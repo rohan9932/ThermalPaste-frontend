@@ -1,10 +1,11 @@
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, UserRoundCog } from "lucide-react";
 
 function Navbar() {
   return (
     <header className="w-full bg-[#0F1117] border-b border-[#222834] px-8 py-2.5 flex items-center justify-between gap-4 select-none sticky top-0 z-50">
       {/* LOGO */}
-      <div className="flex items-center gap-3 shrink-0">
+      <div className="flex items-center gap-3 shrink-0 cursor-pointer">
+        {/* will route to homepage later */}
         <p className="font-bold text-white text-2xl">ThermalPaste</p>
       </div>
 
@@ -14,7 +15,7 @@ function Navbar() {
           <Search className="w-4 h-4 text-[#8F99A8] absolute left-3.5 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search posts, component specs (e.g., RTX 4090, AM5)..."
+            placeholder="Search posts, groups, users"
             className="w-full bg-[#161922] hover:bg-[#1E2330] focus:bg-[#161922] text-xs text-white placeholder-[#8F99A8] pl-10 pr-24 py-2 rounded-full border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all duration-200"
           />
         </div>
@@ -31,11 +32,10 @@ function Navbar() {
         </button>
 
         {/* USER AVATAR */}
-        <button className="relative ml-1 p-0.5 rounded-full hover:ring-2 hover:ring-[#00D8F6]/50 transition">
+        <button className="relative ml-1 p-0.5 rounded-full hover:ring-2 hover:ring-[#00D8F6]/50 transition cursor-pointer">
           <div className="w-8 h-8 rounded-full bg-emerald-900 border border-emerald-500/40 flex items-center justify-center text-xs font-bold text-emerald-200">
-            P
+            <UserRoundCog className="w-4 h-4 stroke-[2.5]" />
           </div>
-          <span className="w-2.5 h-2.5 bg-emerald-400 border-2 border-[#0F1117] rounded-full absolute bottom-0 right-0"></span>
         </button>
       </div>
     </header>
