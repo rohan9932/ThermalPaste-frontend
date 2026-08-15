@@ -2,6 +2,7 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegistrationPage from "./pages/RegistrationPage";
 import ProfilePage from "./pages/ProfilePage";
+import CommunitiesPage from "./pages/CommunitiesPage";
 import { createBrowserRouter, RouterProvider } from "react-router";
 
 const router = createBrowserRouter([
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
   {
     path: "/profile",
     Component: ProfilePage,
+  },
+  {
+    path: "/communities",
+    Component: CommunitiesPage,
   },
 ]);
 

@@ -133,20 +133,20 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           </div>
 
           <div className="space-y-1">
-            <button
+            <Link
+              to="/communities"
               onClick={() => {
-                setActiveId("communities");
                 if (onClose) onClose(); // closes drawer automatically
               }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-150 cursor-pointer font-semibold text-sm ${
-                activeId === "communities" && currentPath !== "/" && currentPath !== "/profile"
+                currentPath === "/communities"
                   ? "bg-[#222732] text-[#00D8F6]"
                   : "text-[#8F99A8] hover:bg-[#161922] hover:text-white"
               }`}
             >
               <UsersRound className="w-5 h-5" />
               <span>Communities</span>
-            </button>
+            </Link>
           </div>
 
           <div className="space-y-1">
@@ -156,7 +156,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 if (onClose) onClose(); // closes drawer automatically
               }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-150 cursor-pointer font-semibold text-sm ${
-                activeId === "saved" && currentPath !== "/" && currentPath !== "/profile"
+                activeId === "saved" && currentPath !== "/" && currentPath !== "/profile" && currentPath !== "/communities"
                   ? "bg-[#222732] text-[#00D8F6]"
                   : "text-[#8F99A8] hover:bg-[#161922] hover:text-white"
               }`}
