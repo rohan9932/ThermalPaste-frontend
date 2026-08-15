@@ -1,1 +1,17 @@
 @import "tailwindcss";
+
+@theme {
+  --color-tp-bg: #0B0D11;
+  --color-tp-card: #0F1117;
+  --color-tp-border: #222834;
+  --color-tp-input: #161922;
+  --color-tp-text: #F3F4F6;
+  --color-tp-secondary: #8F99A8;
+  --color-tp-muted: #4B5563;
+  --color-tp-accent: #00D8F6;
+  --color-tp-accentDim: #00c4e0;
+  --color-tp-purple: #A78BFA;
+
+  --shadow-accent-glow: 0 0 15px rgba(0, 216, 246, 0.25);
+  --shadow-accent-glow-sm: 0 0 10px rgba(0, 216, 246, 0.15);
+}

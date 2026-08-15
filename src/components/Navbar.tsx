@@ -1,4 +1,5 @@
 import { Plus, Search, UserRoundCog, Menu, X } from "lucide-react";
+import { Link } from "react-router";
 
 interface NavbarProps {
   onToggleSidebar?: () => void;
@@ -24,10 +25,9 @@ function Navbar({ onToggleSidebar, isSidebarOpen }: NavbarProps) {
         </button>
 
         {/* Desktop Logo */}
-        <div className="hidden md:flex items-center gap-3 cursor-pointer">
-          {/* will route to homepage later */}
+        <Link to="/" className="hidden md:flex items-center gap-3 cursor-pointer no-underline">
           <p className="font-bold text-white text-2xl">ThermalPaste</p>
-        </div>
+        </Link>
       </div>
 
       {/* SEARCH BAR */}
@@ -57,11 +57,11 @@ function Navbar({ onToggleSidebar, isSidebarOpen }: NavbarProps) {
         </button>
 
         {/* USER AVATAR */}
-        <button className="relative ml-1 p-0.5 rounded-full hover:ring-2 hover:ring-[#00D8F6]/50 transition cursor-pointer">
+        <Link to="/profile" className="relative ml-1 p-0.5 rounded-full hover:ring-2 hover:ring-[#00D8F6]/50 transition cursor-pointer block">
           <div className="w-8 h-8 rounded-full bg-emerald-900 border border-emerald-500/40 flex items-center justify-center text-xs font-bold text-emerald-200">
             <UserRoundCog className="w-4 h-4 stroke-[2.5]" />
           </div>
-        </button>
+        </Link>
       </div>
     </header>
   );

@@ -1,616 +1,437 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, type ChangeEvent } from "react";
+import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
 import {
   Cpu,
-  Gpu,
   MemoryStick,
   CircuitBoard,
   Fan,
   Monitor,
   HardDrive,
   Zap,
+  Shield,
+  Save,
+  RotateCcw,
+  Edit3,
+  Settings,
+  Layers,
   MessageCircle,
   Heart,
   Star,
-  Share2,
-  UserPlus,
-  MoreHorizontal,
-  Edit3,
-  MapPin,
-  Calendar,
-  Link as LinkIcon,
-  Shield,
-  ChevronRight,
   Activity,
   TrendingUp,
-  Award,
-  Layers,
-  Box,
-  Settings,
 } from "lucide-react";
 
-/* ───────────────────────────────────────────────────
-   COLOR THEME (matches LoginPage.tsx)
-   ─────────────────────────────────────────────────── */
-const C = {
-  bg: "#0B0D11",
-  card: "#0F1117",
-  cardHover: "#131620",
-  input: "#161922",
-  border: "#222834",
-  accent: "#00D8F6",
-  accentDim: "#00b8d0",
-  accentGlow: "rgba(0,216,246,0.15)",
-  accentGlowStrong: "rgba(0,216,246,0.35)",
-  secondary: "#8F99A8",
-  muted: "#5A6373",
-  white: "#FFFFFF",
-  text: "#C8CDD6",
-  darkText: "#6B7280",
-  success: "#34D399",
-  danger: "#F87171",
-  purple: "#A78BFA",
-  orange: "#FB923C",
-  pink: "#F472B6",
-} as const;
-
-/* ───────────────────────────────────────────────────
-   MOCK USER DATA
-   ─────────────────────────────────────────────────── */
-interface UserProfile {
-  id: string;
-  username: string;
-  displayName: string;
-  bio: string;
-  avatarUrl: string;
-  coverUrl: string;
-  location: string;
-  joinedAt: string;
-  website: string;
-  role: "Member" | "Moderator" | "Admin" | "Verified Builder";
-  reputation: number;
-  totalPosts: number;
-  totalComments: number;
-  totalLikes: number;
-  totalShares: number;
-  isFollowing: boolean;
-  isOnline: boolean;
-  rigs: string[];
-  specs: {
-    cpu: string;
-    gpu: string;
-    ram: string;
-    motherboard: string;
-    cooler: string;
-    caseName: string;
-    powerSupply: string;
-    storageSpecs: string;
-  };
-  badges: { icon: string; label: string; color: string }[];
-  recentActivity: {
-    type: "post" | "comment" | "like" | "build";
-    title: string;
-    community: string;
-    time: string;
-  }[];
-  topCommunities: {
-    name: string;
-    icon: string;
-    role: string;
-    members: number;
-  }[];
-}
-
-const MOCK_USER: UserProfile = {
-  id: "usr_83kf2",
-  username: "thermalwarrior",
-  displayName: "Alex "ThermalWarrior" Chen",
-  bio: "PC enthusiast & benchmark nerd. I build high-end rigs and push them to the limit. Custom loops, overclocks, and liquid metal everywhere. Current target: sub-60°C on all-core stress tests.",
-  avatarUrl: "",
-  coverUrl: "",
-  location: "San Francisco, CA",
-  joinedAt: "March 2024",
-  website: "https://thermalwarrior.dev",
-  role: "Verified Builder",
-  reputation: 4872,
-  totalPosts: 312,
-  totalComments: 1847,
-  totalLikes: 5620,
-  totalShares: 892,
-  isFollowing: false,
-  isOnline: true,
-  rigs: ["Main Build — AM5 RTX 4090", "SFF LAN Rig — Mini ITX", "Server Rack — Homelab"],
+/* ─── Mock User Data ─── */
+const USER = {
+  username: "LinusBuilds",
+  avatarUrl: "/images/avatar.jpg",
+  bio: "I build enterprise servers in my sleep and drop graphics cards for a living. Host of Overclocked Tech Tips.",
   specs: {
     cpu: "AMD Ryzen 9 7950X3D",
     gpu: "NVIDIA RTX 4090 Founders Edition",
-    ram: "64GB DDR5-6000 CL30 (G.Skill Trident Z5)",
+    ram: "128GB G.Skill Trident Z5 DDR5-6400",
     motherboard: "ASUS ROG Crosshair X670E Hero",
-    cooler: "EK Quantum Velocity² 360mm Custom Loop",
+    cooler: "EK-Quantum Custom Loop 360mm",
     caseName: "Lian Li O11 Dynamic EVO",
-    powerSupply: "Corsair HX1500i 1500W 80+ Platinum",
-    storageSpecs: "2TB Samsung 990 Pro + 4TB WD Black SN850X",
+    powerSupply: "Seasonic Vertex PX-1600 80+ Platinum",
+    storageSpecs: "2x 4TB Samsung 990 Pro NVMe",
   },
   badges: [
-    { icon: "🔥", label: "Firestarter", color: "#FB923C" },
-    { icon: "🧊", label: "Ice Cold", color: "#00D8F6" },
-    { icon: "⚡", label: "Power User", color: "#A78BFA" },
-    { icon: "🏆", label: "Top Builder", color: "#F59E0B" },
-    { icon: "💎", label: "Diamond Tier", color: "#E5E7EB" },
+    { icon: "/images/thermal-paste-thermal-paste-cooling-hard-1.webp", label: "Firestarter", color: "#FB923C" },
+    { icon: "/images/water-cooling-custom-loop-pc-build-1.jpg", label: "Ice Cold", color: "#00D8F6" },
+    { icon: "/images/overclocking-cpu-benchmark-gaming-1.webp", label: "Power User", color: "#A78BFA" },
+    { icon: "/images/gpu-graphics-card-rtx-nvidia-1.webp", label: "Top Builder", color: "#F59E0B" },
+    { icon: "/images/small-form-factor-mini-itx-pc-case-build-1.webp", label: "Diamond Tier", color: "#E5E7EB" },
   ],
+  stats: {
+    reputation: 4872,
+    posts: 312,
+    comments: 1847,
+    likes: 5620,
+  },
   recentActivity: [
-    { type: "post", title: "My custom loop temps after 300 hours of runtime", community: "r/CustomLoops", time: "2 hours ago" },
-    { type: "comment", title: "Re: Best AIO for AM5 in 2025", community: "r/CoolingDiscussion", time: "5 hours ago" },
-    { type: "like", title: "liked a post about the new X870E boards", community: "r/HardwareNews", time: "8 hours ago" },
-    { type: "build", title: "Updated build: SFF ITX with RTX 4090", community: "r/SmallFormFactor", time: "1 day ago" },
-    { type: "post", title: "Thermal paste comparison: Kryonaut vs NT-H1", community: "r/ThermalPaste", time: "2 days ago" },
-    { type: "comment", title: "Re: Is 1500W PSU overkill?", community: "r/PSUAdvice", time: "3 days ago" },
-  ],
-  topCommunities: [
-    { name: "r/ThermalPaste", icon: "🌡️", role: "Moderator", members: 245000 },
-    { name: "r/CustomLoops", icon: "💧", role: "Member", members: 189000 },
-    { name: "r/Overclocking", icon: "⚡", role: "Member", members: 312000 },
-    { name: "r/HardwareNews", icon: "📰", role: "Contributor", members: 567000 },
-    { name: "r/SmallFormFactor", icon: "📦", role: "Member", members: 98000 },
+    { type: "post" as const, title: "My custom loop temps after 300 hours of runtime", community: "r/CustomLoops", time: "2 hours ago", color: "#00D8F6" },
+    { type: "comment" as const, title: "Re: Best AIO for AM5 in 2025", community: "r/CoolingDiscussion", time: "5 hours ago", color: "#A78BFA" },
+    { type: "like" as const, title: "liked a post about the new X870E boards", community: "r/HardwareNews", time: "8 hours ago", color: "#F472B6" },
+    { type: "build" as const, title: "Updated build: SFF ITX with RTX 4090", community: "r/SmallFormFactor", time: "1 day ago", color: "#FB923C" },
+    { type: "post" as const, title: "Thermal paste comparison: Kryonaut vs NT-H1", community: "r/ThermalPaste", time: "2 days ago", color: "#00D8F6" },
+    { type: "comment" as const, title: "Re: Is 1500W PSU overkill?", community: "r/PSUAdvice", time: "3 days ago", color: "#A78BFA" },
   ],
 };
 
-/* ───────────────────────────────────────────────────
-   HELPER COMPONENTS
-   ─────────────────────────────────────────────────── */
+/* ─── Spec icon mapping (SVG icons, no emoji) ─── */
+const SPEC_ICONS: Record<string, React.ReactNode> = {
+  cpu: <Cpu className="w-4 h-4" />,
+  gpu: <Monitor className="w-4 h-4" />,
+  ram: <MemoryStick className="w-4 h-4" />,
+  motherboard: <CircuitBoard className="w-4 h-4" />,
+  cooler: <Fan className="w-4 h-4" />,
+  caseName: <Monitor className="w-4 h-4" />,
+  powerSupply: <Zap className="w-4 h-4" />,
+  storageSpecs: <HardDrive className="w-4 h-4" />,
+};
 
-function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: number | string; color: string }) {
-  return (
-    <div className="flex flex-col items-center gap-1 p-4 rounded-xl bg-[#161922] border border-[#222834] hover:border-[#00D8F6]/20 transition-all duration-300 cursor-default group">
-      <div className="text-[color:var(--c)] group-hover:scale-110 transition-transform" style={{ ["--c" as any]: color }}>
-        {icon}
-      </div>
-      <span className="text-xl font-bold text-white">{typeof value === "number" ? value.toLocaleString() : value}</span>
-      <span className="text-[10px] uppercase tracking-wider font-semibold text-[#8F99A8]">{label}</span>
-    </div>
-  );
-}
+const SPEC_LABELS: Record<string, string> = {
+  cpu: "CPU",
+  gpu: "GPU",
+  ram: "RAM",
+  motherboard: "Motherboard",
+  cooler: "AIO / Custom Cooler",
+  caseName: "PC Case",
+  powerSupply: "Power Supply",
+  storageSpecs: "Storage Specs",
+};
 
-function SpecRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="flex items-start gap-3 p-3 rounded-xl bg-[#161922] border border-[#222834] hover:border-[#00D8F6]/15 transition-all duration-300 group">
-      <div className="mt-0.5 text-[#00D8F6] opacity-60 group-hover:opacity-100 transition-opacity flex-shrink-0">
-        {icon}
-      </div>
-      <div className="min-w-0 flex-1">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-[#8F99A8] block mb-0.5">{label}</span>
-        <span className="text-sm font-medium text-white leading-tight block">{value}</span>
-      </div>
-    </div>
-  );
-}
+const SPEC_PLACEHOLDERS: Record<string, string> = {
+  cpu: "Ryzen 9 7950X3D",
+  gpu: "RTX 4090",
+  ram: "32GB DDR5-6000",
+  motherboard: "B650E-I Gaming ITX",
+  cooler: "NZXT Kraken 360",
+  caseName: "Fractal Design North",
+  powerSupply: "Corsair SF750 750W",
+  storageSpecs: "2TB Samsung 990 Pro",
+};
 
-function ActivityItem({ item }: { item: UserProfile["recentActivity"][0] }) {
-  const typeConfig: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
-    post: { icon: <MessageCircle className="w-3.5 h-3.5" />, color: "#00D8F6", label: "Post" },
-    comment: { icon: <MessageCircle className="w-3.5 h-3.5" />, color: "#A78BFA", label: "Comment" },
-    like: { icon: <Heart className="w-3.5 h-3.5" />, color: "#F472B6", label: "Like" },
-    build: { icon: <Cpu className="w-3.5 h-3.5" />, color: "#FB923C", label: "Build" },
-  };
-  const config = typeConfig[item.type] || typeConfig.post;
+type Tab = "overview" | "specs" | "activity";
 
-  return (
-    <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-[#161922] transition-all duration-200 group cursor-pointer">
-      <div
-        className="mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-        style={{ backgroundColor: `${config.color}15`, color: config.color }}
-      >
-        {config.icon}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm text-[#C8CDD6] leading-snug group-hover:text-white transition-colors">
-          <span className="font-semibold">{item.title}</span>
-        </p>
-        <div className="flex items-center gap-2 mt-1">
-          <span className="text-[11px] text-[#8F99A8]">{item.community}</span>
-          <span className="text-[11px] text-[#5A6373]">·</span>
-          <span className="text-[11px] text-[#5A6373]">{item.time}</span>
-        </div>
-      </div>
-      <span className="text-[10px] uppercase tracking-wider font-bold mt-1" style={{ color: config.color }}>
-        {config.label}
-      </span>
-    </div>
-  );
-}
-
-/* ───────────────────────────────────────────────────
-   MAIN PROFILE PAGE
-   ─────────────────────────────────────────────────── */
+/* ─── Main Component ─── */
 export default function ProfilePage() {
-  const [activeTab, setActiveTab] = useState<"overview" | "specs" | "activity">("overview");
-  const user = MOCK_USER;
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<Tab>("overview");
+
+  // Editable fields (like the modal)
+  const [bio, setBio] = useState(USER.bio);
+  const [avatarUrl, setAvatarUrl] = useState(USER.avatarUrl);
+  const [specs, setSpecs] = useState(USER.specs);
+  const [isSaving, setIsSaving] = useState(false);
+  const [, setError] = useState(""); // keep setter used for API error handling
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleSpecChange = (key: string, value: string) => {
+    setSpecs((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setIsSaving(true);
+    try {
+      // Simulate API call
+      await new Promise((r) => setTimeout(r, 1500));
+      setIsEditing(false);
+    } catch (err: any) {
+      setError(err.message || "Failed to save profile.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
-    <div
-      className="min-h-screen text-white font-sans"
-      style={{
-        backgroundColor: C.bg,
-        "--accent": C.accent,
-        "--accent-dim": C.accentDim,
-        "--border": C.border,
-        "--card": C.card,
-        "--secondary": C.secondary,
-      } as React.CSSProperties}
-    >
-      {/* ═══ COVER / HERO ═══ */}
-      <div className="relative">
-        {/* Cover gradient */}
-        <div
-          className="h-52 sm:h-64 w-full relative overflow-hidden"
-          style={{
-            background: `linear-gradient(135deg, ${C.bg} 0%, #0D1520 40%, #0F2029 70%, ${C.bg} 100%)`,
-          }}
+    <div className="min-h-screen bg-tp-bg text-white flex flex-col font-sans">
+      <Navbar
+        isSidebarOpen={isSidebarOpen}
+        onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
+      />
+      <div className="flex flex-1 relative">
+        <Sidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+        <main
+          className={`flex-1 transition-all duration-300 ${
+            isSidebarOpen ? "md:ml-64" : "ml-0"
+          }`}
         >
-          {/* Decorative glow orbs */}
-          <div
-            className="absolute top-0 right-1/4 w-96 h-96 rounded-full blur-3xl opacity-20"
-            style={{ backgroundColor: C.accent }}
-          />
-          <div
-            className="absolute bottom-0 left-1/6 w-64 h-64 rounded-full blur-3xl opacity-10"
-            style={{ backgroundColor: C.purple }}
-          />
-          {/* Geometric lines */}
-          <svg className="absolute inset-0 w-full h-full opacity-5" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-                <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#00D8F6" strokeWidth="0.5" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-8 pb-6">
+        {/* Header bar */}
+        <div className="flex items-center justify-between p-5 border border-tp-border bg-tp-card rounded-2xl mb-6">
+          <div className="flex items-center gap-3">
+            <span className="p-2 bg-tp-purple/20 border border-tp-purple/40 text-tp-purple rounded-lg text-lg">
+              <Settings className="w-5 h-5" />
+            </span>
+            <div>
+              <h1 className="text-base font-bold text-white">
+                Configure PC Rig & Profile flairs
+              </h1>
+              <p className="text-xs text-tp-secondary">
+                Your specifications will appear as user flair on everything you share.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            className="p-2 text-tp-secondary hover:text-white hover:bg-tp-input rounded-lg transition-all cursor-pointer"
+          >
+            <Edit3 className="w-5 h-5" />
+          </button>
         </div>
 
-        {/* Profile info overlapping cover */}
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 -mt-16 relative z-10">
-          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 sm:gap-6">
-            {/* Avatar */}
-            <div className="relative flex-shrink-0">
-              <div
-                className="w-32 h-32 rounded-2xl border-4 overflow-hidden shadow-2xl"
-                style={{ borderColor: C.card, backgroundColor: C.input }}
-              >
-                <img
-                  src={
-                    user.avatarUrl ||
-                    "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&h=300&q=80"
-                  }
-                  alt={user.displayName}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src =
-                      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&h=300&q=80";
-                  }}
-                />
-              </div>
-              {/* Online indicator */}
-              {user.isOnline && (
-                <div
-                  className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full border-[3px] flex items-center justify-center"
-                  style={{ backgroundColor: "#10B981", borderColor: C.bg }}
-                >
-                  <div className="w-2 h-2 rounded-full bg-white" />
+        {/* ═══════════════════════════════════════════
+            PREVIEW CARD
+        ═══════════════════════════════════════════ */}
+        <div className="p-5 rounded-2xl border border-tp-border bg-gradient-to-r from-tp-card to-tp-bg flex items-center gap-5 mb-6">
+          <img
+            src={avatarUrl || "/images/avatar.jpg"}
+            alt="Avatar Preview"
+            className="w-16 h-16 rounded-full object-cover border-2 border-tp-purple/30 flex-shrink-0"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "/images/avatar.jpg";
+            }}
+          />
+          <div className="min-w-0">
+            <div className="text-sm font-bold text-white flex items-center gap-2">
+              {USER.username}
+              <span className="text-[10px] bg-tp-purple/20 text-tp-purple px-2 py-0.5 rounded-full border border-tp-purple/40">
+                Verified Rig
+              </span>
+            </div>
+            <p className="text-xs text-tp-secondary line-clamp-1 italic mt-0.5">
+              “{bio || "No bio written yet."}”
+            </p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 text-[11px] font-mono text-tp-accent">
+              {specs.cpu && <span>CPU: {specs.cpu}</span>}
+              {specs.gpu && <span>GPU: {specs.gpu}</span>}
+            </div>
+          </div>
+        </div>
+
+        {/* ═══════════════════════════════════════════
+            TWO-COLUMN FORM (matches screenshot)
+        ═══════════════════════════════════════════ */}
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+          {/* ─── Left Column: General Info ─── */}
+          <div className="space-y-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-tp-secondary border-b border-tp-border pb-2 flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5 text-tp-purple" />
+              General Info
+            </h4>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-tp-text">Avatar URL</label>
+              <input
+                type="url"
+                value={avatarUrl}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setAvatarUrl(e.target.value)}
+                placeholder="https://images.unsplash.com/photo-..."
+                className="w-full px-3 py-2 rounded-xl bg-tp-input border border-tp-border text-white placeholder-tp-muted focus:outline-none focus:border-tp-accent text-xs transition-all"
+                disabled={!isEditing}
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-tp-text">Short Bio</label>
+              <textarea
+                value={bio}
+                onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setBio(e.target.value)}
+                placeholder="Write a custom bio about your hardware hobby..."
+                rows={4}
+                className="w-full px-3 py-2 rounded-xl bg-tp-input border border-tp-border text-white placeholder-tp-muted focus:outline-none focus:border-tp-accent text-xs transition-all resize-none"
+                disabled={!isEditing}
+              />
+            </div>
+          </div>
+
+          {/* ─── Right Column: PC Build Specs ─── */}
+          <div className="space-y-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-tp-secondary border-b border-tp-border pb-2 flex items-center gap-1.5">
+              <Cpu className="w-3.5 h-3.5 text-tp-accent" />
+              PC Build Specs
+            </h4>
+
+            <div className="grid grid-cols-2 gap-3">
+              {Object.entries(SPEC_LABELS).map(([key, label]) => (
+                <div key={key} className="space-y-1">
+                  <label className="text-[10px] font-medium text-tp-text">{label}</label>
+                  <input
+                    type="text"
+                    value={specs[key as keyof typeof specs] || ""}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      handleSpecChange(key, e.target.value)
+                    }
+                    placeholder={SPEC_PLACEHOLDERS[key] || label}
+                    className="w-full px-3 py-1.5 rounded-lg bg-tp-input border border-tp-border text-white placeholder-tp-muted/60 focus:outline-none focus:border-tp-accent text-xs font-mono transition-all"
+                    disabled={!isEditing}
+                  />
                 </div>
-              )}
-              {/* Role badge */}
-              <div
-                className="absolute -top-2 -right-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border"
-                style={{
-                  backgroundColor: C.accent + "20",
-                  color: C.accent,
-                  borderColor: C.accent + "40",
-                }}
-              >
-                {user.role}
-              </div>
-            </div>
-
-            {/* Name & meta */}
-            <div className="flex-1 min-w-0 pb-2">
-              <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-                  {user.displayName}
-                </h1>
-              </div>
-              <p className="text-sm text-[#8F99A8] mt-0.5">
-                @{user.username}
-              </p>
-              <div className="flex items-center flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-[#8F99A8]">
-                {user.location && (
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5" /> {user.location}
-                  </span>
-                )}
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5" /> Joined {user.joinedAt}
-                </span>
-                {user.website && (
-                  <a href={user.website} target="_blank" rel="noopener" className="flex items-center gap-1 hover:text-[#00D8F6] transition-colors">
-                    <LinkIcon className="w-3.5 h-3.5" /> {user.website.replace("https://", "")}
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* Action buttons */}
-            <div className="flex items-center gap-2 pb-2">
-              <button
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer"
-                style={{
-                  backgroundColor: user.isFollowing ? "#222834" : C.accent,
-                  color: user.isFollowing ? "#C8CDD6" : C.bg,
-                  boxShadow: user.isFollowing ? "none" : `0 0 15px ${C.accentGlow}`,
-                }}
-              >
-                <UserPlus className="w-3.5 h-3.5" />
-                {user.isFollowing ? "Following" : "Follow"}
-              </button>
-              <button className="p-2.5 rounded-xl bg-[#161922] border border-[#222834] text-[#8F99A8] hover:text-white hover:border-[#00D8F6]/30 transition-all cursor-pointer">
-                <Share2 className="w-4 h-4" />
-              </button>
-              <button className="p-2.5 rounded-xl bg-[#161922] border border-[#222834] text-[#8F99A8] hover:text-white hover:border-[#00D8F6]/30 transition-all cursor-pointer">
-                <Edit3 className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ═══ MAIN CONTENT ═══ */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-          {/* ─── LEFT COLUMN: Sidebar ─── */}
-          <div className="lg:col-span-1 space-y-6">
-
-            {/* Bio */}
-            <div className="rounded-2xl p-5 border" style={{ backgroundColor: C.card, borderColor: C.border }}>
-              <p className="text-sm text-[#C8CDD6] leading-relaxed italic">
-                "{user.bio}"
-              </p>
-            </div>
-
-            {/* Stats */}
-            <div className="rounded-2xl p-5 border" style={{ backgroundColor: C.card, borderColor: C.border }}>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#8F99A8] mb-4 flex items-center gap-1.5">
-                <TrendingUp className="w-3.5 h-3.5 text-[#00D8F6]" />
-                Stats
-              </h3>
-              <div className="grid grid-cols-2 gap-2">
-                <StatCard icon={<Star className="w-4 h-4" />} label="Reputation" value={user.reputation} color="#F59E0B" />
-                <StatCard icon={<MessageCircle className="w-4 h-4" />} label="Posts" value={user.totalPosts} color="#00D8F6" />
-                <StatCard icon={<Activity className="w-4 h-4" />} label="Comments" value={user.totalComments} color="#A78BFA" />
-                <StatCard icon={<Heart className="w-4 h-4" />} label="Likes" value={user.totalLikes} color="#F472B6" />
-              </div>
-            </div>
-
-            {/* Badges */}
-            <div className="rounded-2xl p-5 border" style={{ backgroundColor: C.card, borderColor: C.border }}>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#8F99A8] mb-4 flex items-center gap-1.5">
-                <Award className="w-3.5 h-3.5 text-[#00D8F6]" />
-                Badges
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {user.badges.map((b, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all duration-200 cursor-default hover:scale-105"
-                    style={{
-                      backgroundColor: b.color + "12",
-                      borderColor: b.color + "30",
-                      color: b.color,
-                    }}
-                  >
-                    <span>{b.icon}</span>
-                    {b.label}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Top Communities */}
-            <div className="rounded-2xl p-5 border" style={{ backgroundColor: C.card, borderColor: C.border }}>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#8F99A8] mb-4 flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-[#00D8F6]" />
-                Top Communities
-              </h3>
-              <div className="space-y-2">
-                {user.topCommunities.map((c, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#161922] transition-all cursor-pointer group"
-                  >
-                    <span className="text-xl flex-shrink-0">{c.icon}</span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-white group-hover:text-[#00D8F6] transition-colors truncate">
-                        {c.name}
-                      </p>
-                      <p className="text-[10px] text-[#5A6373]">{(c.members / 1000).toFixed(0)}k members</p>
-                    </div>
-                    <span
-                      className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                      style={{
-                        backgroundColor: c.role === "Moderator" ? "#A78BFA20" : "#8F99A815",
-                        color: c.role === "Moderator" ? "#A78BFA" : "#8F99A8",
-                      }}
-                    >
-                      {c.role}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Your Rigs */}
-            <div className="rounded-2xl p-5 border" style={{ backgroundColor: C.card, borderColor: C.border }}>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#8F99A8] mb-4 flex items-center gap-1.5">
-                <Box className="w-3.5 h-3.5 text-[#00D8F6]" />
-                Your Rigs
-              </h3>
-              <div className="space-y-2">
-                {user.rigs.map((rig, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 p-3 rounded-xl border cursor-pointer group hover:border-[#00D8F6]/20 transition-all"
-                    style={{ backgroundColor: C.input, borderColor: C.border }}
-                  >
-                    <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                      style={{ backgroundColor: C.accent + "15" }}
-                    >
-                      <Cpu className="w-4 h-4" style={{ color: C.accent }} />
-                    </div>
-                    <span className="text-sm text-[#C8CDD6] group-hover:text-white transition-colors">{rig}</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-[#5A6373] ml-auto flex-shrink-0" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* ─── RIGHT COLUMN: Main Content ─── */}
-          <div className="lg:col-span-2 space-y-6">
-
-            {/* Tab navigation */}
-            <div className="flex items-center gap-1 p-1 rounded-xl" style={{ backgroundColor: C.card, border: `1px solid ${C.border}` }}>
-              {[
-                { id: "overview" as const, label: "Overview", icon: <Layers className="w-4 h-4" /> },
-                { id: "specs" as const, label: "PC Build Specs", icon: <Cpu className="w-4 h-4" /> },
-                { id: "activity" as const, label: "Recent Activity", icon: <Activity className="w-4 h-4" /> },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer flex-1 justify-center"
-                  style={{
-                    backgroundColor: activeTab === tab.id ? C.accent : "transparent",
-                    color: activeTab === tab.id ? C.bg : C.secondary,
-                    boxShadow: activeTab === tab.id ? `0 0 15px ${C.accentGlow}` : "none",
-                  }}
-                >
-                  {tab.icon}
-                  {tab.label}
-                </button>
               ))}
             </div>
+          </div>
+        </form>
 
-            {/* ─── OVERVIEW TAB ─── */}
-            {activeTab === "overview" && (
-              <div className="space-y-6">
-                {/* Quick Stats Row */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {[
-                    { label: "Posts", value: user.totalPosts, icon: <MessageCircle className="w-5 h-5" />, color: C.accent },
-                    { label: "Comments", value: user.totalComments, icon: <Activity className="w-5 h-5" />, color: C.purple },
-                    { label: "Likes", value: user.totalLikes, icon: <Heart className="w-5 h-5" />, color: C.pink },
-                    { label: "Reputation", value: user.reputation, icon: <Star className="w-5 h-5" />, color: "#F59E0B" },
-                  ].map((s, i) => (
+        {/* ═══════════════════════════════════════════
+            FOOTER ACTIONS
+        ═══════════════════════════════════════════ */}
+        {isEditing && (
+          <div className="flex items-center justify-end gap-3 mt-6 pt-6 border-t border-tp-border">
+            <button
+              type="button"
+              onClick={() => {
+                setIsEditing(false);
+                setBio(USER.bio);
+                setAvatarUrl(USER.avatarUrl);
+                setSpecs(USER.specs);
+              }}
+              className="px-5 py-2.5 rounded-xl text-xs font-semibold text-tp-secondary hover:bg-tp-input hover:text-white transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Cancel
+            </button>
+            <button
+              type="submit"
+              onClick={handleSubmit}
+              disabled={isSaving}
+              className="px-5 py-2.5 bg-tp-accent hover:bg-tp-accentDim disabled:opacity-50 text-tp-bg rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-accent-glow cursor-pointer"
+            >
+              <Save className="w-4 h-4" />
+              {isSaving ? "Saving Rig..." : "Save Configuration"}
+            </button>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════
+            TAB NAVIGATION
+        ═══════════════════════════════════════════ */}
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-tp-card border border-tp-border mt-8">
+          {([
+            { id: "overview" as Tab, label: "Overview", icon: <Layers className="w-4 h-4" /> },
+            { id: "specs" as Tab, label: "PC Build Specs", icon: <Cpu className="w-4 h-4" /> },
+            { id: "activity" as Tab, label: "Recent Activity", icon: <Activity className="w-4 h-4" /> },
+          ]).map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer flex-1 justify-center ${
+                activeTab === tab.id
+                  ? "bg-tp-accent text-tp-bg shadow-accent-glow-sm"
+                  : "text-tp-secondary hover:text-white"
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ═══════════════════════════════════════════
+            TAB CONTENT
+        ═══════════════════════════════════════════ */}
+        <div className="mt-6 space-y-6">
+
+          {/* ─── OVERVIEW TAB ─── */}
+          {activeTab === "overview" && (
+            <div className="space-y-6 animate-fade-in">
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: "Posts", value: USER.stats.posts, icon: <MessageCircle className="w-5 h-5" />, color: "#00D8F6" },
+                  { label: "Comments", value: USER.stats.comments, icon: <Activity className="w-5 h-5" />, color: "#A78BFA" },
+                  { label: "Likes", value: USER.stats.likes, icon: <Heart className="w-5 h-5" />, color: "#F472B6" },
+                  { label: "Reputation", value: USER.stats.reputation, icon: <Star className="w-5 h-5" />, color: "#FBBF24" },
+                ].map((s, i) => (
+                  <div
+                    key={i}
+                    className="rounded-2xl p-5 border border-tp-border hover:border-tp-accent/15 transition-all duration-300 group"
+                  >
                     <div
-                      key={i}
-                      className="rounded-2xl p-5 border hover:border-[#00D8F6]/15 transition-all duration-300 group"
-                      style={{ backgroundColor: C.card, borderColor: C.border }}
+                      className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"
+                      style={{ backgroundColor: s.color + "15", color: s.color }}
                     >
-                      <div className="flex items-center gap-2 mb-3">
-                        <div
-                          className="w-9 h-9 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"
-                          style={{ backgroundColor: s.color + "15", color: s.color }}
-                        >
-                          {s.icon}
-                        </div>
+                      {s.icon}
+                    </div>
+                    <p className="text-2xl font-bold text-white">{s.value.toLocaleString()}</p>
+                    <p className="text-[10px] uppercase tracking-wider font-bold text-tp-secondary mt-0.5">
+                      {s.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Recent Activity */}
+              <div className="rounded-2xl border border-tp-border bg-tp-card overflow-hidden">
+                <div className="flex items-center justify-between p-5 border-b border-tp-border">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-tp-accent" />
+                    Recent Activity
+                  </h3>
+                  <button
+                    onClick={() => setActiveTab("activity")}
+                    className="text-xs text-tp-accent hover:underline font-semibold transition-all cursor-pointer"
+                  >
+                    View all →
+                  </button>
+                </div>
+                <div className="divide-y divide-tp-border">
+                  {USER.recentActivity.slice(0, 4).map((item, i) => (
+                    <ActivityItem key={i} item={item} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ─── SPECS TAB ─── */}
+          {activeTab === "specs" && (
+            <div className="space-y-6 animate-fade-in">
+              <div className="rounded-2xl border border-tp-border bg-tp-card overflow-hidden">
+                <div className="p-5 border-b border-tp-border">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        <Cpu className="w-4 h-4 text-tp-accent" />
+                        PC Build Configuration
+                      </h3>
+                      <p className="text-xs text-tp-secondary mt-1">Primary build</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {Object.entries(SPEC_LABELS).map(([key, label]) => (
+                    <div
+                      key={key}
+                      className="flex items-start gap-3 p-3 rounded-xl bg-tp-input border border-tp-border hover:border-tp-accent/15 transition-all duration-300 group"
+                    >
+                      <div className="mt-0.5 text-tp-accent opacity-60 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                        {SPEC_ICONS[key] || <Cpu className="w-4 h-4" />}
                       </div>
-                      <p className="text-2xl font-bold text-white">{s.value.toLocaleString()}</p>
-                      <p className="text-[10px] uppercase tracking-wider font-bold text-[#8F99A8] mt-0.5">{s.label}</p>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-tp-secondary block mb-0.5">
+                          {label}
+                        </span>
+                        <span className="text-sm font-medium text-white leading-tight block">
+                          {specs[key as keyof typeof specs]}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>
-
-                {/* Recent Activity Preview */}
-                <div className="rounded-2xl border overflow-hidden" style={{ backgroundColor: C.card, borderColor: C.border }}>
-                  <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: C.border }}>
-                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-[#00D8F6]" />
-                      Recent Activity
-                    </h3>
-                    <button
-                      onClick={() => setActiveTab("activity")}
-                      className="text-xs text-[#00D8F6] hover:underline font-semibold transition-all cursor-pointer"
-                    >
-                      View all →
-                    </button>
-                  </div>
-                  <div className="divide-y" style={{ borderColor: C.border }}>
-                    {user.recentActivity.slice(0, 4).map((item, i) => (
-                      <ActivityItem key={i} item={item} />
-                    ))}
-                  </div>
-                </div>
               </div>
-            )}
 
-            {/* ─── SPECS TAB ─── */}
-            {activeTab === "specs" && (
-              <div className="space-y-6">
-                <div className="rounded-2xl border overflow-hidden" style={{ backgroundColor: C.card, borderColor: C.border }}>
-                  <div className="p-5 border-b" style={{ borderColor: C.border }}>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                          <Cpu className="w-4 h-4 text-[#00D8F6]" />
-                          PC Build Configuration
-                        </h3>
-                        <p className="text-xs text-[#8F99A8] mt-1">Primary build — {user.rigs[0]}</p>
-                      </div>
-                      <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer" style={{ backgroundColor: C.input, color: C.secondary, border: `1px solid ${C.border}` }}>
-                        <Settings className="w-3.5 h-3.5" />
-                        Edit Specs
-                      </button>
-                    </div>
-                  </div>
-                  <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <SpecRow icon={<Cpu className="w-4 h-4" />} label="CPU" value={user.specs.cpu} />
-                    <SpecRow icon={<Gpu className="w-4 h-4" />} label="GPU" value={user.specs.gpu} />
-                    <SpecRow icon={<MemoryStick className="w-4 h-4" />} label="RAM" value={user.specs.ram} />
-                    <SpecRow icon={<CircuitBoard className="w-4 h-4" />} label="Motherboard" value={user.specs.motherboard} />
-                    <SpecRow icon={<Fan className="w-4 h-4" />} label="AIO / Custom Cooler" value={user.specs.cooler} />
-                    <SpecRow icon={<Monitor className="w-4 h-4" />} label="Case" value={user.specs.caseName} />
-                    <SpecRow icon={<Zap className="w-4 h-4" />} label="Power Supply" value={user.specs.powerSupply} />
-                    <SpecRow icon={<HardDrive className="w-4 h-4" />} label="Storage" value={user.specs.storageSpecs} />
-                  </div>
-                </div>
-
-                {/* Spec score summary */}
-                <div className="rounded-2xl border p-5" style={{ backgroundColor: C.card, borderColor: C.border }}>
-                  <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-[#00D8F6]" />
-                    Performance Profile
-                  </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {[
-                      { label: "Gaming", score: 98, color: C.accent },
-                      { label: "Productivity", score: 92, color: C.purple },
-                      { label: "Thermal", score: 87, color: C.success },
-                      { label: "Overall", score: 95, color: C.orange },
-                    ].map((p, i) => (
+              {/* Performance Circles */}
+              <div className="rounded-2xl border border-tp-border bg-tp-card p-5">
+                <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-tp-accent" />
+                  Performance Profile
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {[
+                    { score: 98, label: "Gaming", color: "#00D8F6" },
+                    { score: 92, label: "Productivity", color: "#A78BFA" },
+                    { score: 87, label: "Thermal", color: "#34D399" },
+                    { score: 95, label: "Overall", color: "#FB923C" },
+                  ].map((p, i) => {
+                    const circumference = 2 * Math.PI * 34;
+                    const dashArray = `${(p.score / 100) * circumference} ${circumference}`;
+                    return (
                       <div key={i} className="text-center">
                         <div className="relative w-20 h-20 mx-auto mb-2">
                           <svg className="w-full h-full -rotate-90" viewBox="0 0 80 80">
-                            <circle cx="40" cy="40" r="34" fill="none" stroke={C.border} strokeWidth="6" />
-                            <circle
-                              cx="40"
-                              cy="40"
-                              r="34"
-                              fill="none"
-                              stroke={p.color}
-                              strokeWidth="6"
-                              strokeLinecap="round"
-                              strokeDasharray={`${(p.score / 100) * 213.6} 213.6`}
-                            />
+                            <circle cx="40" cy="40" r="34" fill="none" stroke="#222834" strokeWidth="6" />
+                            <circle cx="40" cy="40" r="34" fill="none" stroke={p.color} strokeWidth="6" strokeLinecap="round" strokeDasharray={dashArray} />
                           </svg>
                           <span className="absolute inset-0 flex items-center justify-center text-lg font-bold text-white">
                             {p.score}
@@ -620,31 +441,71 @@ export default function ProfilePage() {
                           {p.label}
                         </p>
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* ─── ACTIVITY TAB ─── */}
-            {activeTab === "activity" && (
-              <div className="rounded-2xl border overflow-hidden" style={{ backgroundColor: C.card, borderColor: C.border }}>
-                <div className="p-5 border-b" style={{ borderColor: C.border }}>
-                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-[#00D8F6]" />
-                    All Recent Activity
-                  </h3>
-                </div>
-                <div className="divide-y" style={{ borderColor: C.border }}>
-                  {user.recentActivity.map((item, i) => (
-                    <ActivityItem key={i} item={item} />
-                  ))}
-                </div>
+          {/* ─── ACTIVITY TAB ─── */}
+          {activeTab === "activity" && (
+            <div className="rounded-2xl border border-tp-border bg-tp-card overflow-hidden animate-fade-in">
+              <div className="p-5 border-b border-tp-border">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-tp-accent" />
+                  All Recent Activity
+                </h3>
               </div>
-            )}
-          </div>
+              <div className="divide-y divide-tp-border">
+                {USER.recentActivity.map((item, i) => (
+                  <ActivityItem key={i} item={item} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
+    </main>
+  </div>
+</div>
+  );
+}
+
+/* ─── Activity Item ─── */
+function ActivityItem({
+  item,
+}: {
+  item: { type: string; title: string; community: string; time: string; color: string };
+}) {
+  const TYPE_ICONS: Record<string, React.ReactNode> = {
+    post: <MessageCircle className="w-3.5 h-3.5" />,
+    comment: <MessageCircle className="w-3.5 h-3.5" />,
+    like: <Heart className="w-3.5 h-3.5" />,
+    build: <Cpu className="w-3.5 h-3.5" />,
+  };
+
+  return (
+    <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-tp-input transition-all duration-200 group cursor-pointer">
+      <div
+        className="mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+        style={{ backgroundColor: item.color + "15", color: item.color }}
+      >
+        {TYPE_ICONS[item.type] || TYPE_ICONS.post}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm text-tp-text leading-snug group-hover:text-white transition-colors">
+          <span className="font-semibold">{item.title}</span>
+        </p>
+        <div className="flex items-center gap-2 mt-1">
+          <span className="text-[11px] text-tp-secondary">{item.community}</span>
+          <span className="text-[11px] text-tp-muted">·</span>
+          <span className="text-[11px] text-tp-muted">{item.time}</span>
+        </div>
+      </div>
+      <span className="text-[10px] uppercase tracking-wider font-bold mt-1" style={{ color: item.color }}>
+        {item.type}
+      </span>
     </div>
   );
 }

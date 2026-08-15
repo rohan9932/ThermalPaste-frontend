@@ -1,5 +1,6 @@
 import { type LucideIcon } from "lucide-react";
 import { useState } from "react";
+import { Link, useLocation } from "react-router";
 
 import {
   Bookmark,
@@ -12,6 +13,7 @@ import {
   Plus,
   Tag,
   UsersRound,
+  User,
 } from "lucide-react";
 
 interface SubGroup {
@@ -73,6 +75,8 @@ const SUB_GROUPS: SubGroup[] = [
 ];
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const location = useLocation();
+  const currentPath = location.pathname;
   const [activeId, setActiveId] = useState<string>("home");
 
   return (
@@ -95,20 +99,37 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* NAVIGATION SECTION */}
         <div className="space-y-2 mb-6">
           <div className="space-y-1">
-            <button
+            <Link
+              to="/"
               onClick={() => {
-                setActiveId("home");
                 if (onClose) onClose(); // closes drawer automatically
               }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-150 cursor-pointer font-semibold text-sm ${
-                activeId === "home"
+                currentPath === "/"
                   ? "bg-[#222732] text-[#00D8F6]"
                   : "text-[#8F99A8] hover:bg-[#161922] hover:text-white"
               }`}
             >
               <House className="w-5 h-5" />
               <span>Home</span>
-            </button>
+            </Link>
+          </div>
+
+          <div className="space-y-1">
+            <Link
+              to="/profile"
+              onClick={() => {
+                if (onClose) onClose(); // closes drawer automatically
+              }}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-150 cursor-pointer font-semibold text-sm ${
+                currentPath === "/profile"
+                  ? "bg-[#222732] text-[#00D8F6]"
+                  : "text-[#8F99A8] hover:bg-[#161922] hover:text-white"
+              }`}
+            >
+              <User className="w-5 h-5" />
+              <span>Profile</span>
+            </Link>
           </div>
 
           <div className="space-y-1">
@@ -118,7 +139,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 if (onClose) onClose(); // closes drawer automatically
               }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-150 cursor-pointer font-semibold text-sm ${
-                activeId === "communities"
+                activeId === "communities" && currentPath !== "/" && currentPath !== "/profile"
                   ? "bg-[#222732] text-[#00D8F6]"
                   : "text-[#8F99A8] hover:bg-[#161922] hover:text-white"
               }`}
@@ -135,7 +156,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 if (onClose) onClose(); // closes drawer automatically
               }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-150 cursor-pointer font-semibold text-sm ${
-                activeId === "saved"
+                activeId === "saved" && currentPath !== "/" && currentPath !== "/profile"
                   ? "bg-[#222732] text-[#00D8F6]"
                   : "text-[#8F99A8] hover:bg-[#161922] hover:text-white"
               }`}
