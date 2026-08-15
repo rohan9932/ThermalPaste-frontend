@@ -1,5 +1,6 @@
 import { ArrowRight, Eye, EyeOff, Lock, LogIn, User } from "lucide-react";
 import { useState, type ChangeEvent, type SubmitEvent } from "react";
+import { NavLink, useNavigate } from "react-router";
 
 function LoginPage() {
   // controlled component
@@ -8,9 +9,12 @@ function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
+  const navigate = useNavigate();
+
   const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Logging in with:", { usernameOrEmail, password, rememberMe });
+    navigate("/");
   };
 
   return (
@@ -129,12 +133,12 @@ function LoginPage() {
         <div className="mt-8 text-center border-t border-[#222834] pt-6">
           <p className="text-sm text-[#8F99A8]">
             Don't have an account? {/* will update to NavLink */}
-            <a
-              href="#"
-              className="text-[#00D8F6] font-semibold hover:underline inline-flex items-center gap-1 transition-all"
+            <NavLink
+              to="/register"
+              className="text-[#00D8F6] font-semibold hover:underline inline-flex items-center gap-1 transition-all ml-1"
             >
               Create one <ArrowRight className="w-3.5 h-3.5 inline" />
-            </a>
+            </NavLink>
           </p>
         </div>
       </div>
