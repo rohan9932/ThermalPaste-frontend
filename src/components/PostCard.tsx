@@ -1,10 +1,10 @@
 import {
   ArrowDown,
   ArrowUp,
-  Laptop,
   MessageSquare,
   Share2,
-  CircleUserRound
+  CircleUserRound, 
+  Boxes
 } from "lucide-react";
 import React, { useState } from "react";
 
@@ -12,11 +12,7 @@ export interface Post {
   id?: string;
   subGroup?: string;
   subGroupIcon?: React.ElementType;
-  author?: {
-    name: string;
-    avatarUrl?: string;
-    specsBadge?: string;
-  };
+  authorname?: string;
   createdAt?: string;
   title: string;
   content?: string;
@@ -24,7 +20,6 @@ export interface Post {
   upvotes?: number;
   downvotes?: number;
   commentsCount?: number;
-  badgeText?: string;
 }
 
 export interface PostCardProps {
@@ -34,41 +29,52 @@ export interface PostCardProps {
 const DEFAULT_POST: Post = {
   id: "post-1",
   subGroup: "g/pcbuilders",
-  author: {
-    name: "GamerGirlAria",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-    specsBadge: "Intel Core i7-14700K | ASUS ROG ...",
-  },
+  authorname: "GamerGirlAria",
   createdAt: "Aug 15, 08:30 PM",
   title:
-    "Finished my very first solo PC build! Rate my setup and cable management 🌸",
+    "Finished my very first solo PC build! Rate my setup and cable management",
   content:
     "I've been playing on a potato laptop for 5 years and finally saved up enough to build my absolute dream rig!",
   previewSnippet: "### Specs:...",
   upvotes: 1,
   downvotes: 0,
   commentsCount: 4,
-  badgeText: "Popular Rig",
 };
 
 export function PostCard({
   post = DEFAULT_POST,
 }: PostCardProps) {
   // Upvote state defaults to upvoted to match the provided mockup screenshot
-  const [voteState, setVoteState] = useState<"up" | "down" | null>(null);
+  const [voteState, setVoteState] = useState<string | null>(null);
   const [upvoteCount, setUpvoteCount] = useState<number>(
     post.upvotes ?? DEFAULT_POST.upvotes!,
-  );
+  ); // fallback value
 
-  const SubIcon = post.subGroupIcon || Laptop;
+  const SubIcon = post.subGroupIcon || Boxes;
 
+  // substact or add by 2 if down/up selcted. if not any selected just update by 1
   const handleUpvote = () => {
-    
+    if (voteState === "down") {
+      setUpvoteCount((prev) => prev + 2);
+    } else if (voteState === "up") {
+      setUpvoteCount((prev) => prev - 1);
+    } else {
+      setUpvoteCount((prev) => prev + 1);
+    }
+
+    setVoteState(voteState === "up" ? null : "up");
   };
 
   const handleDownvote = () => {
-    
+    if (voteState === "up") {
+      setUpvoteCount((prev) => prev - 2);
+    } else if (voteState === "down") {
+      setUpvoteCount((prev) => prev + 1);
+    } else {
+      setUpvoteCount((prev) => prev - 1);
+    }
+
+    setVoteState(voteState === "down" ? null : "down");
   };
 
   return (
@@ -132,7 +138,7 @@ export function PostCard({
           <div className="inline-flex items-center gap-1 cursor-pointer group">
             <CircleUserRound className="w-4 h-4 text-[#00D8F6]" />
             <span className="text-white font-semibold text-xs group-hover:text-[#00D8F6] transition">
-              {post.author?.name}
+              {post.authorname}
             </span>
           </div>
 
