@@ -407,29 +407,6 @@ export default function CommunitiesPage() {
                         isSidebarOpen ? "md:ml-64" : "ml-0"
                     }`}
                 >
-                    {/* Sticky Search Bar ────────────────────────────────────────────
-                        Stays pinned 57px from the top (below the fixed Navbar height).
-                        backdrop-blur-xl creates a frosted-glass effect as content scrolls beneath. */}
-                    <div className="sticky top-[57px] z-30 bg-tp-bg/80 backdrop-blur-xl border-b border-tp-border">
-                        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
-                            {/* Search input — searchQuery state is bound but filtering is not yet implemented */}
-                            <div className="relative flex-1">
-                                <Search className="w-4 h-4 text-tp-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Search posts, component specs (e.g., RTX 4090, AM5)..."
-                                    className="w-full bg-tp-card text-sm text-white placeholder-tp-muted pl-10 pr-4 py-2.5 rounded-xl border border-tp-border focus:border-tp-accent focus:outline-none transition-all"
-                                />
-                            </div>
-                            {/* "Modify My Rig" button — hidden on mobile, placeholder action */}
-                            <button className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl bg-tp-card border border-tp-border text-xs font-bold text-white hover:border-tp-accent/30 transition-all cursor-pointer">
-                                <LayoutGrid className="w-4 h-4 text-tp-accent" />
-                                Modify My Rig
-                            </button>
-                        </div>
-                    </div>
 
                     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
 
