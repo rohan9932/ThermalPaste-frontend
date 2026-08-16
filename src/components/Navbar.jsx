@@ -1,12 +1,7 @@
 import { Plus, Search, UserRoundCog, Menu, X } from "lucide-react";
 import { Link } from "react-router";
 
-interface NavbarProps {
-  onToggleSidebar?: () => void;
-  isSidebarOpen?: boolean;
-}
-
-function Navbar({ onToggleSidebar, isSidebarOpen }: NavbarProps) {
+function Navbar({ onToggleSidebar, isSidebarOpen }) {
   return (
     <header className="w-full bg-[#0F1117] border-b border-[#222834] px-4 sm:px-8 py-2.5 flex items-center justify-between gap-3 sm:gap-4 select-none sticky top-0 z-50">
       {/* LOGO / HAMBURGER */}

@@ -1,4 +1,3 @@
-import { type LucideIcon } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "react-router";
 
@@ -16,20 +15,7 @@ import {
   User,
 } from "lucide-react";
 
-interface SubGroup {
-  id: string;
-  name: string;
-  icon: LucideIcon;
-  count?: number;
-  iconColor?: string;
-}
-
-interface SidebarProps {
-  isOpen?: boolean;
-  onClose?: () => void;
-}
-
-const SUB_GROUPS: SubGroup[] = [
+const SUB_GROUPS = [
   {
     id: "battlestations",
     name: "g/battlestations",
@@ -74,10 +60,10 @@ const SUB_GROUPS: SubGroup[] = [
   },
 ];
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar({ isOpen, onClose }) {
   const location = useLocation();
   const currentPath = location.pathname;
-  const [activeId, setActiveId] = useState<string>("home");
+  const [activeId, setActiveId] = useState("home");
 
   return (
     <>
@@ -112,23 +98,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             >
               <House className="w-5 h-5" />
               <span>Home</span>
-            </Link>
-          </div>
-
-          <div className="space-y-1">
-            <Link
-              to="/profile"
-              onClick={() => {
-                if (onClose) onClose(); // closes drawer automatically
-              }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-150 cursor-pointer font-semibold text-sm ${
-                currentPath === "/profile"
-                  ? "bg-[#222732] text-[#00D8F6]"
-                  : "text-[#8F99A8] hover:bg-[#161922] hover:text-white"
-              }`}
-            >
-              <User className="w-5 h-5" />
-              <span>Profile</span>
             </Link>
           </div>
 

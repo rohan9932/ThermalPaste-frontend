@@ -1,4 +1,4 @@
-// CommunitiesPage.tsx
+// CommunitiesPage.jsx
 // Displays a community post feed with search, sorting, upvoting/downvoting, and post cards.
 
 import React, { useState } from "react";
@@ -18,31 +18,10 @@ import {
     Award,
 } from "lucide-react";
 
-// ─── Post Type ────────────────────────────────────────────────────────────────
-// Defines the shape of a single post object used throughout this page.
-// Fields marked with ? are optional — not every post needs an image or section header.
-interface Post {
-    id: string;
-    community: string;           // e.g. "g/battlestations"
-    communityIcon: React.ReactNode; // Lucide icon displayed as the community badge
-    communityColor: string;      // Hex color used for community badge and accent styling
-    author: string;              // Display name of the post author
-    authorAvatar: string;        // URL to the author's avatar image
-    hardwareTags: string[];      // Hardware components shown as pill badges (e.g. "RTX 4090")
-    timestamp: string;           // Human-readable post date/time string
-    title: string;               // Main post title
-    content: string;             // Body text of the post
-    sectionHeader?: string;      // Optional markdown-style section header (e.g. "### Specs...")
-    image?: string;              // Optional image URL displayed below the content
-    upvotes: number;             // Starting upvote count from the mock data
-    comments: number;            // Number of comments on the post
-    isPopularRig?: boolean;      // If true, shows the "Popular Rig" award badge
-}
-
 // ─── Mock Posts Data ──────────────────────────────────────────────────────────
 // Static post data used as placeholder content until a backend API is integrated.
 // In production, this would be fetched via GET /api/posts or similar endpoint.
-const POSTS: Post[] = [
+const POSTS = [
     {
         id: "post_1",
         community: "g/battlestations",
@@ -156,9 +135,6 @@ const POSTS: Post[] = [
 function AvatarFallback({
     name,
     className = "w-4 h-4",
-}: {
-    name: string;
-    className?: string;
 }) {
     return (
         <div
@@ -172,10 +148,10 @@ function AvatarFallback({
 // ─── PostCard Sub-Component ───────────────────────────────────────────────────
 // Renders a single post card with vote controls, author metadata, content, and action buttons.
 // Each card manages its own local vote state independently.
-function PostCard({ post }: { post: Post }) {
+function PostCard({ post }) {
     // Local vote state: "up", "down", or null (no vote).
     // Clicking the same button again resets the vote back to null.
-    const [vote, setVote] = useState<"up" | "down" | null>(null);
+    const [vote, setVote] = useState(null);
 
     // Adjust the displayed vote count based on the current vote state:
     // +1 for upvote, -1 for downvote, 0 for no vote.
@@ -250,7 +226,7 @@ function PostCard({ post }: { post: Post }) {
                                 alt={post.author}
                                 className="w-4 h-4 rounded-full object-cover"
                                 onError={(e) => {
-                                    (e.target as HTMLImageElement).style.display = "none";
+                                    e.target.style.display = "none";
                                 }}
                             />
                             {/* Fallback initials avatar — shown only when image fails */}
@@ -310,7 +286,7 @@ function PostCard({ post }: { post: Post }) {
                                 alt={post.title}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
-                                    (e.target as HTMLImageElement).style.display = "none";
+                                    e.target.style.display = "none";
                                 }}
                             />
                         </div>
@@ -345,11 +321,11 @@ function PostCard({ post }: { post: Post }) {
 // ─── CommunitiesPage Component ────────────────────────────────────────────────
 export default function CommunitiesPage() {
     // Controls whether the sidebar is open or collapsed.
-    const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Tracks the active sort mode. Sorting logic is a placeholder —
     // actual filtering/ordering would be applied here once a backend exists.
-    const [sortBy, setSortBy] = useState<"newest" | "hot" | "top">("newest");
+    const [sortBy, setSortBy] = useState("newest");
 
     // Bound to the search input. Filtering is a placeholder —
     // actual search filtering would be applied against POSTS here.
@@ -359,7 +335,7 @@ export default function CommunitiesPage() {
     // Each option has an id, label, and icon.
     const SORT_OPTIONS = [
         {
-            id: "newest" as const,
+            id: "newest",
             label: "Newest",
             // Inline SVG clock icon (no Lucide equivalent available).
             icon: (
@@ -377,9 +353,9 @@ export default function CommunitiesPage() {
                 </svg>
             ),
         },
-        { id: "hot" as const, label: "Hot", icon: <Flame className="w-3.5 h-3.5" /> },
+        { id: "hot", label: "Hot", icon: <Flame className="w-3.5 h-3.5" /> },
         {
-            id: "top" as const,
+            id: "top",
             label: "Top Rated",
             icon: <TrendingUp className="w-3.5 h-3.5" />,
         },

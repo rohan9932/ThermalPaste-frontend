@@ -1,9 +1,7 @@
-// ProfilePage.tsx
+// ProfilePage.jsx
 // Displays the user's profile settings, PC build specs, activity stats, and recent activity feed.
 
-"use client";
-
-import React, { useState, type ChangeEvent } from "react";
+import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import {
@@ -58,19 +56,19 @@ const USER = {
     likes: 5620,
   },
   recentActivity: [
-    { type: "post" as const, title: "My custom loop temps after 300 hours of runtime", community: "r/CustomLoops", time: "2 hours ago", color: "#00D8F6" },
-    { type: "comment" as const, title: "Re: Best AIO for AM5 in 2025", community: "r/CoolingDiscussion", time: "5 hours ago", color: "#A78BFA" },
-    { type: "like" as const, title: "liked a post about the new X870E boards", community: "r/HardwareNews", time: "8 hours ago", color: "#F472B6" },
-    { type: "build" as const, title: "Updated build: SFF ITX with RTX 4090", community: "r/SmallFormFactor", time: "1 day ago", color: "#FB923C" },
-    { type: "post" as const, title: "Thermal paste comparison: Kryonaut vs NT-H1", community: "r/ThermalPaste", time: "2 days ago", color: "#00D8F6" },
-    { type: "comment" as const, title: "Re: Is 1500W PSU overkill?", community: "r/PSUAdvice", time: "3 days ago", color: "#A78BFA" },
+    { type: "post", title: "My custom loop temps after 300 hours of runtime", community: "r/CustomLoops", time: "2 hours ago", color: "#00D8F6" },
+    { type: "comment", title: "Re: Best AIO for AM5 in 2025", community: "r/CoolingDiscussion", time: "5 hours ago", color: "#A78BFA" },
+    { type: "like", title: "liked a post about the new X870E boards", community: "r/HardwareNews", time: "8 hours ago", color: "#F472B6" },
+    { type: "build", title: "Updated build: SFF ITX with RTX 4090", community: "r/SmallFormFactor", time: "1 day ago", color: "#FB923C" },
+    { type: "post", title: "Thermal paste comparison: Kryonaut vs NT-H1", community: "r/ThermalPaste", time: "2 days ago", color: "#00D8F6" },
+    { type: "comment", title: "Re: Is 1500W PSU overkill?", community: "r/PSUAdvice", time: "3 days ago", color: "#A78BFA" },
   ],
 };
 
 // ─── Spec Icon Map ─────────────────────────────────────────────────────────────
 // Maps each spec key to its corresponding Lucide SVG icon.
 // Used in the Specs tab to render the correct icon beside each hardware field.
-const SPEC_ICONS: Record<string, React.ReactNode> = {
+const SPEC_ICONS = {
   cpu: <Cpu className="w-4 h-4" />,
   gpu: <Monitor className="w-4 h-4" />,
   ram: <MemoryStick className="w-4 h-4" />,
@@ -82,7 +80,7 @@ const SPEC_ICONS: Record<string, React.ReactNode> = {
 };
 
 // Maps spec keys to human-readable labels shown in form fields and spec cards.
-const SPEC_LABELS: Record<string, string> = {
+const SPEC_LABELS = {
   cpu: "CPU",
   gpu: "GPU",
   ram: "RAM",
@@ -94,7 +92,7 @@ const SPEC_LABELS: Record<string, string> = {
 };
 
 // Placeholder text displayed inside each spec input when the field is empty.
-const SPEC_PLACEHOLDERS: Record<string, string> = {
+const SPEC_PLACEHOLDERS = {
   cpu: "Ryzen 9 7950X3D",
   gpu: "RTX 4090",
   ram: "32GB DDR5-6000",
@@ -105,16 +103,13 @@ const SPEC_PLACEHOLDERS: Record<string, string> = {
   storageSpecs: "2TB Samsung 990 Pro",
 };
 
-// Union type for the three tab options on the profile page.
-type Tab = "overview" | "specs" | "activity";
-
 // ─── ProfilePage Component ────────────────────────────────────────────────────
 export default function ProfilePage() {
   // Controls whether the sidebar is open or collapsed.
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Tracks which tab is currently active: overview, specs, or activity.
-  const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [activeTab, setActiveTab] = useState("overview");
 
   // Editable profile fields — initialized from mock USER data.
   // These will be replaced by API-driven state once a backend is integrated.
@@ -134,13 +129,13 @@ export default function ProfilePage() {
   // ─── Handlers ───────────────────────────────────────────────────────────────
 
   // Updates a single spec field by key without overwriting the rest of the specs object.
-  const handleSpecChange = (key: string, value: string) => {
+  const handleSpecChange = (key, value) => {
     setSpecs((prev) => ({ ...prev, [key]: value }));
   };
 
   // Handles form submission — simulates an API save with a 1.5s delay.
   // e.preventDefault() stops the browser from reloading the page on form submit.
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setIsSaving(true);
@@ -148,7 +143,7 @@ export default function ProfilePage() {
       // TODO: Replace with actual API call, e.g. PATCH /api/user/profile
       await new Promise((r) => setTimeout(r, 1500));
       setIsEditing(false);
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || "Failed to save profile.");
     } finally {
       setIsSaving(false);
@@ -214,7 +209,7 @@ export default function ProfilePage() {
                 alt="Avatar Preview"
                 className="w-16 h-16 rounded-full object-cover border-2 border-tp-purple/30 flex-shrink-0"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/images/avatar.jpg";
+                  e.target.src = "/images/avatar.jpg";
                 }}
               />
               <div className="min-w-0">
@@ -256,7 +251,7 @@ export default function ProfilePage() {
                   <input
                     type="url"
                     value={avatarUrl}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setAvatarUrl(e.target.value)}
+                    onChange={(e) => setAvatarUrl(e.target.value)}
                     placeholder="https://images.unsplash.com/photo-..."
                     className="w-full px-3 py-2 rounded-xl bg-tp-input border border-tp-border text-white placeholder-tp-muted focus:outline-none focus:border-tp-accent text-xs transition-all"
                     disabled={!isEditing}
@@ -268,7 +263,7 @@ export default function ProfilePage() {
                   <label className="text-xs font-medium text-tp-text">Short Bio</label>
                   <textarea
                     value={bio}
-                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setBio(e.target.value)}
+                    onChange={(e) => setBio(e.target.value)}
                     placeholder="Write a custom bio about your hardware hobby..."
                     rows={4}
                     className="w-full px-3 py-2 rounded-xl bg-tp-input border border-tp-border text-white placeholder-tp-muted focus:outline-none focus:border-tp-accent text-xs transition-all resize-none"
@@ -291,8 +286,8 @@ export default function ProfilePage() {
                       <label className="text-[10px] font-medium text-tp-text">{label}</label>
                       <input
                         type="text"
-                        value={specs[key as keyof typeof specs] || ""}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                        value={specs[key] || ""}
+                        onChange={(e) =>
                           handleSpecChange(key, e.target.value)
                         }
                         placeholder={SPEC_PLACEHOLDERS[key] || label}
@@ -342,11 +337,11 @@ export default function ProfilePage() {
                 Three tabs: Overview, PC Build Specs, Recent Activity.
                 Active tab gets a cyan accent highlight; others stay dimmed.    */}
             <div className="flex items-center gap-1 p-1 rounded-xl bg-tp-card border border-tp-border mt-8">
-              {([
-                { id: "overview" as Tab, label: "Overview", icon: <Layers className="w-4 h-4" /> },
-                { id: "specs" as Tab, label: "PC Build Specs", icon: <Cpu className="w-4 h-4" /> },
-                { id: "activity" as Tab, label: "Recent Activity", icon: <Activity className="w-4 h-4" /> },
-              ]).map((tab) => (
+              {[
+                { id: "overview", label: "Overview", icon: <Layers className="w-4 h-4" /> },
+                { id: "specs", label: "PC Build Specs", icon: <Cpu className="w-4 h-4" /> },
+                { id: "activity", label: "Recent Activity", icon: <Activity className="w-4 h-4" /> },
+              ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
@@ -453,7 +448,7 @@ export default function ProfilePage() {
                               {label}
                             </span>
                             <span className="text-sm font-medium text-white leading-tight block">
-                              {specs[key as keyof typeof specs]}
+                              {specs[key]}
                             </span>
                           </div>
                         </div>
@@ -532,13 +527,9 @@ export default function ProfilePage() {
 // ─── ActivityItem Sub-Component ───────────────────────────────────────────────
 // Renders a single row in the activity feed.
 // Receives one activity item and displays its type icon, title, community, and time.
-function ActivityItem({
-  item,
-}: {
-  item: { type: string; title: string; community: string; time: string; color: string };
-}) {
+function ActivityItem({ item }) {
   // Maps activity type strings to their matching Lucide icons.
-  const TYPE_ICONS: Record<string, React.ReactNode> = {
+  const TYPE_ICONS = {
     post:    <MessageCircle className="w-3.5 h-3.5" />,
     comment: <MessageCircle className="w-3.5 h-3.5" />,
     like:    <Heart className="w-3.5 h-3.5" />,

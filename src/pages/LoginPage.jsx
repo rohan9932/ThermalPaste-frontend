@@ -1,5 +1,5 @@
 import { ArrowRight, Eye, EyeOff, Lock, LogIn, User } from "lucide-react";
-import { useState, type ChangeEvent, type SubmitEvent } from "react";
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router";
 
 function LoginPage() {
@@ -11,7 +11,7 @@ function LoginPage() {
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Logging in with:", { usernameOrEmail, password, rememberMe });
     navigate("/");
@@ -46,9 +46,7 @@ function LoginPage() {
                 type="text"
                 required
                 value={usernameOrEmail}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setUsernameOrEmail(e.target.value)
-                }
+                onChange={(e) => setUsernameOrEmail(e.target.value)}
                 placeholder="Enter your username or email"
                 className="w-full bg-[#161922] text-sm text-white placeholder-[#8F99A8] pl-11 pr-4 py-3 rounded-xl border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all duration-200"
               />
@@ -79,9 +77,7 @@ function LoginPage() {
                 type={showPassword ? "text" : "password"}
                 required
                 value={password}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setPassword(e.target.value)
-                }
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 className="w-full bg-[#161922] text-sm text-white placeholder-[#8F99A8] pl-11 pr-11 py-3 rounded-xl border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all duration-200"
               />
@@ -106,9 +102,7 @@ function LoginPage() {
               id="rememberMe"
               type="checkbox"
               checked={rememberMe}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setRememberMe(e.target.checked)
-              }
+              onChange={(e) => setRememberMe(e.target.checked)}
               className="w-4 h-4 rounded bg-[#161922] border-[#222834] text-[#00D8F6] focus:ring-0 focus:ring-offset-0 accent-[#00D8F6] cursor-pointer"
             />
             <label

@@ -4,7 +4,7 @@ import Sidebar from "../components/Sidebar";
 import PostCard from "../components/PostCard";
 
 function HomePage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#0B0D11] text-white flex flex-col">

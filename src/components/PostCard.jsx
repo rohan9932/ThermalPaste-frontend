@@ -6,27 +6,9 @@ import {
   CircleUserRound, 
   Boxes
 } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 
-export interface Post {
-  id?: string;
-  subGroup?: string;
-  subGroupIcon?: React.ElementType;
-  authorname?: string;
-  createdAt?: string;
-  title: string;
-  content?: string;
-  previewSnippet?: string;
-  upvotes?: number;
-  downvotes?: number;
-  commentsCount?: number;
-}
-
-export interface PostCardProps {
-  post?: Post;
-}
-
-const DEFAULT_POST: Post = {
+const DEFAULT_POST = {
   id: "post-1",
   subGroup: "g/pcbuilders",
   authorname: "GamerGirlAria",
@@ -43,11 +25,11 @@ const DEFAULT_POST: Post = {
 
 export function PostCard({
   post = DEFAULT_POST,
-}: PostCardProps) {
+}) {
   // Upvote state defaults to upvoted to match the provided mockup screenshot
-  const [voteState, setVoteState] = useState<string | null>(null);
-  const [upvoteCount, setUpvoteCount] = useState<number>(
-    post.upvotes ?? DEFAULT_POST.upvotes!,
+  const [voteState, setVoteState] = useState(null);
+  const [upvoteCount, setUpvoteCount] = useState(
+    post.upvotes ?? DEFAULT_POST.upvotes,
   ); // fallback value
 
   const SubIcon = post.subGroupIcon || Boxes;

@@ -1,5 +1,5 @@
 import { ArrowRight, Eye, EyeOff, Lock, Mail, User, UserPlus } from "lucide-react";
-import { useState, type ChangeEvent, type SubmitEvent } from "react";
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router";
 
 function RegistrationPage() {
@@ -14,7 +14,7 @@ function RegistrationPage() {
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
       alert("Passwords do not match!");
@@ -58,9 +58,7 @@ function RegistrationPage() {
                 type="text"
                 required
                 value={username}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setUsername(e.target.value)
-                }
+                onChange={(e) => setUsername(e.target.value)}
                 placeholder="Choose a username"
                 className="w-full bg-[#161922] text-sm text-white placeholder-[#8F99A8] pl-11 pr-4 py-3 rounded-xl border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all duration-200"
               />
@@ -82,9 +80,7 @@ function RegistrationPage() {
                 type="email"
                 required
                 value={email}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setEmail(e.target.value)
-                }
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
                 className="w-full bg-[#161922] text-sm text-white placeholder-[#8F99A8] pl-11 pr-4 py-3 rounded-xl border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all duration-200"
               />
@@ -106,9 +102,7 @@ function RegistrationPage() {
                 type={showPassword ? "text" : "password"}
                 required
                 value={password}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setPassword(e.target.value)
-                }
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Create a password"
                 className="w-full bg-[#161922] text-sm text-white placeholder-[#8F99A8] pl-11 pr-11 py-3 rounded-xl border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all duration-200"
               />
@@ -142,9 +136,7 @@ function RegistrationPage() {
                 type={showConfirmPassword ? "text" : "password"}
                 required
                 value={confirmPassword}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setConfirmPassword(e.target.value)
-                }
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm your password"
                 className="w-full bg-[#161922] text-sm text-white placeholder-[#8F99A8] pl-11 pr-11 py-3 rounded-xl border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all duration-200"
               />
@@ -174,9 +166,7 @@ function RegistrationPage() {
               type="checkbox"
               required
               checked={agreeToTerms}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setAgreeToTerms(e.target.checked)
-              }
+              onChange={(e) => setAgreeToTerms(e.target.checked)}
               className="w-4 h-4 rounded bg-[#161922] border-[#222834] text-[#00D8F6] focus:ring-0 focus:ring-offset-0 accent-[#00D8F6] cursor-pointer"
             />
             <label
