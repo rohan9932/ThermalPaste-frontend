@@ -1,3 +1,6 @@
+// CommunitiesPage.tsx
+// Displays a community post feed with search, sorting, upvoting/downvoting, and post cards.
+
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
@@ -15,26 +18,30 @@ import {
     Award,
 } from "lucide-react";
 
-/* ─── Types ─── */
+// ─── Post Type ────────────────────────────────────────────────────────────────
+// Defines the shape of a single post object used throughout this page.
+// Fields marked with ? are optional — not every post needs an image or section header.
 interface Post {
     id: string;
-    community: string;
-    communityIcon: React.ReactNode;
-    communityColor: string;
-    author: string;
-    authorAvatar: string;
-    hardwareTags: string[];
-    timestamp: string;
-    title: string;
-    content: string;
-    sectionHeader?: string;
-    image?: string;
-    upvotes: number;
-    comments: number;
-    isPopularRig?: boolean;
+    community: string;           // e.g. "g/battlestations"
+    communityIcon: React.ReactNode; // Lucide icon displayed as the community badge
+    communityColor: string;      // Hex color used for community badge and accent styling
+    author: string;              // Display name of the post author
+    authorAvatar: string;        // URL to the author's avatar image
+    hardwareTags: string[];      // Hardware components shown as pill badges (e.g. "RTX 4090")
+    timestamp: string;           // Human-readable post date/time string
+    title: string;               // Main post title
+    content: string;             // Body text of the post
+    sectionHeader?: string;      // Optional markdown-style section header (e.g. "### Specs...")
+    image?: string;              // Optional image URL displayed below the content
+    upvotes: number;             // Starting upvote count from the mock data
+    comments: number;            // Number of comments on the post
+    isPopularRig?: boolean;      // If true, shows the "Popular Rig" award badge
 }
 
-/* ─── Mock Data ─── */
+// ─── Mock Posts Data ──────────────────────────────────────────────────────────
+// Static post data used as placeholder content until a backend API is integrated.
+// In production, this would be fetched via GET /api/posts or similar endpoint.
 const POSTS: Post[] = [
     {
         id: "post_1",
@@ -143,7 +150,9 @@ const POSTS: Post[] = [
     },
 ];
 
-/* ─── Avatar Fallback ─── */
+// ─── AvatarFallback Sub-Component ─────────────────────────────────────────────
+// Renders a simple initials-based avatar circle when an author's image fails to load.
+// 'name' is used to extract the first character for display.
 function AvatarFallback({
     name,
     className = "w-4 h-4",
@@ -160,17 +169,26 @@ function AvatarFallback({
     );
 }
 
-/* ─── Post Card ─── */
+// ─── PostCard Sub-Component ───────────────────────────────────────────────────
+// Renders a single post card with vote controls, author metadata, content, and action buttons.
+// Each card manages its own local vote state independently.
 function PostCard({ post }: { post: Post }) {
+    // Local vote state: "up", "down", or null (no vote).
+    // Clicking the same button again resets the vote back to null.
     const [vote, setVote] = useState<"up" | "down" | null>(null);
+
+    // Adjust the displayed vote count based on the current vote state:
+    // +1 for upvote, -1 for downvote, 0 for no vote.
     const voteCount =
         post.upvotes + (vote === "up" ? 1 : vote === "down" ? -1 : 0);
 
     return (
         <div className="rounded-2xl border border-tp-border bg-tp-card overflow-hidden">
             <div className="flex">
-                {/* Vote column */}
+
+                {/* Vote Column — upvote button, vote count, downvote button */}
                 <div className="flex flex-col items-center gap-1 py-4 px-3 bg-tp-bg/50">
+                    {/* Upvote button — highlighted when vote === "up" */}
                     <button
                         onClick={() => setVote(vote === "up" ? null : "up")}
                         className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all cursor-pointer ${vote === "up"
@@ -180,6 +198,8 @@ function PostCard({ post }: { post: Post }) {
                     >
                         <ArrowBigUp className="w-5 h-5" />
                     </button>
+
+                    {/* Vote count — cyan for upvoted, red for downvoted, grey for neutral */}
                     <span
                         className={`text-sm font-bold ${vote === "up"
                                 ? "text-tp-accent"
@@ -190,6 +210,8 @@ function PostCard({ post }: { post: Post }) {
                     >
                         {voteCount}
                     </span>
+
+                    {/* Downvote button — highlighted when vote === "down" */}
                     <button
                         onClick={() => setVote(vote === "down" ? null : "down")}
                         className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all cursor-pointer ${vote === "down"
@@ -201,10 +223,12 @@ function PostCard({ post }: { post: Post }) {
                     </button>
                 </div>
 
-                {/* Content */}
+                {/* Content Column — metadata, title, body, image, and action buttons */}
                 <div className="flex-1 min-w-0 p-4">
-                    {/* Meta row */}
+
+                    {/* Meta row — community badge, author avatar, hardware tags, timestamp */}
                     <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs text-tp-secondary mb-2">
+                        {/* Community badge — colored icon + community name */}
                         <span className="flex items-center gap-1 font-semibold text-white">
                             <span
                                 className="w-5 h-5 rounded-md flex items-center justify-center"
@@ -218,6 +242,8 @@ function PostCard({ post }: { post: Post }) {
                             {post.community}
                         </span>
                         <span className="text-tp-muted">·</span>
+
+                        {/* Author avatar — hides itself if the image fails to load */}
                         <span className="flex items-center gap-1">
                             <img
                                 src={post.authorAvatar}
@@ -227,6 +253,7 @@ function PostCard({ post }: { post: Post }) {
                                     (e.target as HTMLImageElement).style.display = "none";
                                 }}
                             />
+                            {/* Fallback initials avatar — shown only when image fails */}
                             <span className="fallback-hidden">
                                 {post.authorAvatar && (
                                     <AvatarFallback
@@ -237,6 +264,8 @@ function PostCard({ post }: { post: Post }) {
                             </span>
                             {post.author}
                         </span>
+
+                        {/* Hardware tag pills — cyan monospace badges for each component */}
                         {post.hardwareTags.map((tag, i) => (
                             <React.Fragment key={i}>
                                 <span className="text-tp-muted">·</span>
@@ -256,24 +285,24 @@ function PostCard({ post }: { post: Post }) {
                         <span>{post.timestamp}</span>
                     </div>
 
-                    {/* Title */}
+                    {/* Post title */}
                     <h3 className="text-base font-bold text-white leading-snug mb-1.5">
                         {post.title}
                     </h3>
 
-                    {/* Content */}
+                    {/* Post body text */}
                     <p className="text-sm text-tp-text leading-relaxed mb-2">
                         {post.content}
                     </p>
 
-                    {/* Section header */}
+                    {/* Optional section header — only rendered if the field is present */}
                     {post.sectionHeader && (
                         <p className="text-sm text-tp-secondary font-mono mb-3">
                             {post.sectionHeader}
                         </p>
                     )}
 
-                    {/* Image */}
+                    {/* Optional post image — hidden via CSS if the image fails to load */}
                     {post.image && (
                         <div className="rounded-xl overflow-hidden border border-tp-border mb-3 max-h-[400px]">
                             <img
@@ -287,16 +316,19 @@ function PostCard({ post }: { post: Post }) {
                         </div>
                     )}
 
-                    {/* Actions */}
+                    {/* Action bar — Comments count, Share button, and optional Popular Rig badge */}
                     <div className="flex items-center gap-4 pt-2 border-t border-tp-border">
+                        {/* Comments button — placeholder, no action implemented yet */}
                         <button className="flex items-center gap-1.5 text-xs text-tp-secondary hover:text-white transition-colors cursor-pointer">
                             <MessageCircle className="w-4 h-4" />
                             {post.comments} Comments
                         </button>
+                        {/* Share button — placeholder, no action implemented yet */}
                         <button className="flex items-center gap-1.5 text-xs text-tp-secondary hover:text-white transition-colors cursor-pointer">
                             <Share2 className="w-4 h-4" />
                             Share
                         </button>
+                        {/* Popular Rig badge — only shown if isPopularRig = true */}
                         {post.isPopularRig && (
                             <span className="ml-auto flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg bg-tp-orange/10 text-tp-orange border border-tp-orange/20">
                                 <Award className="w-3 h-3" />
@@ -310,16 +342,26 @@ function PostCard({ post }: { post: Post }) {
     );
 }
 
-/* ─── Main Component ─── */
+// ─── CommunitiesPage Component ────────────────────────────────────────────────
 export default function CommunitiesPage() {
+    // Controls whether the sidebar is open or collapsed.
     const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+
+    // Tracks the active sort mode. Sorting logic is a placeholder —
+    // actual filtering/ordering would be applied here once a backend exists.
     const [sortBy, setSortBy] = useState<"newest" | "hot" | "top">("newest");
+
+    // Bound to the search input. Filtering is a placeholder —
+    // actual search filtering would be applied against POSTS here.
     const [searchQuery, setSearchQuery] = useState("");
 
+    // Sort options array — rendered as buttons in the sort bar.
+    // Each option has an id, label, and icon.
     const SORT_OPTIONS = [
         {
             id: "newest" as const,
             label: "Newest",
+            // Inline SVG clock icon (no Lucide equivalent available).
             icon: (
                 <svg
                     className="w-3.5 h-3.5"
@@ -345,23 +387,32 @@ export default function CommunitiesPage() {
 
     return (
         <div className="min-h-screen bg-tp-bg text-white flex flex-col font-sans">
+
+            {/* Shared top navigation bar */}
             <Navbar
                 isSidebarOpen={isSidebarOpen}
                 onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
             />
+
             <div className="flex flex-1 relative">
+
+                {/* Collapsible left sidebar */}
                 <Sidebar
                     isOpen={isSidebarOpen}
                     onClose={() => setIsSidebarOpen(false)}
                 />
+
                 <main
                     className={`flex-1 transition-all duration-300 ${
                         isSidebarOpen ? "md:ml-64" : "ml-0"
                     }`}
                 >
-                    {/* Top Bar Search */}
+                    {/* Sticky Search Bar ────────────────────────────────────────────
+                        Stays pinned 57px from the top (below the fixed Navbar height).
+                        backdrop-blur-xl creates a frosted-glass effect as content scrolls beneath. */}
                     <div className="sticky top-[57px] z-30 bg-tp-bg/80 backdrop-blur-xl border-b border-tp-border">
                         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
+                            {/* Search input — searchQuery state is bound but filtering is not yet implemented */}
                             <div className="relative flex-1">
                                 <Search className="w-4 h-4 text-tp-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                                 <input
@@ -372,6 +423,7 @@ export default function CommunitiesPage() {
                                     className="w-full bg-tp-card text-sm text-white placeholder-tp-muted pl-10 pr-4 py-2.5 rounded-xl border border-tp-border focus:border-tp-accent focus:outline-none transition-all"
                                 />
                             </div>
+                            {/* "Modify My Rig" button — hidden on mobile, placeholder action */}
                             <button className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl bg-tp-card border border-tp-border text-xs font-bold text-white hover:border-tp-accent/30 transition-all cursor-pointer">
                                 <LayoutGrid className="w-4 h-4 text-tp-accent" />
                                 Modify My Rig
@@ -380,69 +432,83 @@ export default function CommunitiesPage() {
                     </div>
 
                     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-                {/* Community Header */}
-                <div className="rounded-2xl border border-tp-border bg-tp-card p-5 mb-4">
-                    <div className="flex items-start gap-4 flex-wrap sm:flex-nowrap">
-                        <div
-                            className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 border"
-                            style={{
-                                backgroundColor: "#00D8F615",
-                                borderColor: "#00D8F630",
-                                color: "#00D8F6",
-                            }}
-                        >
-                            <Monitor className="w-6 h-6" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <h2 className="text-xl font-bold text-white">g/battlestations</h2>
-                            <p className="text-sm text-tp-accent font-semibold">
-                                Battlestations & Setups
-                            </p>
-                            <p className="text-xs text-tp-secondary mt-1.5 leading-relaxed max-w-xl">
-                                Show off your clean desk space, cable management, RGB setups,
-                                speaker systems, and ergonomics. High-end PC rooms and
-                                minimalist desks.
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-3 flex-shrink-0">
-                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-tp-input border border-tp-border text-xs text-tp-secondary">
-                                <LayoutGrid className="w-3.5 h-3.5" />
-                                <span>Posts Count:</span>
-                                <span className="font-bold text-white">{POSTS.length}</span>
+
+                        {/* Community Header Card ────────────────────────────────────────
+                            Showcases the featured community (g/battlestations).
+                            Posts Count badge dynamically displays the total number of posts. */}
+                        <div className="rounded-2xl border border-tp-border bg-tp-card p-5 mb-4">
+                            <div className="flex items-start gap-4 flex-wrap sm:flex-nowrap">
+                                {/* Community icon badge */}
+                                <div
+                                    className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 border"
+                                    style={{
+                                        backgroundColor: "#00D8F615",
+                                        borderColor: "#00D8F630",
+                                        color: "#00D8F6",
+                                    }}
+                                >
+                                    <Monitor className="w-6 h-6" />
+                                </div>
+                                {/* Community name, tagline, and description */}
+                                <div className="flex-1 min-w-0">
+                                    <h2 className="text-xl font-bold text-white">g/battlestations</h2>
+                                    <p className="text-sm text-tp-accent font-semibold">
+                                        Battlestations & Setups
+                                    </p>
+                                    <p className="text-xs text-tp-secondary mt-1.5 leading-relaxed max-w-xl">
+                                        Show off your clean desk space, cable management, RGB setups,
+                                        speaker systems, and ergonomics. High-end PC rooms and
+                                        minimalist desks.
+                                    </p>
+                                </div>
+                                {/* Posts count + Write Post action */}
+                                <div className="flex items-center gap-3 flex-shrink-0">
+                                    {/* Dynamic post count — reads from POSTS array length */}
+                                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-tp-input border border-tp-border text-xs text-tp-secondary">
+                                        <LayoutGrid className="w-3.5 h-3.5" />
+                                        <span>Posts Count:</span>
+                                        <span className="font-bold text-white">{POSTS.length}</span>
+                                    </div>
+                                    {/* Write Post button — placeholder, no action implemented yet */}
+                                    <button className="px-4 py-2 rounded-xl bg-white text-tp-bg text-xs font-bold transition-all hover:bg-gray-200 cursor-pointer">
+                                        Write Post here
+                                    </button>
+                                </div>
                             </div>
-                            <button className="px-4 py-2 rounded-xl bg-white text-tp-bg text-xs font-bold transition-all hover:bg-gray-200 cursor-pointer">
-                                Write Post here
-                            </button>
                         </div>
-                    </div>
-                </div>
 
-                {/* Sort Bar */}
-                <div className="rounded-2xl border border-tp-border bg-tp-card p-3 mb-4 flex items-center gap-2 flex-wrap">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-tp-muted px-2">
-                        Sort Rig Log:
-                    </span>
-                    {SORT_OPTIONS.map((opt) => (
-                        <button
-                            key={opt.id}
-                            onClick={() => setSortBy(opt.id)}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${sortBy === opt.id
-                                    ? "bg-tp-accent/10 text-tp-accent border border-tp-accent/20"
-                                    : "text-tp-secondary hover:text-white hover:bg-tp-input border border-transparent"
-                                }`}
-                        >
-                            {opt.icon}
-                            {opt.label}
-                        </button>
-                    ))}
-                </div>
+                        {/* Sort Bar ─────────────────────────────────────────────────────
+                            Three sort options: Newest, Hot, Top Rated.
+                            Active button gets an accent-colored highlight.
+                            Note: actual sorting logic is not yet implemented. */}
+                        <div className="rounded-2xl border border-tp-border bg-tp-card p-3 mb-4 flex items-center gap-2 flex-wrap">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-tp-muted px-2">
+                                Sort Rig Log:
+                            </span>
+                            {SORT_OPTIONS.map((opt) => (
+                                <button
+                                    key={opt.id}
+                                    onClick={() => setSortBy(opt.id)}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${sortBy === opt.id
+                                            ? "bg-tp-accent/10 text-tp-accent border border-tp-accent/20"
+                                            : "text-tp-secondary hover:text-white hover:bg-tp-input border border-transparent"
+                                        }`}
+                                >
+                                    {opt.icon}
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
 
-                {/* Posts */}
-                <div className="space-y-4">
-                    {POSTS.map((post) => (
-                        <PostCard key={post.id} post={post} />
-                    ))}
-                </div>
+                        {/* Posts Feed ───────────────────────────────────────────────────
+                            Renders each post from the POSTS array as a PostCard.
+                            Each PostCard manages its own vote state independently.      */}
+                        <div className="space-y-4">
+                            {POSTS.map((post) => (
+                                <PostCard key={post.id} post={post} />
+                            ))}
+                        </div>
+
                     </div>
                 </main>
             </div>

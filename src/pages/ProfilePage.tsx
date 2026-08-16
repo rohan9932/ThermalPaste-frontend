@@ -142,333 +142,331 @@ export default function ProfilePage() {
           onClose={() => setIsSidebarOpen(false)}
         />
         <main
-          className={`flex-1 transition-all duration-300 ${
-            isSidebarOpen ? "md:ml-64" : "ml-0"
-          }`}
+          className={`flex-1 transition-all duration-300 ${isSidebarOpen ? "md:ml-64" : "ml-0"
+            }`}
         >
           <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-8 pb-6">
-        {/* Header bar */}
-        <div className="flex items-center justify-between p-5 border border-tp-border bg-tp-card rounded-2xl mb-6">
-          <div className="flex items-center gap-3">
-            <span className="p-2 bg-tp-purple/20 border border-tp-purple/40 text-tp-purple rounded-lg text-lg">
-              <Settings className="w-5 h-5" />
-            </span>
-            <div>
-              <h1 className="text-base font-bold text-white">
-                Configure PC Rig & Profile flairs
-              </h1>
-              <p className="text-xs text-tp-secondary">
-                Your specifications will appear as user flair on everything you share.
-              </p>
+            {/* Header bar */}
+            <div className="flex items-center justify-between p-5 border border-tp-border bg-tp-card rounded-2xl mb-6">
+              <div className="flex items-center gap-3">
+                <span className="p-2 bg-tp-purple/20 border border-tp-purple/40 text-tp-purple rounded-lg text-lg">
+                  <Settings className="w-5 h-5" />
+                </span>
+                <div>
+                  <h1 className="text-base font-bold text-white">
+                    Configure PC Rig & Profile flairs
+                  </h1>
+                  <p className="text-xs text-tp-secondary">
+                    Your specifications will appear as user flair on everything you share.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className="p-2 text-tp-secondary hover:text-white hover:bg-tp-input rounded-lg transition-all cursor-pointer"
+              >
+                <Edit3 className="w-5 h-5" />
+              </button>
             </div>
-          </div>
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="p-2 text-tp-secondary hover:text-white hover:bg-tp-input rounded-lg transition-all cursor-pointer"
-          >
-            <Edit3 className="w-5 h-5" />
-          </button>
-        </div>
 
-        {/* ═══════════════════════════════════════════
+            {/* ═══════════════════════════════════════════
             PREVIEW CARD
         ═══════════════════════════════════════════ */}
-        <div className="p-5 rounded-2xl border border-tp-border bg-gradient-to-r from-tp-card to-tp-bg flex items-center gap-5 mb-6">
-          <img
-            src={avatarUrl || "/images/avatar.jpg"}
-            alt="Avatar Preview"
-            className="w-16 h-16 rounded-full object-cover border-2 border-tp-purple/30 flex-shrink-0"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = "/images/avatar.jpg";
-            }}
-          />
-          <div className="min-w-0">
-            <div className="text-sm font-bold text-white flex items-center gap-2">
-              {USER.username}
-              <span className="text-[10px] bg-tp-purple/20 text-tp-purple px-2 py-0.5 rounded-full border border-tp-purple/40">
-                Verified Rig
-              </span>
+            <div className="p-5 rounded-2xl border border-tp-border bg-gradient-to-r from-tp-card to-tp-bg flex items-center gap-5 mb-6">
+              <img
+                src={avatarUrl || "/images/avatar.jpg"}
+                alt="Avatar Preview"
+                className="w-16 h-16 rounded-full object-cover border-2 border-tp-purple/30 flex-shrink-0"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/images/avatar.jpg";
+                }}
+              />
+              <div className="min-w-0">
+                <div className="text-sm font-bold text-white flex items-center gap-2">
+                  {USER.username}
+                  <span className="text-[10px] bg-tp-purple/20 text-tp-purple px-2 py-0.5 rounded-full border border-tp-purple/40">
+                    Verified Rig
+                  </span>
+                </div>
+                <p className="text-xs text-tp-secondary line-clamp-1 italic mt-0.5">
+                  “{bio || "No bio written yet."}”
+                </p>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 text-[11px] font-mono text-tp-accent">
+                  {specs.cpu && <span>CPU: {specs.cpu}</span>}
+                  {specs.gpu && <span>GPU: {specs.gpu}</span>}
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-tp-secondary line-clamp-1 italic mt-0.5">
-              “{bio || "No bio written yet."}”
-            </p>
-            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 text-[11px] font-mono text-tp-accent">
-              {specs.cpu && <span>CPU: {specs.cpu}</span>}
-              {specs.gpu && <span>GPU: {specs.gpu}</span>}
-            </div>
-          </div>
-        </div>
 
-        {/* ═══════════════════════════════════════════
+            {/* ═══════════════════════════════════════════
             TWO-COLUMN FORM (matches screenshot)
-        ═══════════════════════════════════════════ */}
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            ═══════════════════════════════════════════ */}
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-          {/* ─── Left Column: General Info ─── */}
-          <div className="space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-tp-secondary border-b border-tp-border pb-2 flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5 text-tp-purple" />
-              General Info
-            </h4>
+              {/* ─── Left Column: General Info ─── */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-tp-secondary border-b border-tp-border pb-2 flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-tp-purple" />
+                  General Info
+                </h4>
 
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-tp-text">Avatar URL</label>
-              <input
-                type="url"
-                value={avatarUrl}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setAvatarUrl(e.target.value)}
-                placeholder="https://images.unsplash.com/photo-..."
-                className="w-full px-3 py-2 rounded-xl bg-tp-input border border-tp-border text-white placeholder-tp-muted focus:outline-none focus:border-tp-accent text-xs transition-all"
-                disabled={!isEditing}
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-tp-text">Short Bio</label>
-              <textarea
-                value={bio}
-                onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setBio(e.target.value)}
-                placeholder="Write a custom bio about your hardware hobby..."
-                rows={4}
-                className="w-full px-3 py-2 rounded-xl bg-tp-input border border-tp-border text-white placeholder-tp-muted focus:outline-none focus:border-tp-accent text-xs transition-all resize-none"
-                disabled={!isEditing}
-              />
-            </div>
-          </div>
-
-          {/* ─── Right Column: PC Build Specs ─── */}
-          <div className="space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-tp-secondary border-b border-tp-border pb-2 flex items-center gap-1.5">
-              <Cpu className="w-3.5 h-3.5 text-tp-accent" />
-              PC Build Specs
-            </h4>
-
-            <div className="grid grid-cols-2 gap-3">
-              {Object.entries(SPEC_LABELS).map(([key, label]) => (
-                <div key={key} className="space-y-1">
-                  <label className="text-[10px] font-medium text-tp-text">{label}</label>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-tp-text">Avatar URL</label>
                   <input
-                    type="text"
-                    value={specs[key as keyof typeof specs] || ""}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                      handleSpecChange(key, e.target.value)
-                    }
-                    placeholder={SPEC_PLACEHOLDERS[key] || label}
-                    className="w-full px-3 py-1.5 rounded-lg bg-tp-input border border-tp-border text-white placeholder-tp-muted/60 focus:outline-none focus:border-tp-accent text-xs font-mono transition-all"
+                    type="url"
+                    value={avatarUrl}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setAvatarUrl(e.target.value)}
+                    placeholder="https://images.unsplash.com/photo-..."
+                    className="w-full px-3 py-2 rounded-xl bg-tp-input border border-tp-border text-white placeholder-tp-muted focus:outline-none focus:border-tp-accent text-xs transition-all"
                     disabled={!isEditing}
                   />
                 </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-tp-text">Short Bio</label>
+                  <textarea
+                    value={bio}
+                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setBio(e.target.value)}
+                    placeholder="Write a custom bio about your hardware hobby..."
+                    rows={4}
+                    className="w-full px-3 py-2 rounded-xl bg-tp-input border border-tp-border text-white placeholder-tp-muted focus:outline-none focus:border-tp-accent text-xs transition-all resize-none"
+                    disabled={!isEditing}
+                  />
+                </div>
+              </div>
+
+              {/* ─── Right Column: PC Build Specs ─── */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-tp-secondary border-b border-tp-border pb-2 flex items-center gap-1.5">
+                  <Cpu className="w-3.5 h-3.5 text-tp-accent" />
+                  PC Build Specs
+                </h4>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {Object.entries(SPEC_LABELS).map(([key, label]) => (
+                    <div key={key} className="space-y-1">
+                      <label className="text-[10px] font-medium text-tp-text">{label}</label>
+                      <input
+                        type="text"
+                        value={specs[key as keyof typeof specs] || ""}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                          handleSpecChange(key, e.target.value)
+                        }
+                        placeholder={SPEC_PLACEHOLDERS[key] || label}
+                        className="w-full px-3 py-1.5 rounded-lg bg-tp-input border border-tp-border text-white placeholder-tp-muted/60 focus:outline-none focus:border-tp-accent text-xs font-mono transition-all"
+                        disabled={!isEditing}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </form>
+
+            {/* ═══════════════════════════════════════════
+            FOOTER ACTIONS
+            ═══════════════════════════════════════════ */}
+            {isEditing && (
+              <div className="flex items-center justify-end gap-3 mt-6 pt-6 border-t border-tp-border">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setBio(USER.bio);
+                    setAvatarUrl(USER.avatarUrl);
+                    setSpecs(USER.specs);
+                  }}
+                  className="px-5 py-2.5 rounded-xl text-xs font-semibold text-tp-secondary hover:bg-tp-input hover:text-white transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  onClick={handleSubmit}
+                  disabled={isSaving}
+                  className="px-5 py-2.5 bg-tp-accent hover:bg-tp-accentDim disabled:opacity-50 text-tp-bg rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-accent-glow cursor-pointer"
+                >
+                  <Save className="w-4 h-4" />
+                  {isSaving ? "Saving Rig..." : "Save Configuration"}
+                </button>
+              </div>
+            )}
+
+            {/* ═══════════════════════════════════════════
+            TAB NAVIGATION
+            ═══════════════════════════════════════════ */}
+            <div className="flex items-center gap-1 p-1 rounded-xl bg-tp-card border border-tp-border mt-8">
+              {([
+                { id: "overview" as Tab, label: "Overview", icon: <Layers className="w-4 h-4" /> },
+                { id: "specs" as Tab, label: "PC Build Specs", icon: <Cpu className="w-4 h-4" /> },
+                { id: "activity" as Tab, label: "Recent Activity", icon: <Activity className="w-4 h-4" /> },
+              ]).map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer flex-1 justify-center ${activeTab === tab.id
+                    ? "bg-tp-accent text-tp-bg shadow-accent-glow-sm"
+                    : "text-tp-secondary hover:text-white"
+                    }`}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
               ))}
             </div>
-          </div>
-        </form>
 
-        {/* ═══════════════════════════════════════════
-            FOOTER ACTIONS
-        ═══════════════════════════════════════════ */}
-        {isEditing && (
-          <div className="flex items-center justify-end gap-3 mt-6 pt-6 border-t border-tp-border">
-            <button
-              type="button"
-              onClick={() => {
-                setIsEditing(false);
-                setBio(USER.bio);
-                setAvatarUrl(USER.avatarUrl);
-                setSpecs(USER.specs);
-              }}
-              className="px-5 py-2.5 rounded-xl text-xs font-semibold text-tp-secondary hover:bg-tp-input hover:text-white transition-all cursor-pointer flex items-center gap-1.5"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              Cancel
-            </button>
-            <button
-              type="submit"
-              onClick={handleSubmit}
-              disabled={isSaving}
-              className="px-5 py-2.5 bg-tp-accent hover:bg-tp-accentDim disabled:opacity-50 text-tp-bg rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-accent-glow cursor-pointer"
-            >
-              <Save className="w-4 h-4" />
-              {isSaving ? "Saving Rig..." : "Save Configuration"}
-            </button>
-          </div>
-        )}
-
-        {/* ═══════════════════════════════════════════
-            TAB NAVIGATION
-        ═══════════════════════════════════════════ */}
-        <div className="flex items-center gap-1 p-1 rounded-xl bg-tp-card border border-tp-border mt-8">
-          {([
-            { id: "overview" as Tab, label: "Overview", icon: <Layers className="w-4 h-4" /> },
-            { id: "specs" as Tab, label: "PC Build Specs", icon: <Cpu className="w-4 h-4" /> },
-            { id: "activity" as Tab, label: "Recent Activity", icon: <Activity className="w-4 h-4" /> },
-          ]).map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer flex-1 justify-center ${
-                activeTab === tab.id
-                  ? "bg-tp-accent text-tp-bg shadow-accent-glow-sm"
-                  : "text-tp-secondary hover:text-white"
-              }`}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* ═══════════════════════════════════════════
+            {/* ═══════════════════════════════════════════
             TAB CONTENT
-        ═══════════════════════════════════════════ */}
-        <div className="mt-6 space-y-6">
+            ═══════════════════════════════════════════ */}
+            <div className="mt-6 space-y-6">
 
-          {/* ─── OVERVIEW TAB ─── */}
-          {activeTab === "overview" && (
-            <div className="space-y-6 animate-fade-in">
-              {/* Quick Stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {[
-                  { label: "Posts", value: USER.stats.posts, icon: <MessageCircle className="w-5 h-5" />, color: "#00D8F6" },
-                  { label: "Comments", value: USER.stats.comments, icon: <Activity className="w-5 h-5" />, color: "#A78BFA" },
-                  { label: "Likes", value: USER.stats.likes, icon: <Heart className="w-5 h-5" />, color: "#F472B6" },
-                  { label: "Reputation", value: USER.stats.reputation, icon: <Star className="w-5 h-5" />, color: "#FBBF24" },
-                ].map((s, i) => (
-                  <div
-                    key={i}
-                    className="rounded-2xl p-5 border border-tp-border hover:border-tp-accent/15 transition-all duration-300 group"
-                  >
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"
-                      style={{ backgroundColor: s.color + "15", color: s.color }}
-                    >
-                      {s.icon}
-                    </div>
-                    <p className="text-2xl font-bold text-white">{s.value.toLocaleString()}</p>
-                    <p className="text-[10px] uppercase tracking-wider font-bold text-tp-secondary mt-0.5">
-                      {s.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Recent Activity */}
-              <div className="rounded-2xl border border-tp-border bg-tp-card overflow-hidden">
-                <div className="flex items-center justify-between p-5 border-b border-tp-border">
-                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-tp-accent" />
-                    Recent Activity
-                  </h3>
-                  <button
-                    onClick={() => setActiveTab("activity")}
-                    className="text-xs text-tp-accent hover:underline font-semibold transition-all cursor-pointer"
-                  >
-                    View all →
-                  </button>
-                </div>
-                <div className="divide-y divide-tp-border">
-                  {USER.recentActivity.slice(0, 4).map((item, i) => (
-                    <ActivityItem key={i} item={item} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ─── SPECS TAB ─── */}
-          {activeTab === "specs" && (
-            <div className="space-y-6 animate-fade-in">
-              <div className="rounded-2xl border border-tp-border bg-tp-card overflow-hidden">
-                <div className="p-5 border-b border-tp-border">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                        <Cpu className="w-4 h-4 text-tp-accent" />
-                        PC Build Configuration
-                      </h3>
-                      <p className="text-xs text-tp-secondary mt-1">Primary build</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {Object.entries(SPEC_LABELS).map(([key, label]) => (
-                    <div
-                      key={key}
-                      className="flex items-start gap-3 p-3 rounded-xl bg-tp-input border border-tp-border hover:border-tp-accent/15 transition-all duration-300 group"
-                    >
-                      <div className="mt-0.5 text-tp-accent opacity-60 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                        {SPEC_ICONS[key] || <Cpu className="w-4 h-4" />}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-tp-secondary block mb-0.5">
-                          {label}
-                        </span>
-                        <span className="text-sm font-medium text-white leading-tight block">
-                          {specs[key as keyof typeof specs]}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Performance Circles */}
-              <div className="rounded-2xl border border-tp-border bg-tp-card p-5">
-                <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-tp-accent" />
-                  Performance Profile
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {[
-                    { score: 98, label: "Gaming", color: "#00D8F6" },
-                    { score: 92, label: "Productivity", color: "#A78BFA" },
-                    { score: 87, label: "Thermal", color: "#34D399" },
-                    { score: 95, label: "Overall", color: "#FB923C" },
-                  ].map((p, i) => {
-                    const circumference = 2 * Math.PI * 34;
-                    const dashArray = `${(p.score / 100) * circumference} ${circumference}`;
-                    return (
-                      <div key={i} className="text-center">
-                        <div className="relative w-20 h-20 mx-auto mb-2">
-                          <svg className="w-full h-full -rotate-90" viewBox="0 0 80 80">
-                            <circle cx="40" cy="40" r="34" fill="none" stroke="#222834" strokeWidth="6" />
-                            <circle cx="40" cy="40" r="34" fill="none" stroke={p.color} strokeWidth="6" strokeLinecap="round" strokeDasharray={dashArray} />
-                          </svg>
-                          <span className="absolute inset-0 flex items-center justify-center text-lg font-bold text-white">
-                            {p.score}
-                          </span>
+              {/* ─── OVERVIEW TAB ─── */}
+              {activeTab === "overview" && (
+                <div className="space-y-6 animate-fade-in">
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[
+                      { label: "Posts", value: USER.stats.posts, icon: <MessageCircle className="w-5 h-5" />, color: "#00D8F6" },
+                      { label: "Comments", value: USER.stats.comments, icon: <Activity className="w-5 h-5" />, color: "#A78BFA" },
+                      { label: "Likes", value: USER.stats.likes, icon: <Heart className="w-5 h-5" />, color: "#F472B6" },
+                      { label: "Reputation", value: USER.stats.reputation, icon: <Star className="w-5 h-5" />, color: "#FBBF24" },
+                    ].map((s, i) => (
+                      <div
+                        key={i}
+                        className="rounded-2xl p-5 border border-tp-border hover:border-tp-accent/15 transition-all duration-300 group"
+                      >
+                        <div
+                          className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"
+                          style={{ backgroundColor: s.color + "15", color: s.color }}
+                        >
+                          {s.icon}
                         </div>
-                        <p className="text-[10px] uppercase tracking-wider font-bold" style={{ color: p.color }}>
-                          {p.label}
+                        <p className="text-2xl font-bold text-white">{s.value.toLocaleString()}</p>
+                        <p className="text-[10px] uppercase tracking-wider font-bold text-tp-secondary mt-0.5">
+                          {s.label}
                         </p>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
+                    ))}
+                  </div>
 
-          {/* ─── ACTIVITY TAB ─── */}
-          {activeTab === "activity" && (
-            <div className="rounded-2xl border border-tp-border bg-tp-card overflow-hidden animate-fade-in">
-              <div className="p-5 border-b border-tp-border">
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-tp-accent" />
-                  All Recent Activity
-                </h3>
-              </div>
-              <div className="divide-y divide-tp-border">
-                {USER.recentActivity.map((item, i) => (
-                  <ActivityItem key={i} item={item} />
-                ))}
-              </div>
+                  {/* Recent Activity */}
+                  <div className="rounded-2xl border border-tp-border bg-tp-card overflow-hidden">
+                    <div className="flex items-center justify-between p-5 border-b border-tp-border">
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-tp-accent" />
+                        Recent Activity
+                      </h3>
+                      <button
+                        onClick={() => setActiveTab("activity")}
+                        className="text-xs text-tp-accent hover:underline font-semibold transition-all cursor-pointer"
+                      >
+                        View all →
+                      </button>
+                    </div>
+                    <div className="divide-y divide-tp-border">
+                      {USER.recentActivity.slice(0, 4).map((item, i) => (
+                        <ActivityItem key={i} item={item} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ─── SPECS TAB ─── */}
+              {activeTab === "specs" && (
+                <div className="space-y-6 animate-fade-in">
+                  <div className="rounded-2xl border border-tp-border bg-tp-card overflow-hidden">
+                    <div className="p-5 border-b border-tp-border">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                            <Cpu className="w-4 h-4 text-tp-accent" />
+                            PC Build Configuration
+                          </h3>
+                          <p className="text-xs text-tp-secondary mt-1">Primary build</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {Object.entries(SPEC_LABELS).map(([key, label]) => (
+                        <div
+                          key={key}
+                          className="flex items-start gap-3 p-3 rounded-xl bg-tp-input border border-tp-border hover:border-tp-accent/15 transition-all duration-300 group"
+                        >
+                          <div className="mt-0.5 text-tp-accent opacity-60 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                            {SPEC_ICONS[key] || <Cpu className="w-4 h-4" />}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-tp-secondary block mb-0.5">
+                              {label}
+                            </span>
+                            <span className="text-sm font-medium text-white leading-tight block">
+                              {specs[key as keyof typeof specs]}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Performance Circles */}
+                  <div className="rounded-2xl border border-tp-border bg-tp-card p-5">
+                    <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4 text-tp-accent" />
+                      Performance Profile
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                      {[
+                        { score: 98, label: "Gaming", color: "#00D8F6" },
+                        { score: 92, label: "Productivity", color: "#A78BFA" },
+                        { score: 87, label: "Thermal", color: "#34D399" },
+                        { score: 95, label: "Overall", color: "#FB923C" },
+                      ].map((p, i) => {
+                        const circumference = 2 * Math.PI * 34;
+                        const dashArray = `${(p.score / 100) * circumference} ${circumference}`;
+                        return (
+                          <div key={i} className="text-center">
+                            <div className="relative w-20 h-20 mx-auto mb-2">
+                              <svg className="w-full h-full -rotate-90" viewBox="0 0 80 80">
+                                <circle cx="40" cy="40" r="34" fill="none" stroke="#222834" strokeWidth="6" />
+                                <circle cx="40" cy="40" r="34" fill="none" stroke={p.color} strokeWidth="6" strokeLinecap="round" strokeDasharray={dashArray} />
+                              </svg>
+                              <span className="absolute inset-0 flex items-center justify-center text-lg font-bold text-white">
+                                {p.score}
+                              </span>
+                            </div>
+                            <p className="text-[10px] uppercase tracking-wider font-bold" style={{ color: p.color }}>
+                              {p.label}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ─── ACTIVITY TAB ─── */}
+              {activeTab === "activity" && (
+                <div className="rounded-2xl border border-tp-border bg-tp-card overflow-hidden animate-fade-in">
+                  <div className="p-5 border-b border-tp-border">
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-tp-accent" />
+                      All Recent Activity
+                    </h3>
+                  </div>
+                  <div className="divide-y divide-tp-border">
+                    {USER.recentActivity.map((item, i) => (
+                      <ActivityItem key={i} item={item} />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        </main>
       </div>
-    </main>
-  </div>
-</div>
+    </div>
   );
 }
 
