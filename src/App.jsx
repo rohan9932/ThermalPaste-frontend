@@ -4,6 +4,7 @@ import RegistrationPage from "./pages/RegistrationPage";
 import ProfilePage from "./pages/ProfilePage";
 import CommunitiesPage from "./pages/CommunitiesPage";
 import CommunitiesListPage from "./pages/CommunitiesListPage";
+import PostDetailsPage from "./pages/PostDetailsPage";
 import { createBrowserRouter, RouterProvider } from "react-router";
 
 const router = createBrowserRouter([
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
   {
     path: "/communities/:groupId",
     Component: CommunitiesPage,
+  },
+  {
+    path: "/post/:id",
+    Component: PostDetailsPage,
   },
 ]);
 

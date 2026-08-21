@@ -19,6 +19,17 @@ import {
     Award,
 } from "lucide-react";
 
+// ─── Community Icon Helper ──────────────────────────────────────────────────
+function getCommunityIcon(community) {
+    if (community?.includes("battlestations")) return <Monitor className="w-4 h-4" />;
+    if (community?.includes("watercooling")) return <Flame className="w-4 h-4" />;
+    if (community?.includes("overclocking")) return <TrendingUp className="w-4 h-4" />;
+    if (community?.includes("gpuhype")) return <Cpu className="w-4 h-4" />;
+    if (community?.includes("pcbuilders")) return <LayoutGrid className="w-4 h-4" />;
+    if (community?.includes("techdeals")) return <Award className="w-4 h-4" />;
+    return <Monitor className="w-4 h-4" />;
+}
+
 // ─── Mock Posts Data ──────────────────────────────────────────────────────────
 // Static post data used as placeholder content until a backend API is integrated.
 // In production, this would be fetched via GET /api/posts or similar endpoint.
@@ -26,7 +37,6 @@ const POSTS = [
     {
         id: "post_1",
         community: "g/battlestations",
-        communityIcon: <Monitor className="w-4 h-4" />,
         communityColor: "#00D8F6",
         author: "SFF_Enthusiast",
         authorAvatar: "/images/avatar.jpg",
@@ -44,7 +54,6 @@ const POSTS = [
     {
         id: "post_2",
         community: "g/watercooling",
-        communityIcon: <Flame className="w-4 h-4" />,
         communityColor: "#3B82F6",
         author: "LoopMaster",
         authorAvatar: "/images/avatar.jpg",
@@ -62,7 +71,6 @@ const POSTS = [
     {
         id: "post_3",
         community: "g/overclocking",
-        communityIcon: <TrendingUp className="w-4 h-4" />,
         communityColor: "#FB923C",
         author: "VoltageKing",
         authorAvatar: "/images/avatar.jpg",
@@ -79,7 +87,6 @@ const POSTS = [
     {
         id: "post_4",
         community: "g/gpuhype",
-        communityIcon: <Cpu className="w-4 h-4" />,
         communityColor: "#A78BFA",
         author: "GPUBeliever",
         authorAvatar: "/images/avatar.jpg",
@@ -97,7 +104,6 @@ const POSTS = [
     {
         id: "post_5",
         community: "g/pcbuilders",
-        communityIcon: <LayoutGrid className="w-4 h-4" />,
         communityColor: "#34D399",
         author: "BuildLogger",
         authorAvatar: "/images/avatar.jpg",
@@ -115,7 +121,6 @@ const POSTS = [
     {
         id: "post_6",
         community: "g/techdeals",
-        communityIcon: <Award className="w-4 h-4" />,
         communityColor: "#FBBF24",
         author: "DealHunter",
         authorAvatar: "/images/avatar.jpg",
@@ -214,7 +219,7 @@ function PostCard({ post }) {
                                     color: post.communityColor,
                                 }}
                             >
-                                {post.communityIcon}
+                                {getCommunityIcon(post.community)}
                             </span>
                             {post.community}
                         </Link>
@@ -263,9 +268,11 @@ function PostCard({ post }) {
                     </div>
 
                     {/* Post title */}
-                    <h3 className="text-base font-bold text-white leading-snug mb-1.5">
-                        {post.title}
-                    </h3>
+                    <Link to={`/post/${post.id}`} state={{ post }} className="block">
+                        <h3 className="text-base font-bold text-white leading-snug mb-1.5 hover:text-tp-accent transition-colors">
+                            {post.title}
+                        </h3>
+                    </Link>
 
                     {/* Post body text */}
                     <p className="text-sm text-tp-text leading-relaxed mb-2">
@@ -281,7 +288,7 @@ function PostCard({ post }) {
 
                     {/* Optional post image — hidden via CSS if the image fails to load */}
                     {post.image && (
-                        <div className="rounded-xl overflow-hidden border border-tp-border mb-3 max-h-[400px]">
+                        <Link to={`/post/${post.id}`} state={{ post }} className="block rounded-xl overflow-hidden border border-tp-border mb-3 max-h-[400px]">
                             <img
                                 src={post.image}
                                 alt={post.title}
@@ -290,16 +297,16 @@ function PostCard({ post }) {
                                     e.target.style.display = "none";
                                 }}
                             />
-                        </div>
+                        </Link>
                     )}
 
                     {/* Action bar — Comments count, Share button, and optional Popular Rig badge */}
                     <div className="flex items-center gap-4 pt-2 border-t border-tp-border">
-                        {/* Comments button — placeholder, no action implemented yet */}
-                        <button className="flex items-center gap-1.5 text-xs text-tp-secondary hover:text-white transition-colors cursor-pointer">
+                        {/* Comments button — links to post details */}
+                        <Link to={`/post/${post.id}`} state={{ post }} className="flex items-center gap-1.5 text-xs text-tp-secondary hover:text-white transition-colors cursor-pointer">
                             <MessageCircle className="w-4 h-4" />
                             {post.comments} Comments
-                        </button>
+                        </Link>
                         {/* Share button — placeholder, no action implemented yet */}
                         <button className="flex items-center gap-1.5 text-xs text-tp-secondary hover:text-white transition-colors cursor-pointer">
                             <Share2 className="w-4 h-4" />

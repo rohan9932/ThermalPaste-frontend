@@ -132,9 +132,11 @@ export function PostCard({
         </div>
 
         {/* POST TITLE */}
-        <h2 className="text-base sm:text-lg font-bold text-white mb-2 leading-snug hover:text-[#00D8F6] transition cursor-pointer">
-          {post.title}
-        </h2>
+        <Link to={`/post/${post.id || "post-1"}`} state={{ post }} className="block">
+          <h2 className="text-base sm:text-lg font-bold text-white mb-2 leading-snug hover:text-[#00D8F6] transition cursor-pointer">
+            {post.title}
+          </h2>
+        </Link>
 
         {/* CONTENT */}
         {post.content && (
@@ -157,13 +159,14 @@ export function PostCard({
         <div className="flex items-center justify-between gap-3 pt-1">
           {/* LEFT ACTIONS */}
           <div className="flex items-center gap-1.5 sm:gap-3">
-            <button
-              onClick={() => {}}
+            <Link
+              to={`/post/${post.id || "post-1"}`}
+              state={{ post }}
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[#8F99A8] hover:text-white hover:bg-[#161922] font-semibold text-xs transition cursor-pointer"
             >
               <MessageSquare className="w-4 h-4 stroke-[2]" />
               <span>{post.commentsCount ?? 0} Comments</span>
-            </button>
+            </Link>
 
             <button
               onClick={() => {}}
