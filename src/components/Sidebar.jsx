@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router";
+import CreateGroupForm from "./CreateGroupForm";
 
 import {
   Bookmark,
@@ -64,9 +65,16 @@ export function Sidebar({ isOpen, onClose }) {
   const location = useLocation();
   const currentPath = location.pathname;
   const [activeId, setActiveId] = useState("home");
+  const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
 
   return (
     <>
+      {/* Create Group Form Modal */}
+      <CreateGroupForm
+        isOpen={isCreateGroupOpen}
+        onClose={() => setIsCreateGroupOpen(false)}
+      />
+
       {/* Mobile Overlay Background Blur */}
       {isOpen && (
         <div
@@ -138,6 +146,7 @@ export function Sidebar({ isOpen, onClose }) {
           <div className="space-y-1">
             <button
               onClick={() => {
+                setIsCreateGroupOpen(true);
                 if (onClose) onClose(); // closes drawer automatically
               }}
               className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-150 cursor-pointer font-semibold text-sm text-[#8F99A8] hover:bg-[#161922] hover:text-white"
