@@ -31,11 +31,7 @@ _There are 3 people working on this project. Agents must track work separately f
 - [2026-08-21] Fixed community routing: added dynamic route `/communities/:groupId` to App.jsx, updated Sidebar subgroup buttons to route there, updated PostCard and CommunitiesPage badges to act as navigation links.
 - [2026-08-21] Created `CommunitiesListPage.jsx` to list all joined subgroups when the user clicks the Communities button in the sidebar (route `/communities`).
 - [2026-08-21] Added instructions to Core Guidelines for dynamic and responsive layouts across PC and mobile screens.
-<<<<<<< HEAD
 - [2026-08-21] Implemented `CreateGroupForm.jsx` (renamed from `CreateGroupModal.jsx`) and connected it to the "Create a Group" button in the Sidebar to allow users to create new communities with credentials (name, tagline, category, description, privacy).
-=======
-- [2026-08-21] Implemented `CreateGroupModal.jsx` and connected it to the "Create a Group" button in the Sidebar to allow users to create new communities with credentials (name, tagline, category, description, privacy).
->>>>>>> 2239e480db5f3fd7cbd19358b8fcd0842ec9830c
 
 ### User 2 (Rohan)
 

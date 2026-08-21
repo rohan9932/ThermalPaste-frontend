@@ -1,10 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router";
-<<<<<<< HEAD
 import CreateGroupForm from "./CreateGroupForm";
-=======
-import CreateGroupModal from "./CreateGroupModal";
->>>>>>> 2239e480db5f3fd7cbd19358b8fcd0842ec9830c
 
 import {
   Bookmark,
@@ -73,13 +69,8 @@ export function Sidebar({ isOpen, onClose }) {
 
   return (
     <>
-<<<<<<< HEAD
       {/* Create Group Form Modal */}
       <CreateGroupForm
-=======
-      {/* Create Group Modal */}
-      <CreateGroupModal
->>>>>>> 2239e480db5f3fd7cbd19358b8fcd0842ec9830c
         isOpen={isCreateGroupOpen}
         onClose={() => setIsCreateGroupOpen(false)}
       />
