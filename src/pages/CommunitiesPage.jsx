@@ -12,8 +12,8 @@ import {
     Share2,
     Cpu,
     Monitor,
-    ArrowBigUp,
-    ArrowBigDown,
+    ArrowUp,
+    ArrowDown,
     LayoutGrid,
     TrendingUp,
     Award,
@@ -160,159 +160,167 @@ function PostCard({ post }) {
         post.upvotes + (vote === "up" ? 1 : vote === "down" ? -1 : 0);
 
     return (
-        <div className="rounded-2xl border border-tp-border bg-tp-card overflow-hidden">
-            <div className="flex">
+        <div className="w-full bg-[#0F1117] border border-[#222834] rounded-2xl overflow-hidden flex flex-row transition-all duration-200 hover:border-[#2A3142] shadow-xl select-none">
+            {/* Vote Column — upvote button, vote count, downvote button */}
+            <div className="w-14 sm:w-16 bg-[#0B0D11] border-r border-[#222834]/60 flex flex-col items-center py-4 px-2 shrink-0">
+                {/* Upvote button — highlighted when vote === "up" */}
+                <button
+                    onClick={() => setVote(vote === "up" ? null : "up")}
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+                        vote === "up"
+                            ? "bg-[#00D8F6] text-[#0B0D11] shadow-[0_0_14px_rgba(0,216,246,0.4)]"
+                            : "text-[#8F99A8] hover:text-[#00D8F6] hover:bg-[#161922]"
+                    }`}
+                >
+                    <ArrowUp
+                        className={`w-5 h-5 stroke-[2.5] ${
+                            vote === "up" ? "fill-current" : ""
+                        }`}
+                    />
+                </button>
 
-                {/* Vote Column — upvote button, vote count, downvote button */}
-                <div className="flex flex-col items-center gap-1 py-4 px-3 bg-tp-bg/50">
-                    {/* Upvote button — highlighted when vote === "up" */}
-                    <button
-                        onClick={() => setVote(vote === "up" ? null : "up")}
-                        className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all cursor-pointer ${vote === "up"
-                                ? "bg-tp-accent text-tp-bg"
-                                : "text-tp-muted hover:text-tp-accent hover:bg-tp-accent/10"
-                            }`}
-                    >
-                        <ArrowBigUp className="w-5 h-5" />
-                    </button>
+                {/* Vote count — cyan for upvoted, red for downvoted, grey for neutral */}
+                <span
+                    className={`text-xs sm:text-sm font-bold my-2 transition-colors ${
+                        vote === "up"
+                            ? "text-[#00D8F6]"
+                            : vote === "down"
+                                ? "text-rose-400"
+                                : "text-[#8F99A8]"
+                    }`}
+                >
+                    {voteCount}
+                </span>
 
-                    {/* Vote count — cyan for upvoted, red for downvoted, grey for neutral */}
-                    <span
-                        className={`text-sm font-bold ${vote === "up"
-                                ? "text-tp-accent"
-                                : vote === "down"
-                                    ? "text-tp-danger"
-                                    : "text-tp-secondary"
-                            }`}
-                    >
-                        {voteCount}
-                    </span>
+                {/* Downvote button — highlighted when vote === "down" */}
+                <button
+                    onClick={() => setVote(vote === "down" ? null : "down")}
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+                        vote === "down"
+                            ? "bg-rose-500/20 text-rose-400 border border-rose-500/40"
+                            : "text-[#8F99A8] hover:text-rose-400 hover:bg-[#161922]"
+                    }`}
+                >
+                    <ArrowDown className="w-5 h-5 stroke-[2.5]" />
+                </button>
+            </div>
 
-                    {/* Downvote button — highlighted when vote === "down" */}
-                    <button
-                        onClick={() => setVote(vote === "down" ? null : "down")}
-                        className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all cursor-pointer ${vote === "down"
-                                ? "bg-tp-danger/20 text-tp-danger"
-                                : "text-tp-muted hover:text-tp-danger hover:bg-tp-danger/10"
-                            }`}
-                    >
-                        <ArrowBigDown className="w-5 h-5" />
-                    </button>
-                </div>
+            {/* Content Column — metadata, title, body, image, and action buttons */}
+            <div className="flex-1 p-4 sm:p-5 flex flex-col min-w-0">
+                {/* Meta row — community badge, author avatar, hardware tags, timestamp */}
+                <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs text-[#8F99A8] mb-2.5">
+                    {/* Community badge — colored icon + community name */}
+                    <Link to={`/communities/${post.community.replace('g/', '')}`} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#161922] text-white font-medium border border-[#222834] hover:border-[#00D8F6]/40 transition cursor-pointer">
+                        <span
+                            className="w-3.5 h-3.5 rounded-md flex items-center justify-center"
+                            style={{
+                                backgroundColor: post.communityColor + "15",
+                                color: post.communityColor,
+                            }}
+                        >
+                            {post.communityIcon}
+                        </span>
+                        <span className="text-xs">{post.community}</span>
+                    </Link>
 
-                {/* Content Column — metadata, title, body, image, and action buttons */}
-                <div className="flex-1 min-w-0 p-4">
+                    <span className="text-[#8F99A8]/60 font-bold">•</span>
 
-                    {/* Meta row — community badge, author avatar, hardware tags, timestamp */}
-                    <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs text-tp-secondary mb-2">
-                        {/* Community badge — colored icon + community name */}
-                        <Link to={`/communities/${post.community.replace('g/', '')}`} className="flex items-center gap-1 font-semibold text-white hover:opacity-80 transition-opacity">
-                            <span
-                                className="w-5 h-5 rounded-md flex items-center justify-center"
-                                style={{
-                                    backgroundColor: post.communityColor + "15",
-                                    color: post.communityColor,
-                                }}
-                            >
-                                {post.communityIcon}
-                            </span>
-                            {post.community}
-                        </Link>
-                        <span className="text-tp-muted">·</span>
-
-                        {/* Author avatar — hides itself if the image fails to load */}
-                        <span className="flex items-center gap-1">
-                            <img
-                                src={post.authorAvatar}
-                                alt={post.author}
-                                className="w-4 h-4 rounded-full object-cover"
-                                onError={(e) => {
-                                    e.target.style.display = "none";
-                                }}
-                            />
-                            {/* Fallback initials avatar — shown only when image fails */}
-                            <span className="fallback-hidden">
-                                {post.authorAvatar && (
-                                    <AvatarFallback
-                                        name={post.author}
-                                        className="w-4 h-4 hidden"
-                                    />
-                                )}
-                            </span>
+                    {/* Author avatar — hides itself if the image fails to load */}
+                    <span className="inline-flex items-center gap-1 cursor-pointer group">
+                        <img
+                            src={post.authorAvatar}
+                            alt={post.author}
+                            className="w-4 h-4 rounded-full object-cover"
+                            onError={(e) => {
+                                e.target.style.display = "none";
+                            }}
+                        />
+                        <span className="fallback-hidden">
+                            {post.authorAvatar && (
+                                <AvatarFallback
+                                    name={post.author}
+                                    className="w-4 h-4 hidden"
+                                />
+                            )}
+                        </span>
+                        <span className="text-white font-semibold text-xs group-hover:text-[#00D8F6] transition">
                             {post.author}
                         </span>
+                    </span>
 
-                        {/* Hardware tag pills — cyan monospace badges for each component */}
-                        {post.hardwareTags.map((tag, i) => (
-                            <React.Fragment key={i}>
-                                <span className="text-tp-muted">·</span>
-                                <span
-                                    className="px-1.5 py-0.5 rounded border text-[10px] font-mono font-semibold"
-                                    style={{
-                                        backgroundColor: "#00D8F610",
-                                        borderColor: "#00D8F630",
-                                        color: "#00D8F6",
-                                    }}
-                                >
-                                    {tag}
-                                </span>
-                            </React.Fragment>
-                        ))}
-                        <span className="text-tp-muted">·</span>
-                        <span>{post.timestamp}</span>
-                    </div>
-
-                    {/* Post title */}
-                    <h3 className="text-base font-bold text-white leading-snug mb-1.5">
-                        {post.title}
-                    </h3>
-
-                    {/* Post body text */}
-                    <p className="text-sm text-tp-text leading-relaxed mb-2">
-                        {post.content}
-                    </p>
-
-                    {/* Optional section header — only rendered if the field is present */}
-                    {post.sectionHeader && (
-                        <p className="text-sm text-tp-secondary font-mono mb-3">
-                            {post.sectionHeader}
-                        </p>
-                    )}
-
-                    {/* Optional post image — hidden via CSS if the image fails to load */}
-                    {post.image && (
-                        <div className="rounded-xl overflow-hidden border border-tp-border mb-3 max-h-[400px]">
-                            <img
-                                src={post.image}
-                                alt={post.title}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                    e.target.style.display = "none";
+                    {/* Hardware tag pills — cyan monospace badges for each component */}
+                    {post.hardwareTags.map((tag, i) => (
+                        <React.Fragment key={i}>
+                            <span className="text-[#8F99A8]/60 font-bold">•</span>
+                            <span
+                                className="px-1.5 py-0.5 rounded border text-[10px] font-mono font-semibold"
+                                style={{
+                                    backgroundColor: "#00D8F610",
+                                    borderColor: "#00D8F630",
+                                    color: "#00D8F6",
                                 }}
-                            />
-                        </div>
-                    )}
-
-                    {/* Action bar — Comments count, Share button, and optional Popular Rig badge */}
-                    <div className="flex items-center gap-4 pt-2 border-t border-tp-border">
-                        {/* Comments button — placeholder, no action implemented yet */}
-                        <button className="flex items-center gap-1.5 text-xs text-tp-secondary hover:text-white transition-colors cursor-pointer">
-                            <MessageCircle className="w-4 h-4" />
-                            {post.comments} Comments
-                        </button>
-                        {/* Share button — placeholder, no action implemented yet */}
-                        <button className="flex items-center gap-1.5 text-xs text-tp-secondary hover:text-white transition-colors cursor-pointer">
-                            <Share2 className="w-4 h-4" />
-                            Share
-                        </button>
-                        {/* Popular Rig badge — only shown if isPopularRig = true */}
-                        {post.isPopularRig && (
-                            <span className="ml-auto flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg bg-tp-orange/10 text-tp-orange border border-tp-orange/20">
-                                <Award className="w-3 h-3" />
-                                Popular Rig
+                            >
+                                {tag}
                             </span>
-                        )}
+                        </React.Fragment>
+                    ))}
+                    <span className="text-[#8F99A8]/60 font-bold">•</span>
+                    <span className="text-[#8F99A8] text-xs">{post.timestamp}</span>
+                </div>
+
+                {/* Post title */}
+                <h3 className="text-base sm:text-lg font-bold text-white leading-snug mb-2 hover:text-[#00D8F6] transition cursor-pointer">
+                    {post.title}
+                </h3>
+
+                {/* Post body text */}
+                <p className="text-xs sm:text-sm text-[#C4C9D4] leading-relaxed mb-2">
+                    {post.content}
+                </p>
+
+                {/* Optional section header — only rendered if the field is present */}
+                {post.sectionHeader && (
+                    <p className="text-xs font-mono text-[#8F99A8] mb-3">
+                        {post.sectionHeader}
+                    </p>
+                )}
+
+                {/* Optional post image — hidden via CSS if the image fails to load */}
+                {post.image && (
+                    <div className="rounded-xl overflow-hidden border border-[#222834] mb-3 max-h-[400px]">
+                        <img
+                            src={post.image}
+                            alt={post.title}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                                e.target.style.display = "none";
+                            }}
+                        />
                     </div>
+                )}
+
+                {/* Divider line */}
+                <div className="border-t border-[#222834] my-2" />
+
+                {/* Action bar — Comments count, Share button, and optional Popular Rig badge */}
+                <div className="flex items-center gap-4 pt-1">
+                    {/* Comments button — placeholder, no action implemented yet */}
+                    <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[#8F99A8] hover:text-white hover:bg-[#161922] font-semibold text-xs transition cursor-pointer">
+                        <MessageCircle className="w-4 h-4 stroke-[2]" />
+                        <span>{post.comments} Comments</span>
+                    </button>
+                    {/* Share button — placeholder, no action implemented yet */}
+                    <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[#8F99A8] hover:text-white hover:bg-[#161922] font-semibold text-xs transition cursor-pointer">
+                        <Share2 className="w-4 h-4 stroke-[2]" />
+                        <span>Share</span>
+                    </button>
+                    {/* Popular Rig badge — only shown if isPopularRig = true */}
+                    {post.isPopularRig && (
+                        <span className="ml-auto flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg bg-[#F97316]/10 text-[#F97316] border border-[#F97316]/20">
+                            <Award className="w-3 h-3" />
+                            Popular Rig
+                        </span>
+                    )}
                 </div>
             </div>
         </div>
@@ -325,16 +333,13 @@ export default function CommunitiesPage() {
     const displayGroupId = groupId || "battlestations";
     const displayGroupName = `g/${displayGroupId}`;
 
-    // Controls whether the sidebar is open or collapsed.
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-    // Tracks the active sort mode. Sorting logic is a placeholder —
-    // actual filtering/ordering would be applied here once a backend exists.
     const [sortBy, setSortBy] = useState("newest");
-
-    // Bound to the search input. Filtering is a placeholder —
-    // actual search filtering would be applied against POSTS here.
     const [searchQuery, setSearchQuery] = useState("");
+
+    const filteredPosts = POSTS.filter(
+        (post) => post.community === `g/${displayGroupId}`
+    );
 
     // Sort options array — rendered as buttons in the sort bar.
     // Each option has an id, label, and icon.
@@ -367,7 +372,7 @@ export default function CommunitiesPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-tp-bg text-white flex flex-col font-sans">
+        <div className="min-h-screen bg-[#0B0D11] text-white flex flex-col">
 
             {/* Shared top navigation bar */}
             <Navbar
@@ -384,12 +389,12 @@ export default function CommunitiesPage() {
                 />
 
                 <main
-                    className={`flex-1 transition-all duration-300 ${
+                    className={`flex-1 p-4 sm:p-6 w-full transition-all duration-300 ${
                         isSidebarOpen ? "md:ml-64" : "ml-0"
                     }`}
                 >
-
-                    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+                    <div className="space-y-6">
+                        <div className="mx-auto max-w-4xl space-y-6">
 
                         {/* Community Header Card ────────────────────────────────────────
                             Showcases the featured community (g/battlestations).
@@ -425,7 +430,7 @@ export default function CommunitiesPage() {
                                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-tp-input border border-tp-border text-xs text-tp-secondary">
                                         <LayoutGrid className="w-3.5 h-3.5" />
                                         <span>Posts Count:</span>
-                                        <span className="font-bold text-white">{POSTS.length}</span>
+                                        <span className="font-bold text-white">{filteredPosts.length}</span>
                                     </div>
                                     {/* Write Post button — placeholder, no action implemented yet */}
                                     <button className="px-4 py-2 rounded-xl bg-white text-tp-bg text-xs font-bold transition-all hover:bg-gray-200 cursor-pointer">
@@ -462,11 +467,17 @@ export default function CommunitiesPage() {
                             Renders each post from the POSTS array as a PostCard.
                             Each PostCard manages its own vote state independently.      */}
                         <div className="space-y-4">
-                            {POSTS.map((post) => (
+                            {filteredPosts.map((post) => (
                                 <PostCard key={post.id} post={post} />
                             ))}
+                            {filteredPosts.length === 0 && (
+                                <div className="text-center py-12 text-tp-secondary text-sm">
+                                    No posts found in this community yet.
+                                </div>
+                            )}
                         </div>
 
+                        </div>
                     </div>
                 </main>
             </div>
