@@ -47,6 +47,8 @@ _There are 3 people working on this project. Agents must track work separately f
 - [2026-08-21] Fixed CommunitiesPage post badge and community header to dynamically render the correct community icon via `COMMUNITY_ICON_MAP`.
 - [2026-08-21] Made CommunitiesPage and CommunitiesListPage responsive by aligning both to HomePage's layout structure: `flex-1 p-4 sm:p-6 w-full` main wrapper, `space-y-6` + `mx-auto max-w-4xl` inner container, and replaced theme tokens with explicit hex color codes in CommunitiesListPage.
 - [2026-08-21] Adjusted CommunitiesPage community header to use `flex flex-col lg:flex-row` so the description text stays full-width on small and medium screens, and only switches to side-by-side on large screens.
+- [2026-08-21] Restyled ProfilePage to match HomePage/CommunitiesPage design: aligned main wrapper to `flex-1 p-4 sm:p-6 w-full`, replaced `max-w-4xl mx-auto px-4 sm:px-6 pt-8 pb-6` with `space-y-6` + `mx-auto max-w-4xl space-y-6`, removed `font-sans`, and replaced all `tp-*` theme tokens with explicit hex color codes.
+- [2026-08-21] Adjusted ProfilePage text styles to match CommunitiesPage: removed italic from bio, changed activity item titles to `text-white`, changed profile preview card from gradient to solid `bg-[#0F1117]`, and aligned all body/secondary text colors to `#8F99A8` and `#C4C9D4`.
 - [2026-08-21] Verified production build passes after all changes.
 
 ---
