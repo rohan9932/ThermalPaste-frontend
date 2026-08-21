@@ -23,21 +23,32 @@ import {
     Award,
 } from "lucide-react";
 
+// ─── Community Icon Helper ──────────────────────────────────────────────────
+function getCommunityIcon(community) {
+    if (community?.includes("battlestations")) return <Monitor className="w-4 h-4" />;
+    if (community?.includes("watercooling")) return <Flame className="w-4 h-4" />;
+    if (community?.includes("overclocking")) return <TrendingUp className="w-4 h-4" />;
+    if (community?.includes("gpuhype")) return <Cpu className="w-4 h-4" />;
+    if (community?.includes("pcbuilders")) return <LayoutGrid className="w-4 h-4" />;
+    if (community?.includes("techdeals")) return <Award className="w-4 h-4" />;
+    return <Monitor className="w-4 h-4" />;
+}
+
 // ─── Mock Posts Data ──────────────────────────────────────────────────────────
 // Static post data used as placeholder content until a backend API is integrated.
 // In production, this would be fetched via GET /api/posts or similar endpoint.
 const SUB_GROUPS = [
-  { id: "battlestations", name: "g/battlestations", icon: Monitor },
-  { id: "watercooling", name: "g/watercooling", icon: Droplet },
-  { id: "gpuhype", name: "g/gpuhype", icon: Gamepad2 },
-  { id: "overclocking", name: "g/overclocking", icon: Flame },
-  { id: "pcbuilders", name: "g/pcbuilders", icon: Laptop },
-  { id: "techdeals", name: "g/techdeals", icon: Tag },
+    { id: "battlestations", name: "g/battlestations", icon: Monitor },
+    { id: "watercooling", name: "g/watercooling", icon: Droplet },
+    { id: "gpuhype", name: "g/gpuhype", icon: Gamepad2 },
+    { id: "overclocking", name: "g/overclocking", icon: Flame },
+    { id: "pcbuilders", name: "g/pcbuilders", icon: Laptop },
+    { id: "techdeals", name: "g/techdeals", icon: Tag },
 ];
 
 const COMMUNITY_ICON_MAP = {};
 SUB_GROUPS.forEach((group) => {
-  COMMUNITY_ICON_MAP[group.name] = group.icon;
+    COMMUNITY_ICON_MAP[group.name] = group.icon;
 });
 
 const POSTS = [
@@ -178,28 +189,25 @@ function PostCard({ post }) {
                 {/* Upvote button — highlighted when vote === "up" */}
                 <button
                     onClick={() => setVote(vote === "up" ? null : "up")}
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
-                        vote === "up"
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer ${vote === "up"
                             ? "bg-[#00D8F6] text-[#0B0D11] shadow-[0_0_14px_rgba(0,216,246,0.4)]"
                             : "text-[#8F99A8] hover:text-[#00D8F6] hover:bg-[#161922]"
-                    }`}
+                        }`}
                 >
                     <ArrowUp
-                        className={`w-5 h-5 stroke-[2.5] ${
-                            vote === "up" ? "fill-current" : ""
-                        }`}
+                        className={`w-5 h-5 stroke-[2.5] ${vote === "up" ? "fill-current" : ""
+                            }`}
                     />
                 </button>
 
                 {/* Vote count — cyan for upvoted, red for downvoted, grey for neutral */}
                 <span
-                    className={`text-xs sm:text-sm font-bold my-2 transition-colors ${
-                        vote === "up"
+                    className={`text-xs sm:text-sm font-bold my-2 transition-colors ${vote === "up"
                             ? "text-[#00D8F6]"
                             : vote === "down"
                                 ? "text-rose-400"
                                 : "text-[#8F99A8]"
-                    }`}
+                        }`}
                 >
                     {voteCount}
                 </span>
@@ -207,11 +215,10 @@ function PostCard({ post }) {
                 {/* Downvote button — highlighted when vote === "down" */}
                 <button
                     onClick={() => setVote(vote === "down" ? null : "down")}
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
-                        vote === "down"
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer ${vote === "down"
                             ? "bg-rose-500/20 text-rose-400 border border-rose-500/40"
                             : "text-[#8F99A8] hover:text-rose-400 hover:bg-[#161922]"
-                    }`}
+                        }`}
                 >
                     <ArrowDown className="w-5 h-5 stroke-[2.5]" />
                 </button>
@@ -221,8 +228,11 @@ function PostCard({ post }) {
             <div className="flex-1 p-4 sm:p-5 flex flex-col min-w-0">
                 {/* Meta row — community badge, author avatar, hardware tags, timestamp */}
                 <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs text-[#8F99A8] mb-2.5">
-                    {/* Community badge — colored icon + community name */}
-                    <Link to={`/communities/${post.community.replace('g/', '')}`} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#161922] text-white font-medium border border-[#222834] hover:border-[#00D8F6]/40 transition cursor-pointer">
+                    {/* Community badge */}
+                    <Link
+                        to={`/communities/${post.community.replace('g/', '')}`}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#161922] text-white font-medium border border-[#222834] hover:border-[#00D8F6]/40 transition cursor-pointer"
+                    >
                         <span
                             className="w-3.5 h-3.5 rounded-md flex items-center justify-center"
                             style={{
@@ -230,14 +240,14 @@ function PostCard({ post }) {
                                 color: post.communityColor,
                             }}
                         >
-                            {COMMUNITY_ICON_MAP[post.community] ? React.createElement(COMMUNITY_ICON_MAP[post.community], { className: "w-3.5 h-3.5" }) : null}
+                            {post.communityIcon}
                         </span>
                         <span className="text-xs">{post.community}</span>
                     </Link>
 
                     <span className="text-[#8F99A8]/60 font-bold">•</span>
 
-                    {/* Author avatar — hides itself if the image fails to load */}
+                    {/* Author avatar */}
                     <span className="inline-flex items-center gap-1 cursor-pointer group">
                         <img
                             src={post.authorAvatar}
@@ -260,7 +270,7 @@ function PostCard({ post }) {
                         </span>
                     </span>
 
-                    {/* Hardware tag pills — cyan monospace badges for each component */}
+                    {/* Hardware tag pills */}
                     {post.hardwareTags.map((tag, i) => (
                         <React.Fragment key={i}>
                             <span className="text-[#8F99A8]/60 font-bold">•</span>
@@ -281,25 +291,27 @@ function PostCard({ post }) {
                 </div>
 
                 {/* Post title */}
-                <h3 className="text-base sm:text-lg font-bold text-white leading-snug mb-2 hover:text-[#00D8F6] transition cursor-pointer">
-                    {post.title}
-                </h3>
+                <Link to={`/post/${post.id}`} state={{ post }} className="block">
+                    <h3 className="text-base sm:text-lg font-bold text-white leading-snug mb-2 hover:text-[#00D8F6] transition cursor-pointer">
+                        {post.title}
+                    </h3>
+                </Link>
 
                 {/* Post body text */}
                 <p className="text-xs sm:text-sm text-[#C4C9D4] leading-relaxed mb-2">
                     {post.content}
                 </p>
 
-                {/* Optional section header — only rendered if the field is present */}
+                {/* Optional section header */}
                 {post.sectionHeader && (
                     <p className="text-xs font-mono text-[#8F99A8] mb-3">
                         {post.sectionHeader}
                     </p>
                 )}
 
-                {/* Optional post image — hidden via CSS if the image fails to load */}
+                {/* Optional post image */}
                 {post.image && (
-                    <div className="rounded-xl overflow-hidden border border-[#222834] mb-3 max-h-[400px]">
+                    <Link to={`/post/${post.id}`} state={{ post }} className="block rounded-xl overflow-hidden border border-[#222834] mb-3 max-h-[400px]">
                         <img
                             src={post.image}
                             alt={post.title}
@@ -308,7 +320,7 @@ function PostCard({ post }) {
                                 e.target.style.display = "none";
                             }}
                         />
-                    </div>
+                    </Link>
                 )}
 
                 {/* Divider line */}
@@ -316,17 +328,23 @@ function PostCard({ post }) {
 
                 {/* Action bar — Comments count, Share button, and optional Popular Rig badge */}
                 <div className="flex items-center gap-4 pt-1">
-                    {/* Comments button — placeholder, no action implemented yet */}
-                    <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[#8F99A8] hover:text-white hover:bg-[#161922] font-semibold text-xs transition cursor-pointer">
+                    {/* Comments button — links to post details */}
+                    <Link
+                        to={`/post/${post.id}`}
+                        state={{ post }}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[#8F99A8] hover:text-white hover:bg-[#161922] font-semibold text-xs transition cursor-pointer"
+                    >
                         <MessageCircle className="w-4 h-4 stroke-[2]" />
                         <span>{post.comments} Comments</span>
-                    </button>
-                    {/* Share button — placeholder, no action implemented yet */}
+                    </Link>
+
+                    {/* Share button */}
                     <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[#8F99A8] hover:text-white hover:bg-[#161922] font-semibold text-xs transition cursor-pointer">
                         <Share2 className="w-4 h-4 stroke-[2]" />
                         <span>Share</span>
                     </button>
-                    {/* Popular Rig badge — only shown if isPopularRig = true */}
+
+                    {/* Popular Rig badge */}
                     {post.isPopularRig && (
                         <span className="ml-auto flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg bg-[#F97316]/10 text-[#F97316] border border-[#F97316]/20">
                             <Award className="w-3 h-3" />
@@ -401,93 +419,92 @@ export default function CommunitiesPage() {
                 />
 
                 <main
-                    className={`flex-1 p-4 sm:p-6 w-full transition-all duration-300 ${
-                        isSidebarOpen ? "md:ml-64" : "ml-0"
-                    }`}
+                    className={`flex-1 p-4 sm:p-6 w-full transition-all duration-300 ${isSidebarOpen ? "md:ml-64" : "ml-0"
+                        }`}
                 >
                     <div className="space-y-6">
                         <div className="mx-auto max-w-4xl space-y-6">
 
-                        {/* Community Header Card ────────────────────────────────────────
+                            {/* Community Header Card ────────────────────────────────────────
                             Showcases the featured community (g/battlestations).
                             Posts Count badge dynamically displays the total number of posts. */}
-                        <div className="rounded-2xl border border-tp-border bg-tp-card p-5 mb-4">
-                            <div className="flex items-start gap-4 flex-wrap sm:flex-nowrap">
-                                {/* Community icon badge */}
-                                <div
-                                    className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 border"
-                                    style={{
-                                        backgroundColor: "#00D8F615",
-                                        borderColor: "#00D8F630",
-                                        color: "#00D8F6",
-                                    }}
-                                >
-                                    <Monitor className="w-6 h-6" />
-                                </div>
-                                {/* Community name, tagline, and description */}
-                                <div className="flex-1 min-w-0">
-                                    <h2 className="text-xl font-bold text-white">{displayGroupName}</h2>
-                                    <p className="text-sm text-tp-accent font-semibold">
-                                        Battlestations & Setups
-                                    </p>
-                                    <p className="text-xs text-tp-secondary mt-1.5 leading-relaxed max-w-xl">
-                                        Show off your clean desk space, cable management, RGB setups,
-                                        speaker systems, and ergonomics. High-end PC rooms and
-                                        minimalist desks.
-                                    </p>
-                                </div>
-                                {/* Posts count + Write Post action */}
-                                <div className="flex items-center gap-3 flex-shrink-0">
-                                    {/* Dynamic post count — reads from POSTS array length */}
-                                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-tp-input border border-tp-border text-xs text-tp-secondary">
-                                        <LayoutGrid className="w-3.5 h-3.5" />
-                                        <span>Posts Count:</span>
-                                        <span className="font-bold text-white">{filteredPosts.length}</span>
+                            <div className="rounded-2xl border border-tp-border bg-tp-card p-5 mb-4">
+                                <div className="flex items-start gap-4 flex-wrap sm:flex-nowrap">
+                                    {/* Community icon badge */}
+                                    <div
+                                        className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 border"
+                                        style={{
+                                            backgroundColor: "#00D8F615",
+                                            borderColor: "#00D8F630",
+                                            color: "#00D8F6",
+                                        }}
+                                    >
+                                        <Monitor className="w-6 h-6" />
                                     </div>
-                                    {/* Write Post button — placeholder, no action implemented yet */}
-                                    <button className="px-4 py-2 rounded-xl bg-white text-tp-bg text-xs font-bold transition-all hover:bg-gray-200 cursor-pointer">
-                                        Write Post here
-                                    </button>
+                                    {/* Community name, tagline, and description */}
+                                    <div className="flex-1 min-w-0">
+                                        <h2 className="text-xl font-bold text-white">{displayGroupName}</h2>
+                                        <p className="text-sm text-tp-accent font-semibold">
+                                            Battlestations & Setups
+                                        </p>
+                                        <p className="text-xs text-tp-secondary mt-1.5 leading-relaxed max-w-xl">
+                                            Show off your clean desk space, cable management, RGB setups,
+                                            speaker systems, and ergonomics. High-end PC rooms and
+                                            minimalist desks.
+                                        </p>
+                                    </div>
+                                    {/* Posts count + Write Post action */}
+                                    <div className="flex items-center gap-3 flex-shrink-0">
+                                        {/* Dynamic post count — reads from POSTS array length */}
+                                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-tp-input border border-tp-border text-xs text-tp-secondary">
+                                            <LayoutGrid className="w-3.5 h-3.5" />
+                                            <span>Posts Count:</span>
+                                            <span className="font-bold text-white">{filteredPosts.length}</span>
+                                        </div>
+                                        {/* Write Post button — placeholder, no action implemented yet */}
+                                        <button className="px-4 py-2 rounded-xl bg-white text-tp-bg text-xs font-bold transition-all hover:bg-gray-200 cursor-pointer">
+                                            Write Post here
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Sort Bar ─────────────────────────────────────────────────────
+                            {/* Sort Bar ─────────────────────────────────────────────────────
                             Three sort options: Newest, Hot, Top Rated.
                             Active button gets an accent-colored highlight.
                             Note: actual sorting logic is not yet implemented. */}
-                        <div className="rounded-2xl border border-tp-border bg-tp-card p-3 mb-4 flex items-center gap-2 flex-wrap">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-tp-muted px-2">
-                                Sort Rig Log:
-                            </span>
-                            {SORT_OPTIONS.map((opt) => (
-                                <button
-                                    key={opt.id}
-                                    onClick={() => setSortBy(opt.id)}
-                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${sortBy === opt.id
+                            <div className="rounded-2xl border border-tp-border bg-tp-card p-3 mb-4 flex items-center gap-2 flex-wrap">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-tp-muted px-2">
+                                    Sort Rig Log:
+                                </span>
+                                {SORT_OPTIONS.map((opt) => (
+                                    <button
+                                        key={opt.id}
+                                        onClick={() => setSortBy(opt.id)}
+                                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${sortBy === opt.id
                                             ? "bg-tp-accent/10 text-tp-accent border border-tp-accent/20"
                                             : "text-tp-secondary hover:text-white hover:bg-tp-input border border-transparent"
-                                        }`}
-                                >
-                                    {opt.icon}
-                                    {opt.label}
-                                </button>
-                            ))}
-                        </div>
+                                            }`}
+                                    >
+                                        {opt.icon}
+                                        {opt.label}
+                                    </button>
+                                ))}
+                            </div>
 
-                        {/* Posts Feed ───────────────────────────────────────────────────
+                            {/* Posts Feed ───────────────────────────────────────────────────
                             Renders each post from the POSTS array as a PostCard.
                             Each PostCard manages its own vote state independently.      */}
-                        <div className="space-y-4">
-                            {filteredPosts.map((post) => (
-                                <PostCard key={post.id} post={post} />
-                            ))}
-                            {filteredPosts.length === 0 && (
-                                <div className="text-center py-12 text-tp-secondary text-sm">
-                                    No posts found in this community yet.
-                                </div>
-                            )}
-                        </div>
+                            <div className="space-y-4">
+                                {filteredPosts.map((post) => (
+                                    <PostCard key={post.id} post={post} />
+                                ))}
+                                {filteredPosts.length === 0 && (
+                                    <div className="text-center py-12 text-tp-secondary text-sm">
+                                        No posts found in this community yet.
+                                    </div>
+                                )}
+                            </div>
 
                         </div>
                     </div>
