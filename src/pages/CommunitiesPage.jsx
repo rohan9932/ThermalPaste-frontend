@@ -12,6 +12,10 @@ import {
     Share2,
     Cpu,
     Monitor,
+    Droplet,
+    Gamepad2,
+    Laptop,
+    Tag,
     ArrowUp,
     ArrowDown,
     LayoutGrid,
@@ -22,11 +26,24 @@ import {
 // ─── Mock Posts Data ──────────────────────────────────────────────────────────
 // Static post data used as placeholder content until a backend API is integrated.
 // In production, this would be fetched via GET /api/posts or similar endpoint.
+const SUB_GROUPS = [
+  { id: "battlestations", name: "g/battlestations", icon: Monitor },
+  { id: "watercooling", name: "g/watercooling", icon: Droplet },
+  { id: "gpuhype", name: "g/gpuhype", icon: Gamepad2 },
+  { id: "overclocking", name: "g/overclocking", icon: Flame },
+  { id: "pcbuilders", name: "g/pcbuilders", icon: Laptop },
+  { id: "techdeals", name: "g/techdeals", icon: Tag },
+];
+
+const COMMUNITY_ICON_MAP = {};
+SUB_GROUPS.forEach((group) => {
+  COMMUNITY_ICON_MAP[group.name] = group.icon;
+});
+
 const POSTS = [
     {
         id: "post_1",
         community: "g/battlestations",
-        communityIcon: <Monitor className="w-4 h-4" />,
         communityColor: "#00D8F6",
         author: "SFF_Enthusiast",
         authorAvatar: "/images/avatar.jpg",
@@ -44,7 +61,6 @@ const POSTS = [
     {
         id: "post_2",
         community: "g/watercooling",
-        communityIcon: <Flame className="w-4 h-4" />,
         communityColor: "#3B82F6",
         author: "LoopMaster",
         authorAvatar: "/images/avatar.jpg",
@@ -62,7 +78,6 @@ const POSTS = [
     {
         id: "post_3",
         community: "g/overclocking",
-        communityIcon: <TrendingUp className="w-4 h-4" />,
         communityColor: "#FB923C",
         author: "VoltageKing",
         authorAvatar: "/images/avatar.jpg",
@@ -79,7 +94,6 @@ const POSTS = [
     {
         id: "post_4",
         community: "g/gpuhype",
-        communityIcon: <Cpu className="w-4 h-4" />,
         communityColor: "#A78BFA",
         author: "GPUBeliever",
         authorAvatar: "/images/avatar.jpg",
@@ -97,7 +111,6 @@ const POSTS = [
     {
         id: "post_5",
         community: "g/pcbuilders",
-        communityIcon: <LayoutGrid className="w-4 h-4" />,
         communityColor: "#34D399",
         author: "BuildLogger",
         authorAvatar: "/images/avatar.jpg",
@@ -115,7 +128,6 @@ const POSTS = [
     {
         id: "post_6",
         community: "g/techdeals",
-        communityIcon: <Award className="w-4 h-4" />,
         communityColor: "#FBBF24",
         author: "DealHunter",
         authorAvatar: "/images/avatar.jpg",
@@ -218,7 +230,7 @@ function PostCard({ post }) {
                                 color: post.communityColor,
                             }}
                         >
-                            {post.communityIcon}
+                            {COMMUNITY_ICON_MAP[post.community] ? React.createElement(COMMUNITY_ICON_MAP[post.community], { className: "w-3.5 h-3.5" }) : null}
                         </span>
                         <span className="text-xs">{post.community}</span>
                     </Link>
