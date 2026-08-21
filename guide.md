@@ -43,6 +43,9 @@ _There are 3 people working on this project. Agents must track work separately f
 - [2026-08-21] Restyled CommunitiesPage to match HomePage: replaced ArrowBigUp/ArrowBigDown with ArrowUp/ArrowDown, rewrote PostCard styles to use explicit HomePage color tokens (#0B0D11, #0F1117, #222834, #00D8F6, #8F99A8, #C4C9D4, #161922, #2A3142), aligned layout wrappers (p-4 sm:p-6, space-y-6, max-w-4xl), and fixed missing JSX closing tags.
 - [2026-08-21] Added sub-group filtering to CommunitiesPage: filtered posts by `g/${groupId}`, updated post count badge to show filtered length, added empty state when no posts exist.
 - [2026-08-21] Replaced hardcoded `communityIcon` JSX in POSTS data with a `COMMUNITY_ICON_MAP` derived from Sidebar SUB_GROUPS so post icons match the sidebar icons per community.
+- [2026-08-21] Fixed CommunitiesPage post badge and community header to dynamically render the correct community icon via `COMMUNITY_ICON_MAP`.
+- [2026-08-21] Made CommunitiesPage and CommunitiesListPage responsive by aligning both to HomePage's layout structure: `flex-1 p-4 sm:p-6 w-full` main wrapper, `space-y-6` + `mx-auto max-w-4xl` inner container, and replaced theme tokens with explicit hex color codes in CommunitiesListPage.
+- [2026-08-21] Adjusted CommunitiesPage community header to use `flex flex-col lg:flex-row` so the description text stays full-width on small and medium screens, and only switches to side-by-side on large screens.
 - [2026-08-21] Verified production build passes after all changes.
 
 ---

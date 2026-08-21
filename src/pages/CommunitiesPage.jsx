@@ -23,20 +23,6 @@ import {
     Award,
 } from "lucide-react";
 
-// ─── Community Icon Helper ──────────────────────────────────────────────────
-function getCommunityIcon(community) {
-    if (community?.includes("battlestations")) return <Monitor className="w-4 h-4" />;
-    if (community?.includes("watercooling")) return <Flame className="w-4 h-4" />;
-    if (community?.includes("overclocking")) return <TrendingUp className="w-4 h-4" />;
-    if (community?.includes("gpuhype")) return <Cpu className="w-4 h-4" />;
-    if (community?.includes("pcbuilders")) return <LayoutGrid className="w-4 h-4" />;
-    if (community?.includes("techdeals")) return <Award className="w-4 h-4" />;
-    return <Monitor className="w-4 h-4" />;
-}
-
-// ─── Mock Posts Data ──────────────────────────────────────────────────────────
-// Static post data used as placeholder content until a backend API is integrated.
-// In production, this would be fetched via GET /api/posts or similar endpoint.
 const SUB_GROUPS = [
     { id: "battlestations", name: "g/battlestations", icon: Monitor },
     { id: "watercooling", name: "g/watercooling", icon: Droplet },
@@ -240,7 +226,7 @@ function PostCard({ post }) {
                                 color: post.communityColor,
                             }}
                         >
-                            {post.communityIcon}
+                            {COMMUNITY_ICON_MAP[post.community] ? React.createElement(COMMUNITY_ICON_MAP[post.community], { className: "w-3.5 h-3.5" }) : null}
                         </span>
                         <span className="text-xs">{post.community}</span>
                     </Link>
@@ -429,7 +415,7 @@ export default function CommunitiesPage() {
                             Showcases the featured community (g/battlestations).
                             Posts Count badge dynamically displays the total number of posts. */}
                             <div className="rounded-2xl border border-tp-border bg-tp-card p-5 mb-4">
-                                <div className="flex items-start gap-4 flex-wrap sm:flex-nowrap">
+                                <div className="flex flex-col lg:flex-row items-start gap-4">
                                     {/* Community icon badge */}
                                     <div
                                         className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 border"
@@ -439,7 +425,7 @@ export default function CommunitiesPage() {
                                             color: "#00D8F6",
                                         }}
                                     >
-                                        <Monitor className="w-6 h-6" />
+                                        {COMMUNITY_ICON_MAP[`g/${displayGroupId}`] ? React.createElement(COMMUNITY_ICON_MAP[`g/${displayGroupId}`], { className: "w-6 h-6" }) : null}
                                     </div>
                                     {/* Community name, tagline, and description */}
                                     <div className="flex-1 min-w-0">
@@ -447,7 +433,7 @@ export default function CommunitiesPage() {
                                         <p className="text-sm text-tp-accent font-semibold">
                                             Battlestations & Setups
                                         </p>
-                                        <p className="text-xs text-tp-secondary mt-1.5 leading-relaxed max-w-xl">
+                                        <p className="text-xs text-[#8F99A8] leading-relaxed">
                                             Show off your clean desk space, cable management, RGB setups,
                                             speaker systems, and ergonomics. High-end PC rooms and
                                             minimalist desks.

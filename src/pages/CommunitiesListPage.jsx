@@ -66,7 +66,7 @@ export default function CommunitiesListPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-tp-bg text-white flex flex-col font-sans">
+    <div className="min-h-screen bg-[#0B0D11] text-white flex flex-col">
       <Navbar
         isSidebarOpen={isSidebarOpen}
         onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
@@ -79,14 +79,15 @@ export default function CommunitiesListPage() {
         />
 
         <main
-          className={`flex-1 transition-all duration-300 ${
+          className={`flex-1 p-4 sm:p-6 w-full transition-all duration-300 ${
             isSidebarOpen ? "md:ml-64" : "ml-0"
           }`}
         >
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-            <div className="mb-6 border-b border-tp-border pb-4">
+          <div className="space-y-6">
+            <div className="mx-auto max-w-4xl space-y-6">
+            <div className="mb-6 border-b border-[#222834] pb-4">
               <h1 className="text-2xl font-bold text-white">Your Communities</h1>
-              <p className="text-sm text-tp-secondary mt-1">
+              <p className="text-sm text-[#8F99A8] mt-1">
                 Manage and explore the sub-groups you've joined.
               </p>
             </div>
@@ -98,7 +99,7 @@ export default function CommunitiesListPage() {
                   <Link
                     key={community.id}
                     to={`/communities/${community.id}`}
-                    className="p-5 rounded-2xl border border-tp-border bg-tp-card hover:border-tp-accent/40 transition-all group flex flex-col h-full"
+                    className="p-5 rounded-2xl border border-[#222834] bg-[#0F1117] hover:border-[#00D8F6]/40 transition-all group flex flex-col h-full"
                   >
                     <div className="flex items-center gap-3 mb-3">
                       <div
@@ -111,26 +112,27 @@ export default function CommunitiesListPage() {
                         <Icon className="w-5 h-5" />
                       </div>
                       <div>
-                        <h2 className="text-base font-bold text-white group-hover:text-tp-accent transition-colors">
+                        <h2 className="text-base font-bold text-white group-hover:text-[#00D8F6] transition-colors">
                           {community.name}
                         </h2>
-                        <p className="text-xs font-semibold text-tp-secondary">
+                        <p className="text-xs font-semibold text-[#8F99A8]">
                           {community.members} members
                         </p>
                       </div>
                     </div>
-                    <p className="text-sm text-tp-text leading-relaxed flex-1">
+                    <p className="text-sm text-[#C4C9D4] leading-relaxed flex-1">
                       {community.description}
                     </p>
-                    <div className="mt-4 pt-3 border-t border-tp-border/50 text-xs font-bold text-tp-accent group-hover:underline">
+                    <div className="mt-4 pt-3 border-t border-[#222834]/50 text-xs font-bold text-[#00D8F6] group-hover:underline">
                       Visit Community &rarr;
                     </div>
                   </Link>
                 );
               })}
             </div>
-          </div>
-        </main>
+                        </div>
+                    </div>
+                </main>
       </div>
     </div>
   );
