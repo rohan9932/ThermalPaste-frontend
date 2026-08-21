@@ -12,7 +12,8 @@
 - **Simplicity First**: Keep the codebase as easy and readable as possible. Always go for the simplest approach.
 - **No Unapproved Additions**: Do not add unnecessary code, features, or npm packages without asking first.
 - **State Management**: Avoid using the Context API unless absolutely necessary. Avoid deep prop drilling (use composition instead).
-- **Theme Consistency**: Do not hallucinate styles or patterns. Strictly follow the existing Tailwind CSS theme and component structure.
+- **Theme Consistency**: Do not hallucinate styles or patterns. Strictly follow the existing theme and component structure.
+- **Responsive & Dynamic Design**: Ensure the site is dynamic and fully optimized for both PC and narrow screens on mobile phones so that layouts never break.
 
 ## 🎨 Theme & Architecture Quick Reference
 
@@ -29,6 +30,8 @@ _There are 3 people working on this project. Agents must track work separately f
 - [2026-08-20] Initialized project tracking and created this `guide.md` file to establish ground rules and activity logs.
 - [2026-08-21] Fixed community routing: added dynamic route `/communities/:groupId` to App.jsx, updated Sidebar subgroup buttons to route there, updated PostCard and CommunitiesPage badges to act as navigation links.
 - [2026-08-21] Created `CommunitiesListPage.jsx` to list all joined subgroups when the user clicks the Communities button in the sidebar (route `/communities`).
+- [2026-08-21] Added instructions to Core Guidelines for dynamic and responsive layouts across PC and mobile screens.
+- [2026-08-21] Implemented `CreateGroupModal.jsx` and connected it to the "Create a Group" button in the Sidebar to allow users to create new communities with credentials (name, tagline, category, description, privacy).
 
 ### User 2 (Rohan)
 
