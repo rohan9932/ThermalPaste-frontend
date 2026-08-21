@@ -26,6 +26,10 @@ const router = createBrowserRouter([
     path: "/communities",
     Component: CommunitiesPage,
   },
+  {
+    path: "/communities/:groupId",
+    Component: CommunitiesPage,
+  },
 ]);
 
 

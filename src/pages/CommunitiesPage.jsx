@@ -2,6 +2,7 @@
 // Displays a community post feed with search, sorting, upvoting/downvoting, and post cards.
 
 import React, { useState } from "react";
+import { useParams, Link } from "react-router";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import {
@@ -205,7 +206,7 @@ function PostCard({ post }) {
                     {/* Meta row — community badge, author avatar, hardware tags, timestamp */}
                     <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs text-tp-secondary mb-2">
                         {/* Community badge — colored icon + community name */}
-                        <span className="flex items-center gap-1 font-semibold text-white">
+                        <Link to={`/communities/${post.community.replace('g/', '')}`} className="flex items-center gap-1 font-semibold text-white hover:opacity-80 transition-opacity">
                             <span
                                 className="w-5 h-5 rounded-md flex items-center justify-center"
                                 style={{
@@ -216,7 +217,7 @@ function PostCard({ post }) {
                                 {post.communityIcon}
                             </span>
                             {post.community}
-                        </span>
+                        </Link>
                         <span className="text-tp-muted">·</span>
 
                         {/* Author avatar — hides itself if the image fails to load */}
@@ -320,6 +321,10 @@ function PostCard({ post }) {
 
 // ─── CommunitiesPage Component ────────────────────────────────────────────────
 export default function CommunitiesPage() {
+    const { groupId } = useParams();
+    const displayGroupId = groupId || "battlestations";
+    const displayGroupName = `g/${displayGroupId}`;
+
     // Controls whether the sidebar is open or collapsed.
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -404,7 +409,7 @@ export default function CommunitiesPage() {
                                 </div>
                                 {/* Community name, tagline, and description */}
                                 <div className="flex-1 min-w-0">
-                                    <h2 className="text-xl font-bold text-white">g/battlestations</h2>
+                                    <h2 className="text-xl font-bold text-white">{displayGroupName}</h2>
                                     <p className="text-sm text-tp-accent font-semibold">
                                         Battlestations & Setups
                                     </p>

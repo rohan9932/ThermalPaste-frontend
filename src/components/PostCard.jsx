@@ -7,6 +7,7 @@ import {
   Boxes
 } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router";
 
 const DEFAULT_POST = {
   id: "post-1",
@@ -109,10 +110,10 @@ export function PostCard({
         {/* HEADER ROW */}
         <div className="flex items-center gap-2 flex-wrap text-xs text-[#8F99A8] mb-2.5">
           {/* SUBGROUP BADGE */}
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#161922] text-white font-medium border border-[#222834] hover:border-[#00D8F6]/40 transition cursor-pointer">
+          <Link to={`/communities/${post.subGroup.replace('g/', '')}`} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#161922] text-white font-medium border border-[#222834] hover:border-[#00D8F6]/40 transition cursor-pointer">
             <SubIcon className="w-3.5 h-3.5 text-gray-300" />
             <span className="text-xs">{post.subGroup}</span>
-          </div>
+          </Link>
 
           <span className="text-[#8F99A8]/60 font-bold">•</span>
 

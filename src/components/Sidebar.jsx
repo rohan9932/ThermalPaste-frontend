@@ -162,14 +162,15 @@ export function Sidebar({ isOpen, onClose }) {
               const isActive = activeId === group.id;
 
               return (
-                <button
+                <Link
                   key={group.id}
+                  to={`/communities/${group.id}`}
                   onClick={() => {
                     setActiveId(group.id);
                     if (onClose) onClose(); // closes drawer automatically
                   }}
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all duration-150 cursor-pointer font-medium text-sm ${
-                    isActive
+                    currentPath === `/communities/${group.id}` || isActive
                       ? "bg-[#222732] text-[#00D8F6]"
                       : "text-gray-300 hover:bg-[#161922] hover:text-white"
                   }`}
@@ -180,7 +181,7 @@ export function Sidebar({ isOpen, onClose }) {
                     />
                     <span className="truncate">{group.name}</span>
                   </div>
-                </button>
+                </Link>
               );
             })}
           </div>

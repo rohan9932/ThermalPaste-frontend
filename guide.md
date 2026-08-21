@@ -22,6 +22,7 @@
 
 ### User 1 (Dark)
 - [2026-08-20] Initialized project tracking and created this `guide.md` file to establish ground rules and activity logs.
+- [2026-08-21] Fixed community routing: added dynamic route `/communities/:groupId` to App.jsx, updated Sidebar subgroup buttons to route there, updated PostCard and CommunitiesPage badges to act as navigation links.
 
 ### User 2 (Rohan)
 - *No recent activity.*
