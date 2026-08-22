@@ -1,10 +1,8 @@
-// CommunitiesPage.jsx
-// Displays a community post feed with search, sorting, upvoting/downvoting, and post cards.
-
 import React, { useState } from "react";
 import { useParams, Link } from "react-router";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
+import CreatePostForm from "../components/CreatePostForm";
 import {
     Search,
     Flame,
@@ -334,6 +332,7 @@ export default function CommunitiesPage() {
     const displayGroupName = `g/${displayGroupId}`;
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
     const [sortBy, setSortBy] = useState("newest");
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -373,6 +372,12 @@ export default function CommunitiesPage() {
 
     return (
         <div className="min-h-screen bg-[#0B0D11] text-white flex flex-col">
+            {/* Create Post Modal */}
+            <CreatePostForm
+                isOpen={isCreatePostOpen}
+                onClose={() => setIsCreatePostOpen(false)}
+                defaultCommunity={displayGroupName}
+            />
 
             {/* Shared top navigation bar */}
             <Navbar
@@ -431,8 +436,11 @@ export default function CommunitiesPage() {
                                             <span>Posts Count:</span>
                                             <span className="font-bold text-white">{filteredPosts.length}</span>
                                         </div>
-                                        {/* Write Post button — placeholder, no action implemented yet */}
-                                        <button className="px-4 py-2 rounded-xl bg-white text-tp-bg text-xs font-bold transition-all hover:bg-gray-200 cursor-pointer">
+                                        {/* Write Post button */}
+                                        <button
+                                            onClick={() => setIsCreatePostOpen(true)}
+                                            className="px-4 py-2 rounded-xl bg-white text-tp-bg text-xs font-bold transition-all hover:bg-gray-200 cursor-pointer"
+                                        >
                                             Write Post here
                                         </button>
                                     </div>
