@@ -14,6 +14,97 @@ import {
   Send,
 } from "lucide-react";
 
+// ─── Comment Item Sub-Component ───────────────────────────────────────────────
+// Renders an individual comment with independent upvote/downvote controls & score.
+function CommentItem({ comment }) {
+  const [voteState, setVoteState] = useState(null);
+  const [voteCount, setVoteCount] = useState(comment.upvotes ?? 0);
+
+  const handleUpvote = () => {
+    if (voteState === "down") {
+      setVoteCount((prev) => prev + 2);
+    } else if (voteState === "up") {
+      setVoteCount((prev) => prev - 1);
+    } else {
+      setVoteCount((prev) => prev + 1);
+    }
+    setVoteState(voteState === "up" ? null : "up");
+  };
+
+  const handleDownvote = () => {
+    if (voteState === "up") {
+      setVoteCount((prev) => prev - 2);
+    } else if (voteState === "down") {
+      setVoteCount((prev) => prev + 1);
+    } else {
+      setVoteCount((prev) => prev - 1);
+    }
+    setVoteState(voteState === "down" ? null : "down");
+  };
+
+  return (
+    <div className="p-4 rounded-xl bg-[#161922] border border-[#222834] flex gap-3.5 hover:border-[#2A3142] transition">
+      {/* Vote Controls Column for Comment */}
+      <div className="flex flex-col items-center shrink-0 pt-0.5">
+        <button
+          onClick={handleUpvote}
+          aria-label="Upvote comment"
+          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+            voteState === "up"
+              ? "bg-[#00D8F6] text-[#0B0D11] shadow-[0_0_10px_rgba(0,216,246,0.4)]"
+              : "text-[#8F99A8] hover:text-[#00D8F6] hover:bg-[#0B0D11]"
+          }`}
+        >
+          <ArrowUp
+            className={`w-4 h-4 stroke-[2.5] ${
+              voteState === "up" ? "fill-current" : ""
+            }`}
+          />
+        </button>
+
+        <span
+          className={`text-xs font-bold my-1 transition-colors ${
+            voteState === "up"
+              ? "text-[#00D8F6]"
+              : voteState === "down"
+              ? "text-rose-400"
+              : "text-[#8F99A8]"
+          }`}
+        >
+          {voteCount}
+        </span>
+
+        <button
+          onClick={handleDownvote}
+          aria-label="Downvote comment"
+          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+            voteState === "down"
+              ? "bg-rose-500/20 text-rose-400 border border-rose-500/40"
+              : "text-[#8F99A8] hover:text-rose-400 hover:bg-[#0B0D11]"
+          }`}
+        >
+          <ArrowDown className="w-4 h-4 stroke-[2.5]" />
+        </button>
+      </div>
+
+      {/* Comment Content Area */}
+      <div className="flex-1 min-w-0 space-y-1.5">
+        <div className="flex items-center gap-2 text-xs">
+          <CircleUserRound className="w-4 h-4 text-[#00D8F6]" />
+          <span className="font-semibold text-white">{comment.author}</span>
+          <span className="text-[#8F99A8]/60 font-bold">•</span>
+          <span className="text-[#8F99A8]">{comment.time}</span>
+        </div>
+
+        <p className="text-xs sm:text-sm text-[#C4C9D4] leading-relaxed whitespace-pre-line">
+          {comment.content}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Post Details Page Main Component ─────────────────────────────────────────
 export default function PostDetailsPage() {
   const { id } = useParams();
   const location = useLocation();
@@ -65,6 +156,13 @@ export default function PostDetailsPage() {
       content: "Great share! Thanks for posting the breakdown and details.",
       upvotes: 4,
     },
+    {
+      id: "comment-2",
+      author: "RigMaster",
+      time: "1 hour ago",
+      content: "Clean aesthetics and great thermals. What paste compound did you use for the cooler mount?",
+      upvotes: 2,
+    },
   ]);
   const [newCommentText, setNewCommentText] = useState("");
 
@@ -77,7 +175,7 @@ export default function PostDetailsPage() {
       author: "You",
       time: "Just now",
       content: newCommentText.trim(),
-      upvotes: 1,
+      upvotes: 0,
     };
 
     setComments([newComment, ...comments]);
@@ -206,6 +304,7 @@ export default function PostDetailsPage() {
                           <React.Fragment key={i}>
                             <span className="text-[#8F99A8]/60 font-bold">•</span>
                             <span
+                              key={i}
                               className="px-1.5 py-0.5 rounded border text-[10px] font-mono font-semibold"
                               style={{
                                 backgroundColor: "#00D8F610",
@@ -318,29 +417,7 @@ export default function PostDetailsPage() {
                 {/* Comments List */}
                 <div className="space-y-3 pt-2">
                   {comments.map((comment) => (
-                    <div
-                      key={comment.id}
-                      className="p-3.5 rounded-xl bg-[#161922] border border-[#222834] space-y-2 hover:border-[#2A3142] transition"
-                    >
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2">
-                          <CircleUserRound className="w-4 h-4 text-[#00D8F6]" />
-                          <span className="font-semibold text-white">
-                            {comment.author}
-                          </span>
-                          <span className="text-[#8F99A8]/60 font-bold">•</span>
-                          <span className="text-[#8F99A8]">{comment.time}</span>
-                        </div>
-
-                        <span className="text-[11px] font-bold text-[#00D8F6]">
-                          +{comment.upvotes}
-                        </span>
-                      </div>
-
-                      <p className="text-xs sm:text-sm text-[#C4C9D4] leading-relaxed">
-                        {comment.content}
-                      </p>
-                    </div>
+                    <CommentItem key={comment.id} comment={comment} />
                   ))}
                 </div>
               </section>
