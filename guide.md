@@ -37,6 +37,8 @@ _There are 3 people working on this project. Agents must track work separately f
 - [2026-08-22] Fixed "Create a Group" button in `Sidebar.jsx` by restoring the `<CreateGroupForm />` modal component rendering in the JSX tree.
 - [2026-08-22] Restyled `PostDetailsPage.jsx` to match HomePage and CommunitiesPage theme tokens, layout structure (`flex-1 p-4 sm:p-6 w-full`, `space-y-6`, `mx-auto max-w-4xl`), vote controls (`ArrowUp`/`ArrowDown`), and dark card aesthetics.
 - [2026-08-22] Added comment voting (`CommentItem` sub-component) to `PostDetailsPage.jsx` with independent upvote/downvote controls and score display matching post cards.
+- [2026-08-22] Added nested reply feature to comments in `PostDetailsPage.jsx` with inline reply forms, reply voting, and total discussion count calculation.
+- [2026-08-22] Enhanced comment reply button styling in `PostDetailsPage.jsx` with a distinct pill button layout, border accents, and active cyan highlights.
 
 ### User 2 (Rohan)
 

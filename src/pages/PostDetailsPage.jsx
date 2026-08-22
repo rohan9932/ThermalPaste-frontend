@@ -12,13 +12,16 @@ import {
   CircleUserRound,
   Boxes,
   Send,
+  Reply,
 } from "lucide-react";
 
 // ─── Comment Item Sub-Component ───────────────────────────────────────────────
-// Renders an individual comment with independent upvote/downvote controls & score.
-function CommentItem({ comment }) {
+// Renders an individual comment with independent vote controls, score, and reply capability.
+function CommentItem({ comment, onAddReply, isNested = false }) {
   const [voteState, setVoteState] = useState(null);
   const [voteCount, setVoteCount] = useState(comment.upvotes ?? 0);
+  const [isReplying, setIsReplying] = useState(false);
+  const [replyText, setReplyText] = useState("");
 
   const handleUpvote = () => {
     if (voteState === "down") {
@@ -42,63 +45,140 @@ function CommentItem({ comment }) {
     setVoteState(voteState === "down" ? null : "down");
   };
 
+  const handleReplySubmit = (e) => {
+    e.preventDefault();
+    if (!replyText.trim()) return;
+
+    if (onAddReply) {
+      onAddReply(comment.id, replyText.trim());
+    }
+
+    setReplyText("");
+    setIsReplying(false);
+  };
+
   return (
-    <div className="p-4 rounded-xl bg-[#161922] border border-[#222834] flex gap-3.5 hover:border-[#2A3142] transition">
-      {/* Vote Controls Column for Comment */}
-      <div className="flex flex-col items-center shrink-0 pt-0.5">
-        <button
-          onClick={handleUpvote}
-          aria-label="Upvote comment"
-          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
-            voteState === "up"
-              ? "bg-[#00D8F6] text-[#0B0D11] shadow-[0_0_10px_rgba(0,216,246,0.4)]"
-              : "text-[#8F99A8] hover:text-[#00D8F6] hover:bg-[#0B0D11]"
-          }`}
-        >
-          <ArrowUp
-            className={`w-4 h-4 stroke-[2.5] ${
-              voteState === "up" ? "fill-current" : ""
+    <div
+      className={`rounded-xl border border-[#222834] transition ${
+        isNested ? "p-3 bg-[#11141c]" : "p-3.5 sm:p-4 bg-[#161922] hover:border-[#2A3142]"
+      }`}
+    >
+      <div className="flex gap-3 sm:gap-3.5">
+        {/* Vote Column */}
+        <div className="flex flex-col items-center shrink-0 pt-0.5">
+          <button
+            onClick={handleUpvote}
+            aria-label="Upvote comment"
+            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+              voteState === "up"
+                ? "bg-[#00D8F6] text-[#0B0D11] shadow-[0_0_10px_rgba(0,216,246,0.4)]"
+                : "text-[#8F99A8] hover:text-[#00D8F6] hover:bg-[#0B0D11]"
             }`}
-          />
-        </button>
+          >
+            <ArrowUp
+              className={`w-4 h-4 stroke-[2.5] ${
+                voteState === "up" ? "fill-current" : ""
+              }`}
+            />
+          </button>
 
-        <span
-          className={`text-xs font-bold my-1 transition-colors ${
-            voteState === "up"
-              ? "text-[#00D8F6]"
-              : voteState === "down"
-              ? "text-rose-400"
-              : "text-[#8F99A8]"
-          }`}
-        >
-          {voteCount}
-        </span>
+          <span
+            className={`text-xs font-bold my-1 transition-colors ${
+              voteState === "up"
+                ? "text-[#00D8F6]"
+                : voteState === "down"
+                ? "text-rose-400"
+                : "text-[#8F99A8]"
+            }`}
+          >
+            {voteCount}
+          </span>
 
-        <button
-          onClick={handleDownvote}
-          aria-label="Downvote comment"
-          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
-            voteState === "down"
-              ? "bg-rose-500/20 text-rose-400 border border-rose-500/40"
-              : "text-[#8F99A8] hover:text-rose-400 hover:bg-[#0B0D11]"
-          }`}
-        >
-          <ArrowDown className="w-4 h-4 stroke-[2.5]" />
-        </button>
-      </div>
-
-      {/* Comment Content Area */}
-      <div className="flex-1 min-w-0 space-y-1.5">
-        <div className="flex items-center gap-2 text-xs">
-          <CircleUserRound className="w-4 h-4 text-[#00D8F6]" />
-          <span className="font-semibold text-white">{comment.author}</span>
-          <span className="text-[#8F99A8]/60 font-bold">•</span>
-          <span className="text-[#8F99A8]">{comment.time}</span>
+          <button
+            onClick={handleDownvote}
+            aria-label="Downvote comment"
+            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+              voteState === "down"
+                ? "bg-rose-500/20 text-rose-400 border border-rose-500/40"
+                : "text-[#8F99A8] hover:text-rose-400 hover:bg-[#0B0D11]"
+            }`}
+          >
+            <ArrowDown className="w-4 h-4 stroke-[2.5]" />
+          </button>
         </div>
 
-        <p className="text-xs sm:text-sm text-[#C4C9D4] leading-relaxed whitespace-pre-line">
-          {comment.content}
-        </p>
+        {/* Comment Content Column */}
+        <div className="flex-1 min-w-0 space-y-1.5">
+          <div className="flex items-center gap-2 text-xs">
+            <CircleUserRound className="w-4 h-4 text-[#00D8F6]" />
+            <span className="font-semibold text-white">{comment.author}</span>
+            <span className="text-[#8F99A8]/60 font-bold">•</span>
+            <span className="text-[#8F99A8]">{comment.time}</span>
+          </div>
+
+          <p className="text-xs sm:text-sm text-[#C4C9D4] leading-relaxed whitespace-pre-line">
+            {comment.content}
+          </p>
+
+          {/* Reply Action Button */}
+          {!isNested && (
+            <div className="pt-1.5 flex items-center gap-2">
+              <button
+                onClick={() => setIsReplying((prev) => !prev)}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                  isReplying
+                    ? "bg-[#00D8F6]/15 text-[#00D8F6] border-[#00D8F6]/40 shadow-[0_0_10px_rgba(0,216,246,0.15)]"
+                    : "bg-[#0B0D11] text-[#8F99A8] border-[#222834] hover:text-white hover:border-[#00D8F6]/40 hover:bg-[#161922]"
+                }`}
+              >
+                <Reply className="w-3.5 h-3.5" />
+                <span>{isReplying ? "Cancel Reply" : "Reply"}</span>
+              </button>
+            </div>
+          )}
+
+          {/* Inline Reply Form */}
+          {isReplying && (
+            <form onSubmit={handleReplySubmit} className="mt-2 space-y-2">
+              <textarea
+                rows={2}
+                required
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder={`Reply to @${comment.author}...`}
+                className="w-full bg-[#0B0D11] text-xs sm:text-sm text-white placeholder-[#8F99A8]/60 p-2.5 rounded-lg border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all resize-none"
+              />
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsReplying(false);
+                    setReplyText("");
+                  }}
+                  className="px-3 py-1 rounded-lg text-xs font-semibold text-[#8F99A8] hover:text-white hover:bg-[#0B0D11] transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex items-center gap-1 px-3 py-1 bg-[#00D8F6] hover:bg-[#00c4e0] text-[#0B0D11] text-xs font-bold rounded-lg shadow-[0_0_10px_rgba(0,216,246,0.25)] transition cursor-pointer"
+                >
+                  <Send className="w-3 h-3" />
+                  <span>Reply</span>
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Nested Replies Stream */}
+          {comment.replies && comment.replies.length > 0 && (
+            <div className="mt-3 pl-3 sm:pl-4 border-l-2 border-[#222834] space-y-2.5">
+              {comment.replies.map((reply) => (
+                <CommentItem key={reply.id} comment={reply} isNested={true} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -147,7 +227,7 @@ export default function PostDetailsPage() {
     }
   };
 
-  // Comments state
+  // Comments state with nested replies support
   const [comments, setComments] = useState([
     {
       id: "comment-1",
@@ -155,6 +235,15 @@ export default function PostDetailsPage() {
       time: "2 hours ago",
       content: "Great share! Thanks for posting the breakdown and details.",
       upvotes: 4,
+      replies: [
+        {
+          id: "reply-1",
+          author: "SFF_Builder",
+          time: "1 hour ago",
+          content: "Agreed! That cable routing in particular is super clean.",
+          upvotes: 2,
+        },
+      ],
     },
     {
       id: "comment-2",
@@ -162,9 +251,16 @@ export default function PostDetailsPage() {
       time: "1 hour ago",
       content: "Clean aesthetics and great thermals. What paste compound did you use for the cooler mount?",
       upvotes: 2,
+      replies: [],
     },
   ]);
   const [newCommentText, setNewCommentText] = useState("");
+
+  // Calculate total comments + replies count
+  const totalCommentsCount = comments.reduce(
+    (acc, c) => acc + 1 + (c.replies ? c.replies.length : 0),
+    0
+  );
 
   const handleAddComment = (e) => {
     e.preventDefault();
@@ -176,10 +272,33 @@ export default function PostDetailsPage() {
       time: "Just now",
       content: newCommentText.trim(),
       upvotes: 0,
+      replies: [],
     };
 
     setComments([newComment, ...comments]);
     setNewCommentText("");
+  };
+
+  const handleAddReply = (parentCommentId, replyContent) => {
+    const newReply = {
+      id: `reply-${Date.now()}`,
+      author: "You",
+      time: "Just now",
+      content: replyContent,
+      upvotes: 0,
+    };
+
+    setComments((prevComments) =>
+      prevComments.map((c) => {
+        if (c.id === parentCommentId) {
+          return {
+            ...c,
+            replies: [...(c.replies || []), newReply],
+          };
+        }
+        return c;
+      })
+    );
   };
 
   return (
@@ -304,7 +423,6 @@ export default function PostDetailsPage() {
                           <React.Fragment key={i}>
                             <span className="text-[#8F99A8]/60 font-bold">•</span>
                             <span
-                              key={i}
                               className="px-1.5 py-0.5 rounded border text-[10px] font-mono font-semibold"
                               style={{
                                 backgroundColor: "#00D8F610",
@@ -359,7 +477,7 @@ export default function PostDetailsPage() {
                     <div className="flex items-center gap-1.5 sm:gap-3">
                       <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[#8F99A8] font-semibold text-xs">
                         <MessageSquare className="w-4 h-4 stroke-[2]" />
-                        <span>{comments.length} Comments</span>
+                        <span>{totalCommentsCount} Comments</span>
                       </div>
 
                       <button
@@ -389,7 +507,7 @@ export default function PostDetailsPage() {
                 <div className="flex items-center justify-between border-b border-[#222834] pb-3">
                   <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
                     <MessageSquare className="w-4 h-4 text-[#00D8F6]" />
-                    <span>Discussion ({comments.length})</span>
+                    <span>Discussion ({totalCommentsCount})</span>
                   </h2>
                 </div>
 
@@ -417,7 +535,11 @@ export default function PostDetailsPage() {
                 {/* Comments List */}
                 <div className="space-y-3 pt-2">
                   {comments.map((comment) => (
-                    <CommentItem key={comment.id} comment={comment} />
+                    <CommentItem
+                      key={comment.id}
+                      comment={comment}
+                      onAddReply={handleAddReply}
+                    />
                   ))}
                 </div>
               </section>
