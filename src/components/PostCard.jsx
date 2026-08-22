@@ -1,13 +1,30 @@
+import { useState } from "react";
+import { Link } from "react-router";
 import {
   ArrowDown,
   ArrowUp,
   MessageSquare,
   Share2,
-  CircleUserRound, 
-  Boxes
+  CircleUserRound,
+  Boxes,
+  Monitor,
+  Droplet,
+  Gamepad2,
+  Flame,
+  Laptop,
+  Tag,
+  Award,
 } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router";
+
+// Community to Lucide icon mapping
+const COMMUNITY_ICON_MAP = {
+  "g/battlestations": Monitor,
+  "g/watercooling": Droplet,
+  "g/gpuhype": Gamepad2,
+  "g/overclocking": Flame,
+  "g/pcbuilders": Laptop,
+  "g/techdeals": Tag,
+};
 
 const DEFAULT_POST = {
   id: "post-1",
@@ -24,19 +41,30 @@ const DEFAULT_POST = {
   commentsCount: 4,
 };
 
-export function PostCard({
-  post = DEFAULT_POST,
-}) {
-  // Upvote state defaults to upvoted to match the provided mockup screenshot
+export function PostCard({ post = DEFAULT_POST }) {
+  // Normalize post properties to support variations seamlessly
+  const subGroupName = post.subGroup || post.community || "g/pcbuilders";
+  const subGroupSlug = subGroupName.replace(/^g\//, "");
+  const author = post.authorname || post.author || "Community Member";
+  const timestamp = post.createdAt || post.timestamp || "Recently";
+  const title = post.title || "Untitled Post";
+  const content = post.content || "";
+  const sectionSnippet = post.previewSnippet || post.sectionHeader || null;
+  const initialVotes = post.upvotes ?? DEFAULT_POST.upvotes;
+  const commentsTotal = post.commentsCount ?? post.comments ?? 0;
+  const image = post.image || null;
+  const authorAvatar = post.authorAvatar || null;
+  const isPopularRig = post.isPopularRig || false;
+
+  // Derive SubGroup Icon
+  const SubIcon = COMMUNITY_ICON_MAP[subGroupName] || post.subGroupIcon || Boxes;
+
+  // Local voting state
   const [voteState, setVoteState] = useState(null);
-  const [upvoteCount, setUpvoteCount] = useState(
-    post.upvotes ?? DEFAULT_POST.upvotes,
-  ); // fallback value
+  const [upvoteCount, setUpvoteCount] = useState(initialVotes);
 
-  const SubIcon = post.subGroupIcon || Boxes;
-
-  // substact or add by 2 if down/up selcted. if not any selected just update by 1
-  const handleUpvote = () => {
+  const handleUpvote = (e) => {
+    e.stopPropagation();
     if (voteState === "down") {
       setUpvoteCount((prev) => prev + 2);
     } else if (voteState === "up") {
@@ -44,11 +72,11 @@ export function PostCard({
     } else {
       setUpvoteCount((prev) => prev + 1);
     }
-
     setVoteState(voteState === "up" ? null : "up");
   };
 
-  const handleDownvote = () => {
+  const handleDownvote = (e) => {
+    e.stopPropagation();
     if (voteState === "up") {
       setUpvoteCount((prev) => prev - 2);
     } else if (voteState === "down") {
@@ -56,8 +84,15 @@ export function PostCard({
     } else {
       setUpvoteCount((prev) => prev - 1);
     }
-
     setVoteState(voteState === "down" ? null : "down");
+  };
+
+  const handleShare = (e) => {
+    e.stopPropagation();
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(`${window.location.origin}/post/${post.id || "post-1"}`);
+      alert("Post link copied to clipboard!");
+    }
   };
 
   return (
@@ -85,8 +120,8 @@ export function PostCard({
             voteState === "up"
               ? "text-[#00D8F6]"
               : voteState === "down"
-                ? "text-rose-400"
-                : "text-[#8F99A8]"
+              ? "text-rose-400"
+              : "text-[#8F99A8]"
           }`}
         >
           {upvoteCount}
@@ -110,46 +145,78 @@ export function PostCard({
         {/* HEADER ROW */}
         <div className="flex items-center gap-2 flex-wrap text-xs text-[#8F99A8] mb-2.5">
           {/* SUBGROUP BADGE */}
-          <Link to={`/communities/${post.subGroup.replace('g/', '')}`} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#161922] text-white font-medium border border-[#222834] hover:border-[#00D8F6]/40 transition cursor-pointer">
+          <Link
+            to={`/communities/${subGroupSlug}`}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#161922] text-white font-medium border border-[#222834] hover:border-[#00D8F6]/40 transition cursor-pointer"
+          >
             <SubIcon className="w-3.5 h-3.5 text-gray-300" />
-            <span className="text-xs">{post.subGroup}</span>
+            <span className="text-xs">{subGroupName}</span>
           </Link>
 
           <span className="text-[#8F99A8]/60 font-bold">•</span>
 
           {/* AUTHOR INFO */}
           <div className="inline-flex items-center gap-1 cursor-pointer group">
-            <CircleUserRound className="w-4 h-4 text-[#00D8F6]" />
+            {authorAvatar ? (
+              <img
+                src={authorAvatar}
+                alt={author}
+                className="w-4 h-4 rounded-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = "none";
+                }}
+              />
+            ) : (
+              <CircleUserRound className="w-4 h-4 text-[#00D8F6]" />
+            )}
             <span className="text-white font-semibold text-xs group-hover:text-[#00D8F6] transition">
-              {post.authorname}
+              {author}
             </span>
           </div>
 
           <span className="text-[#8F99A8]/60 font-bold">•</span>
 
           {/* TIMESTAMP */}
-          <span className="text-[#8F99A8] text-xs">{post.createdAt}</span>
+          <span className="text-[#8F99A8] text-xs">{timestamp}</span>
         </div>
 
         {/* POST TITLE */}
         <Link to={`/post/${post.id || "post-1"}`} state={{ post }} className="block">
           <h2 className="text-base sm:text-lg font-bold text-white mb-2 leading-snug hover:text-[#00D8F6] transition cursor-pointer">
-            {post.title}
+            {title}
           </h2>
         </Link>
 
         {/* CONTENT */}
-        {post.content && (
+        {content && (
           <p className="text-xs sm:text-sm text-[#C4C9D4] leading-relaxed mb-2">
-            {post.content}
+            {content}
           </p>
         )}
 
-        {/* PREVIEW SNIPPET */}
-        {post.previewSnippet && (
-          <div className="text-xs font-mono text-[#8F99A8] mb-3">
-            {post.previewSnippet}
+        {/* PREVIEW SNIPPET / SPECS HEADER */}
+        {sectionSnippet && (
+          <div className="text-xs font-mono text-[#8F99A8] mb-3 bg-[#161922] border border-[#222834] rounded-xl p-3">
+            {sectionSnippet}
           </div>
+        )}
+
+        {/* OPTIONAL POST IMAGE */}
+        {image && (
+          <Link
+            to={`/post/${post.id || "post-1"}`}
+            state={{ post }}
+            className="block rounded-xl overflow-hidden border border-[#222834] mb-3 max-h-[400px]"
+          >
+            <img
+              src={image}
+              alt={title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
+            />
+          </Link>
         )}
 
         {/* DIVIDER LINE */}
@@ -165,17 +232,25 @@ export function PostCard({
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[#8F99A8] hover:text-white hover:bg-[#161922] font-semibold text-xs transition cursor-pointer"
             >
               <MessageSquare className="w-4 h-4 stroke-[2]" />
-              <span>{post.commentsCount ?? 0} Comments</span>
+              <span>{commentsTotal} Comments</span>
             </Link>
 
             <button
-              onClick={() => {}}
+              onClick={handleShare}
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[#8F99A8] hover:text-white hover:bg-[#161922] font-semibold text-xs transition cursor-pointer"
             >
               <Share2 className="w-4 h-4 stroke-[2]" />
               <span>Share</span>
             </button>
           </div>
+
+          {/* POPULAR RIG BADGE */}
+          {isPopularRig && (
+            <span className="ml-auto flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg bg-[#F97316]/10 text-[#F97316] border border-[#F97316]/20">
+              <Award className="w-3 h-3" />
+              Popular Rig
+            </span>
+          )}
         </div>
       </div>
     </div>
