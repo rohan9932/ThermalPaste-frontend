@@ -69,6 +69,12 @@ export function Sidebar({ isOpen, onClose }) {
 
   return (
     <>
+      {/* Create Group Form Modal */}
+      <CreateGroupForm
+        isOpen={isCreateGroupOpen}
+        onClose={() => setIsCreateGroupOpen(false)}
+      />
+
       {/* Mobile Overlay Background Blur */}
       {isOpen && (
         <div
@@ -140,7 +146,6 @@ export function Sidebar({ isOpen, onClose }) {
           <div className="space-y-1">
             <button
               onClick={() => {
-                setIsCreateGroupOpen(true);
                 setIsCreateGroupOpen(true);
                 if (onClose) onClose(); // closes drawer automatically
               }}

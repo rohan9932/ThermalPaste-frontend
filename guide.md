@@ -34,6 +34,7 @@ _There are 3 people working on this project. Agents must track work separately f
 - [2026-08-21] Implemented `CreateGroupForm.jsx` (renamed from `CreateGroupModal.jsx`) and connected it to the "Create a Group" button in the Sidebar to allow users to create new communities with credentials (name, tagline, category, description, privacy).
 - [2026-08-21] Refactored `PostDetailsPage.jsx` to dynamically take post data directly from whichever post was clicked (via route state and params) without any dummy/mock database inside the page. Updated `PostCard.jsx` and `CommunitiesPage.jsx` to pass the clicked post data seamlessly and fixed HTML5 state cloning in CommunitiesPage.
 - [2026-08-21] Resolved merge conflicts in `CommunitiesPage.jsx`, incorporating updated card design while preserving dynamic clickable post card links and icon rendering.
+- [2026-08-22] Fixed "Create a Group" button in `Sidebar.jsx` by restoring the `<CreateGroupForm />` modal component rendering in the JSX tree.
 
 ### User 2 (Rohan)
 
