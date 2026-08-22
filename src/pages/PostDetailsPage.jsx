@@ -415,27 +415,6 @@ export default function PostDetailsPage() {
 
                     {/* Timestamp */}
                     <span className="text-[#8F99A8] text-xs">{post.createdAt}</span>
-
-                    {/* Hardware Tag Badges */}
-                    {post.hardwareTags && post.hardwareTags.length > 0 && (
-                      <>
-                        {post.hardwareTags.map((tag, i) => (
-                          <React.Fragment key={i}>
-                            <span className="text-[#8F99A8]/60 font-bold">•</span>
-                            <span
-                              className="px-1.5 py-0.5 rounded border text-[10px] font-mono font-semibold"
-                              style={{
-                                backgroundColor: "#00D8F610",
-                                borderColor: "#00D8F630",
-                                color: "#00D8F6",
-                              }}
-                            >
-                              {tag}
-                            </span>
-                          </React.Fragment>
-                        ))}
-                      </>
-                    )}
                   </div>
 
                   {/* Title */}

@@ -39,6 +39,7 @@ _There are 3 people working on this project. Agents must track work separately f
 - [2026-08-22] Added comment voting (`CommentItem` sub-component) to `PostDetailsPage.jsx` with independent upvote/downvote controls and score display matching post cards.
 - [2026-08-22] Added nested reply feature to comments in `PostDetailsPage.jsx` with inline reply forms, reply voting, and total discussion count calculation.
 - [2026-08-22] Enhanced comment reply button styling in `PostDetailsPage.jsx` with a distinct pill button layout, border accents, and active cyan highlights.
+- [2026-08-22] Removed PC hardware specs / component badges (e.g. RTX 4090, CPU names) from post card headers across `CommunitiesPage.jsx` and `PostDetailsPage.jsx` for a cleaner metadata row.
 
 ### User 2 (Rohan)
 
