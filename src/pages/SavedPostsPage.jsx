@@ -3,52 +3,12 @@ import { Link } from "react-router";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import PostCard from "../components/PostCard";
-import { Bookmark, Sparkles, Compass } from "lucide-react";
-
-// Mock list of initial saved/bookmarked posts for the active user
-const INITIAL_SAVED_POSTS = [
-  {
-    id: "post_3",
-    subGroup: "g/overclocking",
-    community: "g/overclocking",
-    authorname: "VoltageKing",
-    author: "VoltageKing",
-    authorAvatar: "/images/avatar.jpg",
-    createdAt: "Aug 14, 3:15 PM",
-    timestamp: "Aug 14, 3:15 PM",
-    title: "5.8GHz all-core on 7950X3D — full voltage & cooling breakdown",
-    content:
-      "Managed to hit 5.8GHz all-core stable with 1.45V. Running custom loop with dual 420mm rads. Cinebench R23 score: 42,800.",
-    sectionHeader: "### OC Settings...",
-    image: "/images/overclocking-cpu-benchmark-gaming-1.webp",
-    upvotes: 89,
-    commentsCount: 34,
-    isPopularRig: false,
-  },
-  {
-    id: "post_2",
-    subGroup: "g/watercooling",
-    community: "g/watercooling",
-    authorname: "LoopMaster",
-    author: "LoopMaster",
-    authorAvatar: "/images/avatar.jpg",
-    createdAt: "Aug 15, 8:30 PM",
-    timestamp: "Aug 15, 8:30 PM",
-    title:
-      "First hardline build — full EK Quantum loop with dual 360 radiators",
-    content:
-      "Took me 3 weekends but finally finished my first hardline custom loop. Temps are insane — 55°C on all-core stress.",
-    sectionHeader: "### Loop Specs...",
-    image: "/images/water-cooling-custom-loop-pc-build-1.jpg",
-    upvotes: 47,
-    commentsCount: 12,
-    isPopularRig: true,
-  },
-];
+import { Bookmark, Compass } from "lucide-react";
+import { getSavedPosts } from "../data/mockData";
 
 export default function SavedPostsPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [savedPosts, setSavedPosts] = useState(INITIAL_SAVED_POSTS);
+  const [savedPosts, setSavedPosts] = useState(getSavedPosts());
 
   return (
     <div className="min-h-screen bg-[#0B0D11] text-white flex flex-col">
