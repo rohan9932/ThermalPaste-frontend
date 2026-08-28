@@ -5,6 +5,7 @@ import ProfilePage from "./pages/ProfilePage";
 import CommunitiesPage from "./pages/CommunitiesPage";
 import CommunitiesListPage from "./pages/CommunitiesListPage";
 import PostDetailsPage from "./pages/PostDetailsPage";
+import SavedPostsPage from "./pages/SavedPostsPage";
 import { createBrowserRouter, RouterProvider } from "react-router";
 
 const router = createBrowserRouter([
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
   {
     path: "/profile",
     Component: ProfilePage,
+  },
+  {
+    path: "/saved",
+    Component: SavedPostsPage,
   },
   {
     path: "/communities",
