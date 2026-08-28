@@ -2,6 +2,7 @@ import { useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import PostCard from "../components/PostCard";
+import { POSTS } from "../data/mockData";
 
 function HomePage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -24,14 +25,9 @@ function HomePage() {
         >
           <div className="space-y-6">
             <div className="mx-auto max-w-4xl space-y-6">
-              <PostCard />
-              <PostCard />
-              <PostCard />
-              <PostCard />
-              <PostCard />
-              <PostCard />
-              <PostCard />
-              <PostCard />
+              {POSTS.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))}
             </div>
           </div>
         </main>
