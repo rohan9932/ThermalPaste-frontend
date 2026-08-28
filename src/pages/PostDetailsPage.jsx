@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useParams, useLocation, Link, useNavigate } from "react-router";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
+import { getPostById, COMMUNITY_ICON_MAP } from "../data/mockData";
 import {
   ArrowLeft,
   ArrowUp,
@@ -60,7 +61,9 @@ function CommentItem({ comment, onAddReply, isNested = false }) {
   return (
     <div
       className={`rounded-xl border border-[#222834] transition ${
-        isNested ? "p-3 bg-[#11141c]" : "p-3.5 sm:p-4 bg-[#161922] hover:border-[#2A3142]"
+        isNested
+          ? "p-3 bg-[#11141c]"
+          : "p-3.5 sm:p-4 bg-[#161922] hover:border-[#2A3142]"
       }`}
     >
       <div className="flex gap-3 sm:gap-3.5">
@@ -87,8 +90,8 @@ function CommentItem({ comment, onAddReply, isNested = false }) {
               voteState === "up"
                 ? "text-[#00D8F6]"
                 : voteState === "down"
-                ? "text-rose-400"
-                : "text-[#8F99A8]"
+                  ? "text-rose-400"
+                  : "text-[#8F99A8]"
             }`}
           >
             {voteCount}
@@ -191,23 +194,30 @@ export default function PostDetailsPage() {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Retrieve post data passed via navigation state, or construct a clean fallback template based on id
+  // Retrieve post data passed via navigation state, or fetch by ID from centralized mockData
   const passedPost = location.state?.post;
+  const fetchedPost = getPostById(id);
+  const rawPost = passedPost || fetchedPost;
 
   const post = {
-    id: id || passedPost?.id || "unknown",
-    title: passedPost?.title || `Post #${id}`,
-    content: passedPost?.content || "No additional text content provided for this post.",
-    author: passedPost?.author || passedPost?.authorname || "Community Member",
-    authorAvatar: passedPost?.authorAvatar || null,
-    subGroup: passedPost?.subGroup || passedPost?.community || "g/pcbuilders",
-    subGroupSlug: (passedPost?.subGroup || passedPost?.community || "pcbuilders").replace(/^g\//, ""),
-    createdAt: passedPost?.createdAt || passedPost?.timestamp || "Recently",
-    hardwareTags: passedPost?.hardwareTags || [],
-    sectionHeader: passedPost?.sectionHeader || passedPost?.previewSnippet || null,
-    image: passedPost?.image || null,
-    upvotes: passedPost?.upvotes ?? 1,
-    commentsCount: passedPost?.commentsCount ?? passedPost?.comments ?? 0,
+    id: id || rawPost?.id || "unknown",
+    title: rawPost?.title || `Post #${id}`,
+    content:
+      rawPost?.content || "No additional text content provided for this post.",
+    author: rawPost?.author || rawPost?.authorname || "Community Member",
+    authorAvatar: rawPost?.authorAvatar || null,
+    subGroup: rawPost?.subGroup || rawPost?.community || "g/pcbuilders",
+    subGroupSlug: (
+      rawPost?.subGroup ||
+      rawPost?.community ||
+      "pcbuilders"
+    ).replace(/^g\//, ""),
+    createdAt: rawPost?.createdAt || rawPost?.timestamp || "Recently",
+    sectionHeader: rawPost?.sectionHeader || rawPost?.previewSnippet || null,
+    image: rawPost?.image || null,
+    upvotes: rawPost?.upvotes ?? 1,
+    commentsCount: rawPost?.commentsCount ?? rawPost?.comments ?? 0,
+    isPopularRig: rawPost?.isPopularRig || false,
   };
 
   // Voting state initialized from the post's vote count
@@ -249,7 +259,8 @@ export default function PostDetailsPage() {
       id: "comment-2",
       author: "RigMaster",
       time: "1 hour ago",
-      content: "Clean aesthetics and great thermals. What paste compound did you use for the cooler mount?",
+      content:
+        "Clean aesthetics and great thermals. What paste compound did you use for the cooler mount?",
       upvotes: 2,
       replies: [],
     },
@@ -259,7 +270,7 @@ export default function PostDetailsPage() {
   // Calculate total comments + replies count
   const totalCommentsCount = comments.reduce(
     (acc, c) => acc + 1 + (c.replies ? c.replies.length : 0),
-    0
+    0,
   );
 
   const handleAddComment = (e) => {
@@ -297,7 +308,7 @@ export default function PostDetailsPage() {
           };
         }
         return c;
-      })
+      }),
     );
   };
 
@@ -357,8 +368,8 @@ export default function PostDetailsPage() {
                       vote === "up"
                         ? "text-[#00D8F6]"
                         : vote === "down"
-                        ? "text-rose-400"
-                        : "text-[#8F99A8]"
+                          ? "text-rose-400"
+                          : "text-[#8F99A8]"
                     }`}
                   >
                     {voteCount}
@@ -414,7 +425,9 @@ export default function PostDetailsPage() {
                     <span className="text-[#8F99A8]/60 font-bold">•</span>
 
                     {/* Timestamp */}
-                    <span className="text-[#8F99A8] text-xs">{post.createdAt}</span>
+                    <span className="text-[#8F99A8] text-xs">
+                      {post.createdAt}
+                    </span>
                   </div>
 
                   {/* Title */}
