@@ -4,136 +4,13 @@ import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import CreatePostForm from "../components/CreatePostForm";
 import PostCard from "../components/PostCard";
+import { LayoutGrid, Boxes } from "lucide-react";
 import {
-  Search,
-  Flame,
-  MessageCircle,
-  Share2,
-  Cpu,
-  Monitor,
-  Droplet,
-  Gamepad2,
-  Laptop,
-  Tag,
-  ArrowUp,
-  ArrowDown,
-  LayoutGrid,
-  TrendingUp,
-  Award,
-} from "lucide-react";
+  getPostsByCommunity,
+  getCommunityById,
+  COMMUNITY_ICON_MAP,
+} from "../data/mockData";
 
-const SUB_GROUPS = [
-  { id: "battlestations", name: "g/battlestations", icon: Monitor },
-  { id: "watercooling", name: "g/watercooling", icon: Droplet },
-  { id: "gpuhype", name: "g/gpuhype", icon: Gamepad2 },
-  { id: "overclocking", name: "g/overclocking", icon: Flame },
-  { id: "pcbuilders", name: "g/pcbuilders", icon: Laptop },
-  { id: "techdeals", name: "g/techdeals", icon: Tag },
-];
-
-const COMMUNITY_ICON_MAP = {};
-SUB_GROUPS.forEach((group) => {
-  COMMUNITY_ICON_MAP[group.name] = group.icon;
-});
-
-const POSTS = [
-  {
-    id: "post_1",
-    community: "g/battlestations",
-    communityColor: "#00D8F6",
-    author: "SFF_Enthusiast",
-    authorAvatar: "/images/avatar.jpg",
-    timestamp: "Aug 16, 12:45 AM",
-    title: "Clean Walnut & SFF Setup. Tucked away 9.9L Fractal Terra",
-    content:
-      "I wanted a distraction-free home office workspace that could double as a decent 1440p gaming machine at night.",
-    sectionHeader: "### Setup Gear...",
-    image: "/images/small-form-factor-mini-itx-pc-case-build-1.webp",
-    upvotes: 4,
-    comments: 0,
-    isPopularRig: true,
-  },
-  {
-    id: "post_2",
-    community: "g/watercooling",
-    communityColor: "#3B82F6",
-    author: "LoopMaster",
-    authorAvatar: "/images/avatar.jpg",
-    timestamp: "Aug 15, 8:30 PM",
-    title:
-      "First hardline build — full EK Quantum loop with dual 360 radiators",
-    content:
-      "Took me 3 weekends but finally finished my first hardline custom loop. Temps are insane — 55°C on all-core stress.",
-    sectionHeader: "### Loop Specs...",
-    image: "/images/water-cooling-custom-loop-pc-build-1.jpg",
-    upvotes: 47,
-    comments: 12,
-    isPopularRig: true,
-  },
-  {
-    id: "post_3",
-    community: "g/overclocking",
-    communityColor: "#FB923C",
-    author: "VoltageKing",
-    authorAvatar: "/images/avatar.jpg",
-    timestamp: "Aug 14, 3:15 PM",
-    title: "5.8GHz all-core on 7950X3D — full voltage & cooling breakdown",
-    content:
-      "Managed to hit 5.8GHz all-core stable with 1.45V. Running custom loop with dual 420mm rads. Cinebench R23 score: 42,800.",
-    sectionHeader: "### OC Settings...",
-    image: "/images/overclocking-cpu-benchmark-gaming-1.webp",
-    upvotes: 89,
-    comments: 34,
-  },
-  {
-    id: "post_4",
-    community: "g/gpuhype",
-    communityColor: "#A78BFA",
-    author: "GPUBeliever",
-    authorAvatar: "/images/avatar.jpg",
-    timestamp: "Aug 13, 11:00 AM",
-    title: "RTX 5090 FE vs RX 9070 XT — first real-world benchmarks",
-    content:
-      "Finally got both cards side by side. RTX 5090 is about 35% faster in rasterization but the 9070 XT is incredible value.",
-    sectionHeader: "### Benchmark Results...",
-    image: "/images/gpu-graphics-card-rtx-nvidia-1.webp",
-    upvotes: 156,
-    comments: 67,
-    isPopularRig: true,
-  },
-  {
-    id: "post_5",
-    community: "g/pcbuilders",
-    communityColor: "#34D399",
-    author: "BuildLogger",
-    authorAvatar: "/images/avatar.jpg",
-    timestamp: "Aug 12, 6:45 PM",
-    title: "Complete AM5 build guide — from parts to Windows in 8 hours",
-    content:
-      "Thought I'd share my step-by-step process for anyone building their first AM5 system. Including BIOS tips and thermal paste application.",
-    sectionHeader: "### Parts List...",
-    image: "/images/pc-build-guide-step-by-step-tutorial-1.jpg",
-    upvotes: 203,
-    comments: 45,
-    isPopularRig: true,
-  },
-  {
-    id: "post_6",
-    community: "g/techdeals",
-    communityColor: "#FBBF24",
-    author: "DealHunter",
-    authorAvatar: "/images/avatar.jpg",
-    timestamp: "Aug 11, 2:20 PM",
-    title: "RTX 4070 SUPER drops to $549 — best GPU value right now?",
-    content:
-      "Newegg has the RTX 4070 SUPER at $549 after rebate. Going through for me. Anyone else pulling the trigger?",
-    image: "/images/gpu-graphics-card-rtx-nvidia-2.webp",
-    upvotes: 78,
-    comments: 23,
-  },
-];
-
-// ─── CommunitiesPage Component ────────────────────────────────────────────────
 export default function CommunitiesPage() {
   const { groupId } = useParams();
   const displayGroupId = groupId || "battlestations";
@@ -141,42 +18,16 @@ export default function CommunitiesPage() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
-  const [sortBy, setSortBy] = useState("newest");
-  const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredPosts = POSTS.filter(
-    (post) => post.community === `g/${displayGroupId}`,
-  );
+  // Fetch community data and matching posts by community identifier
+  const communityInfo = getCommunityById(displayGroupId);
+  const posts = getPostsByCommunity(displayGroupId);
 
-  // Sort options array — rendered as buttons in the sort bar.
-  // Each option has an id, label, and icon.
-  const SORT_OPTIONS = [
-    {
-      id: "newest",
-      label: "Newest",
-      // Inline SVG clock icon (no Lucide equivalent available).
-      icon: (
-        <svg
-          className="w-3.5 h-3.5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="12" cy="12" r="10" />
-          <polyline points="12 6 12 12 16 14" />
-        </svg>
-      ),
-    },
-    { id: "hot", label: "Hot", icon: <Flame className="w-3.5 h-3.5" /> },
-    {
-      id: "top",
-      label: "Top Rated",
-      icon: <TrendingUp className="w-3.5 h-3.5" />,
-    },
-  ];
+  const CommunityIcon =
+    COMMUNITY_ICON_MAP[displayGroupName] ||
+    COMMUNITY_ICON_MAP[displayGroupId] ||
+    communityInfo?.icon ||
+    Boxes;
 
   return (
     <div className="min-h-screen bg-[#0B0D11] text-white flex flex-col">
@@ -207,10 +58,8 @@ export default function CommunitiesPage() {
         >
           <div className="space-y-6">
             <div className="mx-auto max-w-4xl space-y-6">
-              {/* Community Header Card ────────────────────────────────────────
-                            Showcases the featured community (g/battlestations).
-                            Posts Count badge dynamically displays the total number of posts. */}
-              <div className="rounded-2xl border border-tp-border bg-tp-card p-5 mb-4">
+              {/* Community Header Card */}
+              <div className="rounded-2xl border border-[#222834] bg-[#0F1117] p-5 sm:p-6 mb-4">
                 <div className="flex flex-col lg:flex-row items-start gap-4">
                   {/* Community icon badge */}
                   <div
@@ -221,41 +70,37 @@ export default function CommunitiesPage() {
                       color: "#00D8F6",
                     }}
                   >
-                    {COMMUNITY_ICON_MAP[`g/${displayGroupId}`]
-                      ? React.createElement(
-                          COMMUNITY_ICON_MAP[`g/${displayGroupId}`],
-                          { className: "w-6 h-6" },
-                        )
-                      : null}
+                    <CommunityIcon className="w-6 h-6" />
                   </div>
+
                   {/* Community name, tagline, and description */}
                   <div className="flex-1 min-w-0">
                     <h2 className="text-xl font-bold text-white">
-                      {displayGroupName}
+                      {communityInfo ? communityInfo.name : displayGroupName}
                     </h2>
-                    <p className="text-sm text-tp-accent font-semibold">
-                      Battlestations & Setups
+                    <p className="text-sm text-[#00D8F6] font-semibold mt-0.5">
+                      {communityInfo ? communityInfo.topic : "Tech Community"}
                     </p>
-                    <p className="text-xs text-[#8F99A8] leading-relaxed">
-                      Show off your clean desk space, cable management, RGB
-                      setups, speaker systems, and ergonomics. High-end PC rooms
-                      and minimalist desks.
+                    <p className="text-xs text-[#8F99A8] leading-relaxed mt-1">
+                      {communityInfo
+                        ? communityInfo.description
+                        : "Join the discussion, share your benchmarks, rigs, questions, and guides."}
                     </p>
                   </div>
+
                   {/* Posts count + Write Post action */}
                   <div className="flex items-center gap-3 flex-shrink-0">
-                    {/* Dynamic post count — reads from POSTS array length */}
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-tp-input border border-tp-border text-xs text-tp-secondary">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#161922] border border-[#222834] text-xs text-[#8F99A8]">
                       <LayoutGrid className="w-3.5 h-3.5" />
                       <span>Posts Count:</span>
                       <span className="font-bold text-white">
-                        {filteredPosts.length}
+                        {posts.length}
                       </span>
                     </div>
-                    {/* Write Post button */}
+
                     <button
                       onClick={() => setIsCreatePostOpen(true)}
-                      className="px-4 py-2 rounded-xl bg-white text-tp-bg text-xs font-bold transition-all hover:bg-gray-200 cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-white text-[#0B0D11] text-xs font-bold transition-all hover:bg-gray-200 cursor-pointer"
                     >
                       Write Post here
                     </button>
@@ -263,40 +108,14 @@ export default function CommunitiesPage() {
                 </div>
               </div>
 
-              {/* Sort Bar ─────────────────────────────────────────────────────
-                            Three sort options: Newest, Hot, Top Rated.
-                            Active button gets an accent-colored highlight.
-                            Note: actual sorting logic is not yet implemented. */}
-              <div className="rounded-2xl border border-tp-border bg-tp-card p-3 mb-4 flex items-center gap-2 flex-wrap">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-tp-muted px-2">
-                  Sort Rig Log:
-                </span>
-                {SORT_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.id}
-                    onClick={() => setSortBy(opt.id)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                      sortBy === opt.id
-                        ? "bg-tp-accent/10 text-tp-accent border border-tp-accent/20"
-                        : "text-tp-secondary hover:text-white hover:bg-tp-input border border-transparent"
-                    }`}
-                  >
-                    {opt.icon}
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Posts Feed ───────────────────────────────────────────────────
-                            Renders each post from the POSTS array as a PostCard.
-                            Each PostCard manages its own vote state independently.      */}
+              {/* Posts Feed */}
               <div className="space-y-4">
-                {filteredPosts.map((post) => (
+                {posts.map((post) => (
                   <PostCard key={post.id} post={post} />
                 ))}
-                {filteredPosts.length === 0 && (
-                  <div className="text-center py-12 text-tp-secondary text-sm">
-                    No posts found in this community yet.
+                {posts.length === 0 && (
+                  <div className="rounded-2xl border border-[#222834] bg-[#0F1117] py-12 text-center text-[#8F99A8] text-sm">
+                    No posts found in this community yet. Be the first to share!
                   </div>
                 )}
               </div>
