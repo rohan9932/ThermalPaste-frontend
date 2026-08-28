@@ -7,24 +7,9 @@ import {
   Share2,
   CircleUserRound,
   Boxes,
-  Monitor,
-  Droplet,
-  Gamepad2,
-  Flame,
-  Laptop,
-  Tag,
   Award,
 } from "lucide-react";
-
-// Community to Lucide icon mapping
-const COMMUNITY_ICON_MAP = {
-  "g/battlestations": Monitor,
-  "g/watercooling": Droplet,
-  "g/gpuhype": Gamepad2,
-  "g/overclocking": Flame,
-  "g/pcbuilders": Laptop,
-  "g/techdeals": Tag,
-};
+import { COMMUNITY_ICON_MAP } from "../data/mockData";
 
 const DEFAULT_POST = {
   id: "post-1",
@@ -56,8 +41,12 @@ export function PostCard({ post = DEFAULT_POST }) {
   const authorAvatar = post.authorAvatar || null;
   const isPopularRig = post.isPopularRig || false;
 
-  // Derive SubGroup Icon
-  const SubIcon = COMMUNITY_ICON_MAP[subGroupName] || post.subGroupIcon || Boxes;
+  // Derive SubGroup Icon from centralized icon map
+  const SubIcon =
+    COMMUNITY_ICON_MAP[subGroupName] ||
+    COMMUNITY_ICON_MAP[subGroupSlug] ||
+    post.subGroupIcon ||
+    Boxes;
 
   // Local voting state
   const [voteState, setVoteState] = useState(null);
@@ -90,7 +79,9 @@ export function PostCard({ post = DEFAULT_POST }) {
   const handleShare = (e) => {
     e.stopPropagation();
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(`${window.location.origin}/post/${post.id || "post-1"}`);
+      navigator.clipboard.writeText(
+        `${window.location.origin}/post/${post.id || "post-1"}`,
+      );
       alert("Post link copied to clipboard!");
     }
   };
@@ -120,8 +111,8 @@ export function PostCard({ post = DEFAULT_POST }) {
             voteState === "up"
               ? "text-[#00D8F6]"
               : voteState === "down"
-              ? "text-rose-400"
-              : "text-[#8F99A8]"
+                ? "text-rose-400"
+                : "text-[#8F99A8]"
           }`}
         >
           {upvoteCount}
@@ -181,7 +172,11 @@ export function PostCard({ post = DEFAULT_POST }) {
         </div>
 
         {/* POST TITLE */}
-        <Link to={`/post/${post.id || "post-1"}`} state={{ post }} className="block">
+        <Link
+          to={`/post/${post.id || "post-1"}`}
+          state={{ post }}
+          className="block"
+        >
           <h2 className="text-base sm:text-lg font-bold text-white mb-2 leading-snug hover:text-[#00D8F6] transition cursor-pointer">
             {title}
           </h2>
