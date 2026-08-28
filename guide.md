@@ -44,6 +44,10 @@ _There are 3 people working on this project. Agents must track work separately f
 - [2026-08-22] Consolidated post card rendering to a single shared `PostCard.jsx` component (`src/components/PostCard.jsx`). Removed duplicate `PostCard` and `AvatarFallback` definitions from `CommunitiesPage.jsx` and verified unified usage across `HomePage.jsx` and `CommunitiesPage.jsx`.
 - [2026-08-22] Audited entire project and documented prioritized list of suggested edits and improvements under Suggested Project Tracking.
 - [2026-08-28] Implemented `SavedPostsPage.jsx` and registered `/saved` route in `App.jsx`. Updated `Sidebar.jsx` with a direct navigation link and active route highlight for the Saved menu item.
+- [2026-08-28] Implemented real-time interactive search popup dropdown in `Navbar.jsx` with real-time multi-section filtering across communities, posts/threads, and users, complete with clear buttons and click-outside dismissal.
+- [2026-08-28] Centralized all mock posts, communities, and user data into `src/data/mockData.js` with fetch helpers (`getPostById`, `getPostsByCommunity`, `getCommunityById`, `getSavedPosts`). Refactored all pages and components (`Navbar`, `Sidebar`, `PostCard`, `CreatePostForm`, `CommunitiesPage`, `CommunitiesListPage`, `PostDetailsPage`, `SavedPostsPage`, `HomePage`) to eliminate duplicate data bloat.
+- [2026-08-28] Removed sort bar and sorting state from `CommunitiesPage.jsx` for a cleaner, unified feed view.
+- [2026-08-28] Updated `ProfilePage.jsx` recent activity feed: replaced all `r/` prefixes with standard `g/` sub-groups and rendered active, styled router `Link`s for all communities.
 
 ### User 2 (Rohan)
 
@@ -73,14 +77,13 @@ _To keep things clean, use these sections to track ongoing work without needing 
 
 ### 💡 Suggested Edits & Improvements
 
-1. **Diverse HomePage Feed**: Pass varied post data to `HomePage.jsx` instead of repeating default cards.
-2. **Direct Post URL Lookup**: Match post ID in `PostDetailsPage.jsx` when loaded directly via URL without route state.
-3. **Sidebar Dynamic States**: Highlight active sub-group based on URL pathname and calculate post counts dynamically.
+1. ~~**Diverse HomePage Feed**: Pass varied post data to `HomePage.jsx` instead of repeating default cards.~~ *(Completed)*
+2. ~~**Direct Post URL Lookup**: Match post ID in `PostDetailsPage.jsx` when loaded directly via URL without route state.~~ *(Completed)*
+3. ~~**Sidebar Dynamic States**: Highlight active sub-group based on URL pathname and calculate post counts dynamically.~~ *(Completed)*
 4. ~~**Saved Posts Route**: Implement `/saved` bookmark feed.~~ *(Completed)*
-5. **CommunitiesPage Sorting**: Connect "Newest", "Hot", "Top" sort buttons to reorder posts dynamically.
-6. **Navbar Search**: Add client-side query filtering for posts and communities.
-7. **Profile Activity Links**: Change `r/` prefix to `g/` and link to respective sub-groups.
-8. **Auth State Switch**: Add guest (login/register) vs logged-in state toggle in Navbar.
+5. ~~**Navbar Search**: Add client-side query filtering for posts and communities.~~ *(Completed)*
+6. ~~**Profile Activity Links**: Change `r/` prefix to `g/` and link to respective sub-groups.~~ *(Completed)*
+7. **Auth State Switch**: Add guest (login/register) vs logged-in state toggle in Navbar.
 
 ### 🐛 Known Issues / Tech Debt
 

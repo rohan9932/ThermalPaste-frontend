@@ -1,15 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { X, PlusCircle, Image, FileText, LayoutGrid, Sparkles } from "lucide-react";
+import { X, PlusCircle, Sparkles } from "lucide-react";
+import { SUB_GROUPS } from "../data/mockData";
 
-const COMMUNITY_OPTIONS = [
-  { id: "g/battlestations", name: "g/battlestations (Setups & Desks)" },
-  { id: "g/pcbuilders", name: "g/pcbuilders (Builds & Advice)" },
-  { id: "g/watercooling", name: "g/watercooling (Custom Loops)" },
-  { id: "g/overclocking", name: "g/overclocking (Tuning & Benchmarks)" },
-  { id: "g/gpuhype", name: "g/gpuhype (Graphics Cards & News)" },
-  { id: "g/techdeals", name: "g/techdeals (Discounts & Sales)" },
-];
+const COMMUNITY_OPTIONS = SUB_GROUPS.map((g) => ({
+  id: g.name,
+  name: `${g.name} (${g.topic})`,
+}));
 
 export function CreatePostForm({
   isOpen,
@@ -119,7 +116,11 @@ export function CreatePostForm({
                 className="w-full bg-[#161922] text-sm text-white px-3.5 py-2.5 rounded-xl border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all cursor-pointer"
               >
                 {COMMUNITY_OPTIONS.map((opt) => (
-                  <option key={opt.id} value={opt.id} className="bg-[#0F1117] text-white">
+                  <option
+                    key={opt.id}
+                    value={opt.id}
+                    className="bg-[#0F1117] text-white"
+                  >
                     {opt.name}
                   </option>
                 ))}
@@ -160,7 +161,8 @@ export function CreatePostForm({
           {/* Section Header / Snippet (Optional) */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#8F99A8] mb-1.5">
-              Specs Snippet / Sub-header <span className="text-gray-500 font-normal">(Optional)</span>
+              Specs Snippet / Sub-header{" "}
+              <span className="text-gray-500 font-normal">(Optional)</span>
             </label>
             <input
               type="text"
@@ -174,7 +176,8 @@ export function CreatePostForm({
           {/* Image URL (Optional) */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#8F99A8] mb-1.5">
-              Image URL <span className="text-gray-500 font-normal">(Optional)</span>
+              Image URL{" "}
+              <span className="text-gray-500 font-normal">(Optional)</span>
             </label>
             <input
               type="url"
