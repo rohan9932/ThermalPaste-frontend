@@ -19,9 +19,7 @@ function LoginPage() {
     setIsLoading(true);
 
     try {
-      const data = await login({ identifier, password });
-      const user = data.user || { username: identifier };
-      localStorage.setItem("user", JSON.stringify(user));
+      await login({ identifier, password });
       navigate("/");
     } catch (err) {
       setError(err.data?.message || err.message || "Login failed");

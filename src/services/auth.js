@@ -1,4 +1,4 @@
-import { api } from "./api.js";
+import api from "./api.js";
 
 export async function login({ identifier, password }) {
   const payload = { password };
@@ -16,10 +16,5 @@ export async function register({ username, email, password }) {
 
 export async function logout() {
   const data = await api.post("/logout");
-  return data;
-}
-
-export async function getCurrentUser() {
-  const data = await api.get("/user/me");
   return data;
 }

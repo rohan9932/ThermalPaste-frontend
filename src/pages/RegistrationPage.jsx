@@ -32,9 +32,7 @@ function RegistrationPage() {
 
     setIsLoading(true);
     try {
-      const data = await register({ username, email, password });
-      const user = data.user || { username, email };
-      localStorage.setItem("user", JSON.stringify(user));
+      await register({ username, email, password });
       navigate("/");
     } catch (err) {
       setError(err.data?.message || err.message || "Registration failed");
