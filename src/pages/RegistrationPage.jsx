@@ -1,9 +1,9 @@
 import { ArrowRight, Eye, EyeOff, Lock, Mail, User, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router";
+import { register } from "../services/auth.js";
 
 function RegistrationPage() {
-  // controlled component state
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -11,22 +11,36 @@ function RegistrationPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      setError("Passwords do not match!");
       return;
     }
-    console.log("Registered user:", {
-      username,
-      email,
-      password,
-      agreeToTerms,
-    });
-    navigate("/");
+
+    if (!agreeToTerms) {
+      setError("You must agree to the terms.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const data = await register({ username, email, password });
+      const user = data.user || { username, email };
+      localStorage.setItem("user", JSON.stringify(user));
+      navigate("/");
+    } catch (err) {
+      setError(err.data?.message || err.message || "Registration failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -41,6 +55,12 @@ function RegistrationPage() {
             Create a new account to get started
           </p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs text-center">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Username Field */}
@@ -174,7 +194,6 @@ function RegistrationPage() {
               className="ml-2 text-sm text-[#8F99A8] cursor-pointer select-none"
             >
               I agree to the{" "}
-              {/* need to switch with NavLink later */}
               <a href="#" className="text-[#00D8F6] hover:underline">
                 Terms of Service
               </a>{" "}
@@ -188,9 +207,10 @@ function RegistrationPage() {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-2 bg-[#00D8F6] hover:bg-[#00c4e0] text-[#0B0D11] font-bold text-sm uppercase tracking-wider py-3.5 px-4 rounded-xl transition-all duration-200 shadow-[0_0_15px_rgba(0,216,246,0.25)] active:scale-[0.98] cursor-pointer"
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-2 bg-[#00D8F6] hover:bg-[#00c4e0] text-[#0B0D11] font-bold text-sm uppercase tracking-wider py-3.5 px-4 rounded-xl transition-all duration-200 shadow-[0_0_15px_rgba(0,216,246,0.25)] active:scale-[0.98] cursor-pointer disabled:opacity-50"
           >
-            <span>Create Account</span>
+            <span>{isLoading ? "Creating Account..." : "Create Account"}</span>
             <UserPlus className="w-4 h-4 stroke-[2.5]" />
           </button>
         </form>
@@ -198,8 +218,7 @@ function RegistrationPage() {
         {/* Login page routing */}
         <div className="mt-8 text-center border-t border-[#222834] pt-6">
           <p className="text-sm text-[#8F99A8]">
-            Already have an account? 
-            {/* will update to NavLink */}
+            Already have an account?{" "}
             <NavLink
               to="/login"
               className="text-[#00D8F6] font-semibold hover:underline inline-flex items-center gap-1 transition-all ml-1"

@@ -1,20 +1,33 @@
 import { ArrowRight, Eye, EyeOff, Lock, LogIn, User } from "lucide-react";
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router";
+import { login } from "../services/auth.js";
 
 function LoginPage() {
-  // controlled component
-  const [usernameOrEmail, setUsernameOrEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Logging in with:", { usernameOrEmail, password, rememberMe });
-    navigate("/");
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const data = await login({ identifier, password });
+      const user = data.user || { username: identifier };
+      localStorage.setItem("user", JSON.stringify(user));
+      navigate("/");
+    } catch (err) {
+      setError(err.data?.message || err.message || "Login failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -30,11 +43,17 @@ function LoginPage() {
           </p>
         </div>
 
+        {error && (
+          <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs text-center">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Username / Email Field */}
           <div>
             <label
-              htmlFor="usernameOrEmail"
+              htmlFor="identifier"
               className="block text-xs font-semibold uppercase tracking-wider text-[#8F99A8] mb-2"
             >
               Username or Email
@@ -42,11 +61,11 @@ function LoginPage() {
             <div className="relative flex items-center">
               <User className="w-5 h-5 text-[#8F99A8] absolute left-3.5 pointer-events-none" />
               <input
-                id="usernameOrEmail"
+                id="identifier"
                 type="text"
                 required
-                value={usernameOrEmail}
-                onChange={(e) => setUsernameOrEmail(e.target.value)}
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
                 placeholder="Enter your username or email"
                 className="w-full bg-[#161922] text-sm text-white placeholder-[#8F99A8] pl-11 pr-4 py-3 rounded-xl border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all duration-200"
               />
@@ -62,7 +81,6 @@ function LoginPage() {
               >
                 Password
               </label>
-              {/* need to update to api call Later */}
               <a
                 href="#"
                 className="text-xs text-[#00D8F6] hover:underline transition-all"
@@ -116,9 +134,10 @@ function LoginPage() {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-2 bg-[#00D8F6] hover:bg-[#00c4e0] text-[#0B0D11] font-bold text-sm uppercase tracking-wider py-3.5 px-4 rounded-xl transition-all duration-200 shadow-[0_0_15px_rgba(0,216,246,0.25)] active:scale-[0.98] cursor-pointer"
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-2 bg-[#00D8F6] hover:bg-[#00c4e0] text-[#0B0D11] font-bold text-sm uppercase tracking-wider py-3.5 px-4 rounded-xl transition-all duration-200 shadow-[0_0_15px_rgba(0,216,246,0.25)] active:scale-[0.98] cursor-pointer disabled:opacity-50"
           >
-            <span>Sign In</span>
+            <span>{isLoading ? "Signing in..." : "Sign In"}</span>
             <LogIn className="w-4 h-4 stroke-[2.5]" />
           </button>
         </form>
@@ -126,7 +145,7 @@ function LoginPage() {
         {/* Registration page routing */}
         <div className="mt-8 text-center border-t border-[#222834] pt-6">
           <p className="text-sm text-[#8F99A8]">
-            Don't have an account? {/* will update to NavLink */}
+            Don't have an account?{" "}
             <NavLink
               to="/register"
               className="text-[#00D8F6] font-semibold hover:underline inline-flex items-center gap-1 transition-all ml-1"
