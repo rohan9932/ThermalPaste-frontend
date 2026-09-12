@@ -1,6 +1,6 @@
 import { ArrowRight, Eye, EyeOff, Lock, Mail, User, UserPlus } from "lucide-react";
 import { useState } from "react";
-import { NavLink, useNavigate } from "react-router";
+import { NavLink, useNavigate } from "react-router-dom";
 import { register } from "../services/auth.js";
 
 function RegistrationPage() {

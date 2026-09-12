@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useParams, useLocation, Link, useNavigate } from "react-router";
+import { useParams, useLocation, Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import { getPostById, COMMUNITY_ICON_MAP } from "../data/mockData";

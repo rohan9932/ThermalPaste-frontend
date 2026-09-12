@@ -2,7 +2,7 @@
 // Displays the user's profile settings, PC build specs, activity stats, and recent activity feed.
 
 import React, { useState } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import {

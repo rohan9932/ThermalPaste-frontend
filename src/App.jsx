@@ -6,28 +6,50 @@ import CommunitiesPage from "./pages/CommunitiesPage";
 import CommunitiesListPage from "./pages/CommunitiesListPage";
 import PostDetailsPage from "./pages/PostDetailsPage";
 import SavedPostsPage from "./pages/SavedPostsPage";
-import { createBrowserRouter, RouterProvider } from "react-router";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicOnlyRoute from "./components/PublicOnlyRoute";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    Component: HomePage,
+    element: (
+      <ProtectedRoute>
+        <HomePage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/login",
-    Component: LoginPage,
+    element: (
+      <PublicOnlyRoute>
+        <LoginPage />
+      </PublicOnlyRoute>
+    ),
   },
   {
     path: "/register",
-    Component: RegistrationPage,
+    element: (
+      <PublicOnlyRoute>
+        <RegistrationPage />
+      </PublicOnlyRoute>
+    ),
   },
   {
     path: "/profile",
-    Component: ProfilePage,
+    element: (
+      <ProtectedRoute>
+        <ProfilePage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/saved",
-    Component: SavedPostsPage,
+    element: (
+      <ProtectedRoute>
+        <SavedPostsPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/communities",
@@ -42,7 +64,6 @@ const router = createBrowserRouter([
     Component: PostDetailsPage,
   },
 ]);
-
 
 function App() {
   return (

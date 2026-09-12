@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { X, Users, Globe, Shield, Sparkles } from "lucide-react";
 
 export function CreateGroupForm({ isOpen, onClose }) {

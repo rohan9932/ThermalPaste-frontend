@@ -8,12 +8,15 @@ import {
   FileText,
   User,
 } from "lucide-react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import CreatePostForm from "./CreatePostForm";
 import { SUB_GROUPS, POSTS, SEARCH_USERS } from "../data/mockData";
 
 function Navbar({ onToggleSidebar, isSidebarOpen }) {
+  const { user, isLoading } = useAuth();
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchRef = useRef(null);
@@ -247,29 +250,40 @@ function Navbar({ onToggleSidebar, isSidebarOpen }) {
         </div>
 
         {/* ACTION ICONS & USER PROFILE */}
-        <div className="flex items-center gap-x-3 sm:gap-2 shrink-0">
-          {/* CREATE POST */}
-          <button
-            onClick={() => setIsCreatePostOpen(true)}
-            className="flex items-center gap-1.5 bg-[#00D8F6] hover:bg-[#00c4e0] text-[#0B0D11] text-xs
-            font-bold px-3 py-1.5 rounded-full transition shadow-[0_0_12px_rgba(0,216,246,0.25)] 
-            active:scale-95 cursor-pointer"
-          >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span className="hidden md:inline uppercase tracking-wider text-[11px]">
-              Create
-            </span>
-          </button>
-
-          {/* USER AVATAR */}
-          <Link
-            to="/profile"
-            className="relative ml-1 p-0.5 rounded-full hover:ring-2 hover:ring-[#00D8F6]/50 transition cursor-pointer block"
-          >
-            <div className="w-8 h-8 rounded-full bg-emerald-900 border border-emerald-500/40 flex items-center justify-center text-xs font-bold text-emerald-200">
-              <UserRoundCog className="w-4 h-4 stroke-[2.5]" />
+        <div className="flex items-center gap-x-2 sm:gap-2 shrink-0">
+          {isLoading ? (
+            <div className="w-20 h-8 rounded-full bg-[#161922] animate-pulse" />
+          ) : user ? (
+            <>
+              {/* CREATE POST */}
+              <button
+                onClick={() => setIsCreatePostOpen(true)}
+                className="flex items-center gap-1.5 bg-[#00D8F6] hover:bg-[#00c4e0] text-[#0B0D11] text-xs
+                font-bold px-3 py-1.5 rounded-full transition shadow-[0_0_12px_rgba(0,216,246,0.25)] 
+                active:scale-95 cursor-pointer"
+              >
+                <Plus className="w-4 h-4 stroke-[2.5]" />
+                <span className="hidden md:inline uppercase tracking-wider text-[11px]">
+                  Create
+                </span>
+              </button>
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/login"
+                className="text-xs font-semibold text-[#8F99A8] hover:text-white px-3 py-1.5 rounded-lg hover:bg-[#161922] transition cursor-pointer"
+              >
+                Log In
+              </Link>
+              <Link
+                to="/register"
+                className="bg-[#00D8F6] hover:bg-[#00c4e0] text-[#0B0D11] text-xs font-bold px-3.5 py-1.5 rounded-full transition shadow-[0_0_12px_rgba(0,216,246,0.25)] active:scale-95 cursor-pointer"
+              >
+                Sign Up
+              </Link>
             </div>
-          </Link>
+          )}
         </div>
       </header>
     </>
