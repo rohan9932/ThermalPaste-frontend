@@ -26,15 +26,26 @@ export function AuthProvider({ children }) {
     queryClient.removeQueries({ queryKey: ["me"] });
   };
 
-  // User is only valid if query succeeded AND returned data.
-  // If getMe threw (401), error is set and data is undefined.
-  const user = (!error && data) ? data : null;
+  // Distinguish between:
+  //   • 401 error → not authenticated, user = null (normal for logged-out visitors)
+  //   • Network/5xx error → server issue, treat as not authenticated but
+  //     expose the error so components can show an appropriate state
+  //   • No error + data → authenticated, user = data
+  const is401 =
+    error?.response?.status === 401 ||
+    error?.response?.data?.status === 401;
+
+  // User is valid only if the query succeeded with real data
+  const user = !error && data ? data : null;
+
+  // Expose whether the error is a real server/network fault (not a normal 401)
+  const authError = error && !is401 ? error : null;
 
   const value = {
     user,
     isLoading,
     isFetching,
-    error,
+    error: authError, // only real errors, not "not logged in"
     refetch,
     logout,
   };

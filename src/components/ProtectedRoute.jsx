@@ -1,10 +1,10 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 function ProtectedRoute({ children }) {
   const { user, isLoading } = useAuth();
+  const location = useLocation();
 
-  // Show spinner while checking auth status with the server
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#0B0D11] flex items-center justify-center">
@@ -13,9 +13,9 @@ function ProtectedRoute({ children }) {
     );
   }
 
-  // No valid user = redirect to login
   if (!user) {
-    return <Navigate to="/login" replace />;
+    // Pass the attempted path so LoginPage can redirect back after login
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
   return children ? children : <Outlet />;

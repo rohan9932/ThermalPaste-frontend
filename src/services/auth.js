@@ -10,7 +10,11 @@ export async function login({ identifier, password }) {
 }
 
 export async function register({ username, email, password }) {
-  const response = await api.post("/api/auth/register", { username, email, password });
+  const response = await api.post("/api/auth/register", {
+    username,
+    email,
+    password,
+  });
   return response.data;
 }
 
@@ -20,6 +24,10 @@ export async function logout() {
 }
 
 export async function getMe() {
-  const response = await api.get("/api/auth/me");
+  // Skip the silent-refresh interceptor for this call.
+  // If /me returns 401 it means there's genuinely no valid session
+  // (no cookies at all), not an expired access token — attempting a
+  // refresh here would be wrong and cause a loop on initial page load.
+  const response = await api.get("/api/auth/me", { _retried: true });
   return response.data?.user ?? response.data;
 }
