@@ -15,7 +15,7 @@ export function Sidebar({ isOpen, onClose }) {
   const handleLogout = async () => {
     await logout();
     if (onClose) onClose();
-    navigate("/login");
+    navigate("/login", { replace: true });
   };
 
   return (

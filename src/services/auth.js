@@ -20,18 +20,6 @@ export async function logout() {
 }
 
 export async function getMe() {
-  try {
-    const response = await api.get("/api/auth/me");
-    return response.data?.user ?? response.data;
-  } catch (err) {
-    const data = err.response?.data;
-    if (
-      err.response?.status === 401 ||
-      data?.status === 401 ||
-      (data?.success === false && data?.status === 401)
-    ) {
-      return null;
-    }
-    throw err;
-  }
+  const response = await api.get("/api/auth/me");
+  return response.data?.user ?? response.data;
 }

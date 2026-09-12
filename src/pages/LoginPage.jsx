@@ -2,6 +2,7 @@ import { ArrowRight, Eye, EyeOff, Lock, LogIn, User } from "lucide-react";
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { login } from "../services/auth.js";
+import { useAuth } from "../context/AuthContext";
 
 function LoginPage() {
   const [identifier, setIdentifier] = useState("");
@@ -12,6 +13,7 @@ function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { refetch } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +22,8 @@ function LoginPage() {
 
     try {
       await login({ identifier, password });
-      navigate("/");
+      await refetch(); // Refresh auth state
+      navigate("/", { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || err.data?.message || err.message || "Login failed");
     } finally {

@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 function ProtectedRoute({ children }) {
   const { user, isLoading } = useAuth();
 
+  // Show spinner while checking auth status with the server
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#0B0D11] flex items-center justify-center">
@@ -12,6 +13,7 @@ function ProtectedRoute({ children }) {
     );
   }
 
+  // No valid user = redirect to login
   if (!user) {
     return <Navigate to="/login" replace />;
   }
