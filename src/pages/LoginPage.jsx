@@ -22,7 +22,7 @@ function LoginPage() {
       await login({ identifier, password });
       navigate("/");
     } catch (err) {
-      setError(err.data?.message || err.message || "Login failed");
+      setError(err.response?.data?.message || err.data?.message || err.message || "Login failed");
     } finally {
       setIsLoading(false);
     }

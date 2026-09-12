@@ -8,15 +8,4 @@ const api = axios.create({
   },
 });
 
-api.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    const message = error.response?.data?.message || error.message || "Something went wrong";
-    const err = new Error(message);
-    err.status = error.response?.status;
-    err.data = error.response?.data;
-    return Promise.reject(err);
-  }
-);
-
 export default api;

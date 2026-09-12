@@ -33,9 +33,9 @@ function RegistrationPage() {
     setIsLoading(true);
     try {
       await register({ username, email, password });
-      navigate("/");
+      navigate("/login");
     } catch (err) {
-      setError(err.data?.message || err.message || "Registration failed");
+      setError(err.response?.data?.message || err.data?.message || err.message || "Registration failed");
     } finally {
       setIsLoading(false);
     }
