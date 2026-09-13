@@ -2,12 +2,13 @@
 // Displays the user's profile settings, PC build specs, activity stats, and recent activity feed.
 
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import {
   getProfile,
   updateProfile,
+  createProfile,
 } from "../services/profile.js";
 import {
   Cpu,
@@ -33,20 +34,19 @@ import {
 // ─── Mock User Data ────────────────────────────────────────────────────────────
 // Temporary static data representing the logged-in user.
 // In production, this would be fetched from the backend API (e.g. GET /api/user/me).
+// Structure matches what applyProfile() expects: flat specs properties.
 const USER = {
   username: "LinusBuilds",
   imageLink: "/images/avatar.jpg",
   bio: "I build enterprise servers in my sleep and drop graphics cards for a living. Host of Overclocked Tech Tips.",
-  specs: {
-    cpu: "AMD Ryzen 9 7950X3D",
-    gpu: "NVIDIA RTX 4090 Founders Edition",
-    ram: "128GB G.Skill Trident Z5 DDR5-6400",
-    motherboard: "ASUS ROG Crosshair X670E Hero",
-    customCooler: "EK-Quantum Custom Loop 300mm",
-    pcCase: "Lian Li O11 Dynamic EVO",
-    powerSupply: "Seasonic Vertex PX-1600 80+ Platinum",
-    storage: "2x 4TB Samsung 990 Pro NVMe",
-  },
+  cpu: "AMD Ryzen 9 7950X3D",
+  gpu: "NVIDIA RTX 4090 Founders Edition",
+  ram: "128GB G.Skill Trident Z5 DDR5-6400",
+  motherboard: "ASUS ROG Crosshair X670E Hero",
+  customCooler: "EK-Quantum Custom Loop 300mm",
+  pcCase: "Lian Li O11 Dynamic EVO",
+  powerSupply: "Seasonic Vertex PX-1600 80+ Platinum",
+  storage: "2x 4TB Samsung 990 Pro NVMe",
   badges: [
     {
       icon: "/images/thermal-paste-thermal-paste-cooling-hard-1.webp",
@@ -178,8 +178,8 @@ export default function ProfilePage() {
   // Tracks which tab is currently active: overview, specs, or activity.
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Editable profile fields. A brand-new user has no saved profile, so these
-  // start blank; they get populated from the backend on mount if a profile exists.
+  // Editable profile fields — populated from backend on mount.
+  // Start empty; sections remain blank until data is fetched/saved.
   const [bio, setBio] = useState("");
   const [imageLink, setImageLink] = useState("");
   const [specs, setSpecs] = useState({
@@ -197,6 +197,9 @@ export default function ProfilePage() {
   // null => no saved profile yet.
   const [existingProfile, setExistingProfile] = useState(null);
 
+  // Username from profile's nested user object
+  const [profileUsername, setProfileUsername] = useState("");
+
   // Tracks whether the form is currently in a saving state (API call in progress).
   const [isSaving, setIsSaving] = useState(false);
 
@@ -209,6 +212,7 @@ export default function ProfilePage() {
 
   // Pushes a saved (or empty) profile into the form fields.
   const applyProfile = (profile) => {
+    console.log("Applying profile:", profile);
     setBio(profile?.bio ?? "");
     setImageLink(profile?.imageLink ?? "");
     setSpecs({
@@ -223,18 +227,30 @@ export default function ProfilePage() {
     });
   };
 
-  // On mount, load the user's saved profile. If none exists the fields stay blank.
+  // On mount, load the user's saved profile from backend.
+  // If no profile exists or API fails, fields remain blank.
   useEffect(() => {
     async function loadProfile() {
       try {
         const res = await getProfile();
-        const profile = res?.profile || res;
+        console.log("Profile API response:", res);
+        // Backend returns: { status: 200, success: true, data: { profile: {...} } }
+        // Axios wraps it in res.data
+        const profile = res?.data?.data?.profile || res?.data?.profile || res?.data || res;
+        console.log("Extracted profile:", profile);
         if (profile) {
           setExistingProfile(profile);
           applyProfile(profile);
+          // Extract username from nested user object: profile.user.username
+          if (profile.user?.username) {
+            setProfileUsername(profile.user.username);
+          }
+        } else {
+          console.log("No profile found");
         }
       } catch (err) {
-        // 404 (no profile yet) or auth error — fields remain blank.
+        console.error("Profile load error:", err);
+        console.log("API failed, leaving fields blank");
       }
     }
     loadProfile();
@@ -247,10 +263,8 @@ export default function ProfilePage() {
     setSpecs((prev) => ({ ...prev, [key]: value }));
   };
 
-  // Handles form submission — always an update call (upsert) so it works for
-  // new users who have no profile yet, as well as existing ones.
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // Handles save button click — sends an update request with the provided values.
+  const handleSubmit = async () => {
     setError("");
     setSaveSuccess(false);
     setIsSaving(true);
@@ -261,7 +275,11 @@ export default function ProfilePage() {
         ...specs,
       };
 
-      await updateProfile(payload);
+      if (existingProfile) {
+        await updateProfile(payload);
+      } else {
+        await createProfile(payload);
+      }
 
       setSaveSuccess(true);
 
@@ -332,28 +350,28 @@ export default function ProfilePage() {
 
               {/* ── Profile Preview Card ──────────────────────────────────────────
                 Live preview of how the user's profile appears to other users.
-                Shows avatar, username, bio excerpt, and inline CPU/GPU flair. */}
-              <div className="p-5 rounded-2xl border border-[#222834] bg-[#0F1117] flex items-center gap-5 mb-6">
-                {/* Avatar image — falls back to default if the URL fails to load */}
-                 <img
-                   src={imageLink || "/images/avatar.jpg"}
-                   alt="Avatar Preview"
-                  className="w-16 h-16 rounded-full object-cover border-2 border-[#A78BFA]/30 flex-shrink-0"
-                  onError={(e) => {
-                    e.target.src = "/images/avatar.jpg";
-                  }}
-                />
-                <div className="min-w-0">
-                  {/* Username + verified badge */}
-                  <div className="text-sm font-bold text-white flex items-center gap-2">
-                    {USER.username}
+Shows avatar, username, bio excerpt, and inline CPU/GPU flair. */}
+                <div className="p-5 rounded-2xl border border-[#222834] bg-[#0F1117] flex items-center gap-5 mb-6">
+                  {/* Avatar image — falls back to default if the URL fails to load */}
+                  <img
+                    src={imageLink || "/images/avatar.jpg"}
+                    alt="Avatar Preview"
+                    className="w-16 h-16 rounded-full object-cover border-2 border-[#A78BFA]/30 flex-shrink-0"
+                    onError={(e) => {
+                      e.target.src = "/images/avatar.jpg";
+                    }}
+                  />
+                  <div className="min-w-0">
+{/* Username + verified badge */}
+                    <div className="text-sm font-bold text-white flex items-center gap-2">
+                      {profileUsername || USER.username}
                     <span className="text-[10px] bg-[#A78BFA]/20 text-[#A78BFA] px-2 py-0.5 rounded-full border border-[#A78BFA]/40">
                       Verified Rig
                     </span>
                   </div>
-                  {/* Bio preview — truncated to one line */}
+                  {/* Bio preview — shows empty when no bio */}
                   <p className="text-xs text-[#8F99A8] line-clamp-1 mt-0.5">
-                    "{bio || "No bio written yet."}"
+                    {bio || ""}
                   </p>
                   {/* Inline CPU and GPU flair shown beneath the bio */}
                   <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 text-[11px] font-mono text-[#00D8F6]">
@@ -382,11 +400,11 @@ export default function ProfilePage() {
                     <label className="text-xs font-medium text-[#F3F4F6]">
                       Avatar URL
                     </label>
-                     <input
-                       type="url"
-                       value={imageLink}
-                       onChange={(e) => setImageLink(e.target.value)}
-                       placeholder="https://images.unsplash.com/photo-..."
+                    <input
+                      type="url"
+                      value={imageLink}
+                      onChange={(e) => setImageLink(e.target.value)}
+                      placeholder="https://images.unsplash.com/photo-..."
                       className="w-full px-3 py-2 rounded-xl bg-[#161922] border border-[#222834] text-white placeholder-[#4B5563] focus:outline-none focus:border-[#00D8F6] text-xs transition-all"
                       disabled={!isEditing}
                     />
