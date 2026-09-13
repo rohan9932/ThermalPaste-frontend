@@ -1,10 +1,14 @@
 // ProfilePage.jsx
 // Displays the user's profile settings, PC build specs, activity stats, and recent activity feed.
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
+import {
+  getProfile,
+  updateProfile,
+} from "../services/profile.js";
 import {
   Cpu,
   MemoryStick,
@@ -31,17 +35,17 @@ import {
 // In production, this would be fetched from the backend API (e.g. GET /api/user/me).
 const USER = {
   username: "LinusBuilds",
-  avatarUrl: "/images/avatar.jpg",
+  imageLink: "/images/avatar.jpg",
   bio: "I build enterprise servers in my sleep and drop graphics cards for a living. Host of Overclocked Tech Tips.",
   specs: {
     cpu: "AMD Ryzen 9 7950X3D",
     gpu: "NVIDIA RTX 4090 Founders Edition",
     ram: "128GB G.Skill Trident Z5 DDR5-6400",
     motherboard: "ASUS ROG Crosshair X670E Hero",
-    cooler: "EK-Quantum Custom Loop 360mm",
-    caseName: "Lian Li O11 Dynamic EVO",
+    customCooler: "EK-Quantum Custom Loop 300mm",
+    pcCase: "Lian Li O11 Dynamic EVO",
     powerSupply: "Seasonic Vertex PX-1600 80+ Platinum",
-    storageSpecs: "2x 4TB Samsung 990 Pro NVMe",
+    storage: "2x 4TB Samsung 990 Pro NVMe",
   },
   badges: [
     {
@@ -136,10 +140,10 @@ const SPEC_ICONS = {
   gpu: <Monitor className="w-4 h-4" />,
   ram: <MemoryStick className="w-4 h-4" />,
   motherboard: <CircuitBoard className="w-4 h-4" />,
-  cooler: <Fan className="w-4 h-4" />,
-  caseName: <Monitor className="w-4 h-4" />,
+  customCooler: <Fan className="w-4 h-4" />,
+  pcCase: <Monitor className="w-4 h-4" />,
   powerSupply: <Zap className="w-4 h-4" />,
-  storageSpecs: <HardDrive className="w-4 h-4" />,
+  storage: <HardDrive className="w-4 h-4" />,
 };
 
 // Maps spec keys to human-readable labels shown in form fields and spec cards.
@@ -148,10 +152,10 @@ const SPEC_LABELS = {
   gpu: "GPU",
   ram: "RAM",
   motherboard: "Motherboard",
-  cooler: "AIO / Custom Cooler",
-  caseName: "PC Case",
+  customCooler: "AIO / Custom Cooler",
+  pcCase: "PC Case",
   powerSupply: "Power Supply",
-  storageSpecs: "Storage Specs",
+  storage: "Storage Specs",
 };
 
 // Placeholder text displayed inside each spec input when the field is empty.
@@ -160,10 +164,10 @@ const SPEC_PLACEHOLDERS = {
   gpu: "RTX 4090",
   ram: "32GB DDR5-6000",
   motherboard: "B650E-I Gaming ITX",
-  cooler: "NZXT Kraken 360",
-  caseName: "Fractal Design North",
+  customCooler: "NZXT Kraken 300",
+  pcCase: "Fractal Design North",
   powerSupply: "Corsair SF750 750W",
-  storageSpecs: "2TB Samsung 990 Pro",
+  storage: "2TB Samsung 990 Pro",
 };
 
 // ─── ProfilePage Component ────────────────────────────────────────────────────
@@ -174,20 +178,67 @@ export default function ProfilePage() {
   // Tracks which tab is currently active: overview, specs, or activity.
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Editable profile fields — initialized from mock USER data.
-  // These will be replaced by API-driven state once a backend is integrated.
-  const [bio, setBio] = useState(USER.bio);
-  const [avatarUrl, setAvatarUrl] = useState(USER.avatarUrl);
-  const [specs, setSpecs] = useState(USER.specs);
+  // Editable profile fields. A brand-new user has no saved profile, so these
+  // start blank; they get populated from the backend on mount if a profile exists.
+  const [bio, setBio] = useState("");
+  const [imageLink, setImageLink] = useState("");
+  const [specs, setSpecs] = useState({
+    cpu: "",
+    gpu: "",
+    ram: "",
+    motherboard: "",
+    customCooler: "",
+    pcCase: "",
+    powerSupply: "",
+    storage: "",
+  });
+
+  // Holds the last-saved profile (used to revert on Cancel).
+  // null => no saved profile yet.
+  const [existingProfile, setExistingProfile] = useState(null);
 
   // Tracks whether the form is currently in a saving state (API call in progress).
   const [isSaving, setIsSaving] = useState(false);
 
-  // Stores any API error message. Setter is kept for future backend error handling.
-  const [, setError] = useState("");
+  // Stores any API error or success message.
+  const [error, setError] = useState("");
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Toggles whether the form fields are editable or read-only.
   const [isEditing, setIsEditing] = useState(false);
+
+  // Pushes a saved (or empty) profile into the form fields.
+  const applyProfile = (profile) => {
+    setBio(profile?.bio ?? "");
+    setImageLink(profile?.imageLink ?? "");
+    setSpecs({
+      cpu: profile?.cpu ?? "",
+      gpu: profile?.gpu ?? "",
+      ram: profile?.ram ?? "",
+      motherboard: profile?.motherboard ?? "",
+      customCooler: profile?.customCooler ?? "",
+      pcCase: profile?.pcCase ?? "",
+      powerSupply: profile?.powerSupply ?? "",
+      storage: profile?.storage ?? "",
+    });
+  };
+
+  // On mount, load the user's saved profile. If none exists the fields stay blank.
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const res = await getProfile();
+        const profile = res?.profile || res;
+        if (profile) {
+          setExistingProfile(profile);
+          applyProfile(profile);
+        }
+      } catch (err) {
+        // 404 (no profile yet) or auth error — fields remain blank.
+      }
+    }
+    loadProfile();
+  }, []);
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
 
@@ -196,19 +247,37 @@ export default function ProfilePage() {
     setSpecs((prev) => ({ ...prev, [key]: value }));
   };
 
-  // Handles form submission — simulates an API save with a 1.5s delay.
-  // e.preventDefault() stops the browser from reloading the page on form submit.
+  // Handles form submission — always an update call (upsert) so it works for
+  // new users who have no profile yet, as well as existing ones.
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSaveSuccess(false);
     setIsSaving(true);
     try {
-      // TODO: Replace with actual API call, e.g. PATCH /api/user/profile
-      await new Promise((r) => setTimeout(r, 1500));
-      setIsEditing(false);
+      const payload = {
+        imageLink,
+        bio,
+        ...specs,
+      };
+
+      await updateProfile(payload);
+
+      setSaveSuccess(true);
+
+      const savedProfile = {
+        bio,
+        imageLink,
+        ...specs,
+      };
+      setExistingProfile(savedProfile);
+      applyProfile(savedProfile);
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 800);
     } catch (err) {
-      setError(err.message || "Failed to save profile.");
-    } finally {
+      setError(err.data?.message || err.message || "Failed to save profile.");
       setIsSaving(false);
     }
   };
@@ -266,9 +335,9 @@ export default function ProfilePage() {
                 Shows avatar, username, bio excerpt, and inline CPU/GPU flair. */}
               <div className="p-5 rounded-2xl border border-[#222834] bg-[#0F1117] flex items-center gap-5 mb-6">
                 {/* Avatar image — falls back to default if the URL fails to load */}
-                <img
-                  src={avatarUrl || "/images/avatar.jpg"}
-                  alt="Avatar Preview"
+                 <img
+                   src={imageLink || "/images/avatar.jpg"}
+                   alt="Avatar Preview"
                   className="w-16 h-16 rounded-full object-cover border-2 border-[#A78BFA]/30 flex-shrink-0"
                   onError={(e) => {
                     e.target.src = "/images/avatar.jpg";
@@ -299,7 +368,6 @@ export default function ProfilePage() {
                 Right column: 8 PC hardware spec inputs.
                 All inputs are disabled by default; enabled only when isEditing = true. */}
               <form
-                onSubmit={handleSubmit}
                 className="grid grid-cols-1 md:grid-cols-2 gap-5"
               >
                 {/* Left Column — General Info */}
@@ -314,11 +382,11 @@ export default function ProfilePage() {
                     <label className="text-xs font-medium text-[#F3F4F6]">
                       Avatar URL
                     </label>
-                    <input
-                      type="url"
-                      value={avatarUrl}
-                      onChange={(e) => setAvatarUrl(e.target.value)}
-                      placeholder="https://images.unsplash.com/photo-..."
+                     <input
+                       type="url"
+                       value={imageLink}
+                       onChange={(e) => setImageLink(e.target.value)}
+                       placeholder="https://images.unsplash.com/photo-..."
                       className="w-full px-3 py-2 rounded-xl bg-[#161922] border border-[#222834] text-white placeholder-[#4B5563] focus:outline-none focus:border-[#00D8F6] text-xs transition-all"
                       disabled={!isEditing}
                     />
@@ -368,40 +436,51 @@ export default function ProfilePage() {
                     ))}
                   </div>
                 </div>
-              </form>
-
               {/* ── Footer Actions ────────────────────────────────────────────────
                 Only visible when isEditing = true.
                 Cancel resets all fields to the original USER data.
-                Save triggers handleSubmit which simulates an API call.         */}
+                Save triggers handleSubmit which sends an update request.     */}
               {isEditing && (
-                <div className="flex items-center justify-end gap-3 mt-6 pt-6 border-t border-[#222834]">
-                  {/* Cancel — resets form to original USER data and exits edit mode */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsEditing(false);
-                      setBio(USER.bio);
-                      setAvatarUrl(USER.avatarUrl);
-                      setSpecs(USER.specs);
-                    }}
-                    className="px-5 py-2.5 rounded-xl text-xs font-semibold text-[#8F99A8] hover:bg-[#161922] hover:text-white transition-all cursor-pointer flex items-center gap-1.5"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    Cancel
-                  </button>
-                  {/* Save — shows loading state while the async handleSubmit runs */}
-                  <button
-                    type="submit"
-                    onClick={handleSubmit}
-                    disabled={isSaving}
-                    className="px-5 py-2.5 bg-[#00D8F6] hover:bg-[#00c4e0] disabled:opacity-50 text-[#0B0D11] rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(0,216,246,0.25)] cursor-pointer"
-                  >
-                    <Save className="w-4 h-4" />
-                    {isSaving ? "Saving Rig..." : "Save Configuration"}
-                  </button>
+                <div className="flex flex-col gap-3 md:col-span-2">
+                  {error && (
+                    <div className="px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-medium">
+                      {error}
+                    </div>
+                  )}
+                  {saveSuccess && (
+                    <div className="px-4 py-2.5 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-medium">
+                      Configuration saved successfully! Refreshing...
+                    </div>
+                  )}
+                  <div className="flex items-center justify-end gap-3">
+                    {/* Cancel — reverts form to the last-saved profile (or blank) and exits edit mode */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditing(false);
+                        applyProfile(existingProfile);
+                        setError("");
+                        setSaveSuccess(false);
+                      }}
+                      className="px-5 py-2.5 rounded-xl text-xs font-semibold text-[#8F99A8] hover:bg-[#161922] hover:text-white transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      Cancel
+                    </button>
+                    {/* Save — calls handleSubmit directly via onClick */}
+                    <button
+                      type="button"
+                      onClick={handleSubmit}
+                      disabled={isSaving}
+                      className="px-5 py-2.5 bg-[#00D8F6] hover:bg-[#00c4e0] disabled:opacity-50 text-[#0B0D11] rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(0,216,246,0.25)] cursor-pointer"
+                    >
+                      <Save className="w-4 h-4" />
+                      {isSaving ? "Saving Rig..." : "Save Configuration"}
+                    </button>
+                  </div>
                 </div>
               )}
+            </form>
 
               {/* ── Tab Navigation ────────────────────────────────────────────────
                 Three tabs: Overview, PC Build Specs, Recent Activity.
