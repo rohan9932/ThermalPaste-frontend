@@ -1,7 +1,8 @@
 import { ArrowRight, Eye, EyeOff, Lock, LogIn, User } from "lucide-react";
 import { useState } from "react";
-import { NavLink, useNavigate } from "react-router";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { login } from "../services/auth.js";
+import { useAuth } from "../context/AuthContext";
 
 function LoginPage() {
   const [identifier, setIdentifier] = useState("");
@@ -12,6 +13,11 @@ function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const { refetch } = useAuth();
+
+  // If ProtectedRoute sent us here from a protected page, go back there after login
+  const from = location.state?.from || "/";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,9 +26,10 @@ function LoginPage() {
 
     try {
       await login({ identifier, password });
-      navigate("/");
+      await refetch(); // Refresh auth state
+      navigate(from, { replace: true });
     } catch (err) {
-      setError(err.data?.message || err.message || "Login failed");
+      setError(err.response?.data?.message || err.data?.message || err.message || "Login failed");
     } finally {
       setIsLoading(false);
     }
@@ -40,6 +47,13 @@ function LoginPage() {
             Sign in to access your account
           </p>
         </div>
+
+        {/* Registration success banner */}
+        {location.state?.registered && (
+          <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs text-center">
+            Account created! Sign in to get started.
+          </div>
+        )}
 
         {error && (
           <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs text-center">

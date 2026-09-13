@@ -1,6 +1,6 @@
 import { ArrowRight, Eye, EyeOff, Lock, Mail, User, UserPlus } from "lucide-react";
 import { useState } from "react";
-import { NavLink, useNavigate } from "react-router";
+import { NavLink, useNavigate } from "react-router-dom";
 import { register } from "../services/auth.js";
 
 function RegistrationPage() {
@@ -33,9 +33,13 @@ function RegistrationPage() {
     setIsLoading(true);
     try {
       await register({ username, email, password });
-      navigate("/");
+      // Navigate to login with a success message — backend does NOT log in on register
+      navigate("/login", {
+        state: { registered: true },
+        replace: true,
+      });
     } catch (err) {
-      setError(err.data?.message || err.message || "Registration failed");
+      setError(err.response?.data?.message || err.data?.message || err.message || "Registration failed");
     } finally {
       setIsLoading(false);
     }

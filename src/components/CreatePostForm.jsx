@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { X, PlusCircle, Sparkles } from "lucide-react";
 import { SUB_GROUPS } from "../data/mockData";
 
