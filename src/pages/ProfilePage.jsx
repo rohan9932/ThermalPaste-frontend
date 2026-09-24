@@ -1,10 +1,11 @@
 // ProfilePage.jsx
-// Displays the user's profile settings, PC build specs, activity stats, and recent activity feed.
+// Displays the user's profile settings, their posts, and recent activity feed.
 
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
+import PostCard from "../components/PostCard.jsx";
 import {
   getProfile,
   updateProfile,
@@ -12,12 +13,6 @@ import {
 } from "../services/profile.js";
 import {
   Cpu,
-  MemoryStick,
-  CircuitBoard,
-  Fan,
-  Monitor,
-  HardDrive,
-  Zap,
   Shield,
   Save,
   RotateCcw,
@@ -26,27 +21,16 @@ import {
   Layers,
   MessageCircle,
   Heart,
-  Star,
   Activity,
-  TrendingUp,
 } from "lucide-react";
 
 // ─── Mock User Data ────────────────────────────────────────────────────────────
 // Temporary static data representing the logged-in user.
 // In production, this would be fetched from the backend API (e.g. GET /api/user/me).
-// Structure matches what applyProfile() expects: flat specs properties.
 const USER = {
   username: "LinusBuilds",
   imageLink: "/images/avatar.jpg",
   bio: "I build enterprise servers in my sleep and drop graphics cards for a living. Host of Overclocked Tech Tips.",
-  cpu: "AMD Ryzen 9 7950X3D",
-  gpu: "NVIDIA RTX 4090 Founders Edition",
-  ram: "128GB G.Skill Trident Z5 DDR5-6400",
-  motherboard: "ASUS ROG Crosshair X670E Hero",
-  customCooler: "EK-Quantum Custom Loop 300mm",
-  pcCase: "Lian Li O11 Dynamic EVO",
-  powerSupply: "Seasonic Vertex PX-1600 80+ Platinum",
-  storage: "2x 4TB Samsung 990 Pro NVMe",
   badges: [
     {
       icon: "/images/thermal-paste-thermal-paste-cooling-hard-1.webp",
@@ -61,7 +45,7 @@ const USER = {
     {
       icon: "/images/overclocking-cpu-benchmark-gaming-1.webp",
       label: "Power User",
-      color: "#A78BFA",
+      color: "#A78BDA",
     },
     {
       icon: "/images/gpu-graphics-card-rtx-nvidia-1.webp",
@@ -80,6 +64,62 @@ const USER = {
     comments: 1847,
     likes: 5620,
   },
+  userPosts: [
+    {
+      id: "post_7",
+      community: "g/watercooling",
+      subGroup: "g/watercooling",
+      authorname: "LinusBuilds",
+      authorAvatar: "/images/avatar.jpg",
+      timestamp: "Sep 22, 4:00 PM",
+      createdAt: "Sep 22, 4:00 PM",
+      title: "Dual EPYC waterblock design — 3D printing custom top plates",
+      content:
+        "Working on a dual socket EPYC waterblock build. The stock coolers just won't cut it for server overclocking...",
+      sectionHeader: "### Loop Specs...",
+      image: "/images/water-cooling-custom-loop-pc-build-1.jpg",
+      upvotes: 112,
+      commentsCount: 28,
+      comments: 28,
+      isPopularRig: true,
+    },
+    {
+      id: "post_8",
+      community: "g/overclocking",
+      subGroup: "g/overclocking",
+      authorname: "LinusBuilds",
+      authorAvatar: "/images/avatar.jpg",
+      timestamp: "Sep 19, 10:30 AM",
+      createdAt: "Sep 19, 10:30 AM",
+      title: "Server RAM overclocking — pushing ECC DDR5 to 7200MHz CL32",
+      content:
+        "Decided to test the limits of ECC memory on a Threadripper platform. Results were surprising...",
+      sectionHeader: "### OC Settings...",
+      image: "/images/overclocking-cpu-benchmark-gaming-1.webp",
+      upvotes: 87,
+      commentsCount: 19,
+      comments: 19,
+      isPopularRig: false,
+    },
+    {
+      id: "post_9",
+      community: "g/battlestations",
+      subGroup: "g/battlestations",
+      authorname: "LinusBuilds",
+      authorAvatar: "/images/avatar.jpg",
+      timestamp: "Sep 15, 6:15 PM",
+      createdAt: "Sep 15, 6:15 PM",
+      title: "12-node render farm in a single 4U chassis — cable management nightmare",
+      content:
+        "Built this for a rendering studio. 12x EPYC nodes, dual 4090s each, all in one 4U box...",
+      sectionHeader: "### Setup Gear...",
+      image: "/images/small-form-factor-mini-itx-pc-case-build-1.webp",
+      upvotes: 342,
+      commentsCount: 56,
+      comments: 56,
+      isPopularRig: true,
+    },
+  ],
   recentActivity: [
     {
       type: "post",
@@ -95,7 +135,7 @@ const USER = {
       community: "g/pcbuilders",
       groupId: "pcbuilders",
       time: "5 hours ago",
-      color: "#A78BFA",
+      color: "#A78BDA",
     },
     {
       type: "like",
@@ -127,47 +167,9 @@ const USER = {
       community: "g/techdeals",
       groupId: "techdeals",
       time: "3 days ago",
-      color: "#A78BFA",
+      color: "#A78BDA",
     },
   ],
-};
-
-// ─── Spec Icon Map ─────────────────────────────────────────────────────────────
-// Maps each spec key to its corresponding Lucide SVG icon.
-// Used in the Specs tab to render the correct icon beside each hardware field.
-const SPEC_ICONS = {
-  cpu: <Cpu className="w-4 h-4" />,
-  gpu: <Monitor className="w-4 h-4" />,
-  ram: <MemoryStick className="w-4 h-4" />,
-  motherboard: <CircuitBoard className="w-4 h-4" />,
-  customCooler: <Fan className="w-4 h-4" />,
-  pcCase: <Monitor className="w-4 h-4" />,
-  powerSupply: <Zap className="w-4 h-4" />,
-  storage: <HardDrive className="w-4 h-4" />,
-};
-
-// Maps spec keys to human-readable labels shown in form fields and spec cards.
-const SPEC_LABELS = {
-  cpu: "CPU",
-  gpu: "GPU",
-  ram: "RAM",
-  motherboard: "Motherboard",
-  customCooler: "AIO / Custom Cooler",
-  pcCase: "PC Case",
-  powerSupply: "Power Supply",
-  storage: "Storage Specs",
-};
-
-// Placeholder text displayed inside each spec input when the field is empty.
-const SPEC_PLACEHOLDERS = {
-  cpu: "Ryzen 9 7950X3D",
-  gpu: "RTX 4090",
-  ram: "32GB DDR5-6000",
-  motherboard: "B650E-I Gaming ITX",
-  customCooler: "NZXT Kraken 300",
-  pcCase: "Fractal Design North",
-  powerSupply: "Corsair SF750 750W",
-  storage: "2TB Samsung 990 Pro",
 };
 
 // ─── ProfilePage Component ────────────────────────────────────────────────────
@@ -175,26 +177,14 @@ export default function ProfilePage() {
   // Controls whether the sidebar is open or collapsed.
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Tracks which tab is currently active: overview, specs, or activity.
-  const [activeTab, setActiveTab] = useState("overview");
+  // Tracks which tab is currently active: posts or activity.
+  const [activeTab, setActiveTab] = useState("posts");
 
   // Editable profile fields — populated from backend on mount.
-  // Start empty; sections remain blank until data is fetched/saved.
   const [bio, setBio] = useState("");
   const [imageLink, setImageLink] = useState("");
-  const [specs, setSpecs] = useState({
-    cpu: "",
-    gpu: "",
-    ram: "",
-    motherboard: "",
-    customCooler: "",
-    pcCase: "",
-    powerSupply: "",
-    storage: "",
-  });
 
   // Holds the last-saved profile (used to revert on Cancel).
-  // null => no saved profile yet.
   const [existingProfile, setExistingProfile] = useState(null);
 
   // Username from profile's nested user object
@@ -212,56 +202,31 @@ export default function ProfilePage() {
 
   // Pushes a saved (or empty) profile into the form fields.
   const applyProfile = (profile) => {
-    console.log("Applying profile:", profile);
     setBio(profile?.bio ?? "");
     setImageLink(profile?.imageLink ?? "");
-    setSpecs({
-      cpu: profile?.cpu ?? "",
-      gpu: profile?.gpu ?? "",
-      ram: profile?.ram ?? "",
-      motherboard: profile?.motherboard ?? "",
-      customCooler: profile?.customCooler ?? "",
-      pcCase: profile?.pcCase ?? "",
-      powerSupply: profile?.powerSupply ?? "",
-      storage: profile?.storage ?? "",
-    });
   };
 
   // On mount, load the user's saved profile from backend.
-  // If no profile exists or API fails, fields remain blank.
   useEffect(() => {
     async function loadProfile() {
       try {
         const res = await getProfile();
-        console.log("Profile API response:", res);
-        // Backend returns: { status: 200, success: true, data: { profile: {...} } }
-        // Axios wraps it in res.data
         const profile = res?.data?.data?.profile || res?.data?.profile || res?.data || res;
-        console.log("Extracted profile:", profile);
         if (profile) {
           setExistingProfile(profile);
           applyProfile(profile);
-          // Extract username from nested user object: profile.user.username
           if (profile.user?.username) {
             setProfileUsername(profile.user.username);
           }
-        } else {
-          console.log("No profile found");
         }
       } catch (err) {
         console.error("Profile load error:", err);
-        console.log("API failed, leaving fields blank");
       }
     }
     loadProfile();
   }, []);
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
-
-  // Updates a single spec field by key without overwriting the rest of the specs object.
-  const handleSpecChange = (key, value) => {
-    setSpecs((prev) => ({ ...prev, [key]: value }));
-  };
 
   // Handles save button click — sends an update request with the provided values.
   const handleSubmit = async () => {
@@ -272,7 +237,6 @@ export default function ProfilePage() {
       const payload = {
         imageLink,
         bio,
-        ...specs,
       };
 
       if (existingProfile) {
@@ -286,7 +250,6 @@ export default function ProfilePage() {
       const savedProfile = {
         bio,
         imageLink,
-        ...specs,
       };
       setExistingProfile(savedProfile);
       applyProfile(savedProfile);
@@ -326,16 +289,15 @@ export default function ProfilePage() {
                 Clicking the pencil toggles isEditing to enable the form inputs. */}
               <div className="flex items-center justify-between p-5 border border-[#222834] bg-[#0F1117] rounded-2xl mb-6">
                 <div className="flex items-center gap-3">
-                  <span className="p-2 bg-[#A78BFA]/20 border border-[#A78BFA]/40 text-[#A78BFA] rounded-lg text-lg">
+                  <span className="p-2 bg-[#A78BDA]/20 border border-[#A78BDA]/40 text-[#A78BDA] rounded-lg text-lg">
                     <Settings className="w-5 h-5" />
                   </span>
                   <div>
                     <h1 className="text-base font-bold text-white">
-                      Configure PC Rig & Profile flairs
+                      Profile Settings
                     </h1>
                     <p className="text-xs text-[#8F99A8]">
-                      Your specifications will appear as user flair on
-                      everything you share.
+                      Customize your avatar and bio.
                     </p>
                   </div>
                 </div>
@@ -350,170 +312,122 @@ export default function ProfilePage() {
 
               {/* ── Profile Preview Card ──────────────────────────────────────────
                 Live preview of how the user's profile appears to other users.
-Shows avatar, username, bio excerpt, and inline CPU/GPU flair. */}
-                <div className="p-5 rounded-2xl border border-[#222834] bg-[#0F1117] flex items-center gap-5 mb-6">
-                  {/* Avatar image — falls back to default if the URL fails to load */}
-                  <img
-                    src={imageLink || "/images/avatar.jpg"}
-                    alt="Avatar Preview"
-                    className="w-16 h-16 rounded-full object-cover border-2 border-[#A78BFA]/30 flex-shrink-0"
-                    onError={(e) => {
-                      e.target.src = "/images/avatar.jpg";
-                    }}
-                  />
-                  <div className="min-w-0">
-{/* Username + verified badge */}
-                    <div className="text-sm font-bold text-white flex items-center gap-2">
-                      {profileUsername || USER.username}
-                    <span className="text-[10px] bg-[#A78BFA]/20 text-[#A78BFA] px-2 py-0.5 rounded-full border border-[#A78BFA]/40">
-                      Verified Rig
-                    </span>
+                Shows avatar and username. */}
+              <div className="p-5 rounded-2xl border border-[#222834] bg-[#0F1117] flex items-center gap-5 mb-6">
+                {/* Avatar image — falls back to default if the URL fails to load */}
+                <img
+                  src={imageLink || "/images/avatar.jpg"}
+                  alt="Avatar Preview"
+                  className="w-16 h-16 rounded-full object-cover border-2 border-[#A78BDA]/30 flex-shrink-0"
+                  onError={(e) => {
+                    e.target.src = "/images/avatar.jpg";
+                  }}
+                />
+                <div className="min-w-0">
+                  {/* Username */}
+                  <div className="text-sm font-bold text-white flex items-center gap-2">
+                    {profileUsername || USER.username}
                   </div>
                   {/* Bio preview — shows empty when no bio */}
                   <p className="text-xs text-[#8F99A8] line-clamp-1 mt-0.5">
                     {bio || ""}
                   </p>
-                  {/* Inline CPU and GPU flair shown beneath the bio */}
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 text-[11px] font-mono text-[#00D8F6]">
-                    {specs.cpu && <span>CPU: {specs.cpu}</span>}
-                    {specs.gpu && <span>GPU: {specs.gpu}</span>}
-                  </div>
                 </div>
               </div>
 
-              {/* ── Two-Column Edit Form ──────────────────────────────────────────
-                Left column : avatar URL and short bio textarea.
-                Right column: 8 PC hardware spec inputs.
-                All inputs are disabled by default; enabled only when isEditing = true. */}
-              <form
-                className="grid grid-cols-1 md:grid-cols-2 gap-5"
-              >
-                {/* Left Column — General Info */}
-                <div className="space-y-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#8F99A8] border-b border-[#222834] pb-2 flex items-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5 text-[#A78BFA]" />
-                    General Info
-                  </h4>
-
-                  {/* Avatar URL input */}
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-[#F3F4F6]">
-                      Avatar URL
-                    </label>
-                    <input
-                      type="url"
-                      value={imageLink}
-                      onChange={(e) => setImageLink(e.target.value)}
-                      placeholder="https://images.unsplash.com/photo-..."
-                      className="w-full px-3 py-2 rounded-xl bg-[#161922] border border-[#222834] text-white placeholder-[#4B5563] focus:outline-none focus:border-[#00D8F6] text-xs transition-all"
-                      disabled={!isEditing}
-                    />
-                  </div>
-
-                  {/* Short Bio textarea */}
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-[#F3F4F6]">
-                      Short Bio
-                    </label>
-                    <textarea
-                      value={bio}
-                      onChange={(e) => setBio(e.target.value)}
-                      placeholder="Write a custom bio about your hardware hobby..."
-                      rows={4}
-                      className="w-full px-3 py-2 rounded-xl bg-[#161922] border border-[#222834] text-white placeholder-[#4B5563] focus:outline-none focus:border-[#00D8F6] text-xs transition-all resize-none"
-                      disabled={!isEditing}
-                    />
-                  </div>
-                </div>
-
-                {/* Right Column — PC Build Specs
-                  Dynamically rendered from SPEC_LABELS to avoid repetitive JSX. */}
-                <div className="space-y-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#8F99A8] border-b border-[#222834] pb-2 flex items-center gap-1.5">
-                    <Cpu className="w-3.5 h-3.5 text-[#00D8F6]" />
-                    PC Build Specs
-                  </h4>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    {Object.entries(SPEC_LABELS).map(([key, label]) => (
-                      <div key={key} className="space-y-1">
-                        <label className="text-[10px] font-medium text-[#F3F4F6]">
-                          {label}
-                        </label>
-                        <input
-                          type="text"
-                          value={specs[key] || ""}
-                          onChange={(e) =>
-                            handleSpecChange(key, e.target.value)
-                          }
-                          placeholder={SPEC_PLACEHOLDERS[key] || label}
-                          className="w-full px-3 py-1.5 rounded-lg bg-[#161922] border border-[#222834] text-white placeholder-[#4B5563]/60 focus:outline-none focus:border-[#00D8F6] text-xs font-mono transition-all"
-                          disabled={!isEditing}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              {/* ── Footer Actions ────────────────────────────────────────────────
-                Only visible when isEditing = true.
-                Cancel resets all fields to the original USER data.
-                Save triggers handleSubmit which sends an update request.     */}
+              {/* ── Edit Form ──────────────────────────────────────────
+                Avatar URL and short bio textarea.
+                Only rendered when isEditing = true; hidden in view mode. */}
               {isEditing && (
-                <div className="flex flex-col gap-3 md:col-span-2">
-                  {error && (
-                    <div className="px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-medium">
-                      {error}
+                <form className="grid grid-cols-1 gap-5">
+                  {/* General Info */}
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#8F99A8] border-b border-[#222834] pb-2 flex items-center gap-1.5">
+                      <Shield className="w-3.5 h-3.5 text-[#A78BDA]" />
+                      General Info
+                    </h4>
+
+                    {/* Avatar URL input */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-[#F3F4F6]">
+                        Avatar URL
+                      </label>
+                      <input
+                        type="url"
+                        value={imageLink}
+                        onChange={(e) => setImageLink(e.target.value)}
+                        placeholder="https://images.unsplash.com/photo-..."
+                        className="w-full px-3 py-2 rounded-xl bg-[#161922] border border-[#222834] text-white placeholder-[#4B5563] focus:outline-none focus:border-[#00D8F6] text-xs transition-all"
+                      />
                     </div>
-                  )}
-                  {saveSuccess && (
-                    <div className="px-4 py-2.5 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-medium">
-                      Configuration saved successfully! Refreshing...
+
+                    {/* Short Bio textarea */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-[#F3F4F6]">
+                        Short Bio
+                      </label>
+                      <textarea
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                        placeholder="Write a custom bio about yourself..."
+                        rows={4}
+                        className="w-full px-3 py-2 rounded-xl bg-[#161922] border border-[#222834] text-white placeholder-[#4B5563] focus:outline-none focus:border-[#00D8F6] text-xs transition-all resize-none"
+                      />
                     </div>
-                  )}
-                  <div className="flex items-center justify-end gap-3">
-                    {/* Cancel — reverts form to the last-saved profile (or blank) and exits edit mode */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsEditing(false);
-                        applyProfile(existingProfile);
-                        setError("");
-                        setSaveSuccess(false);
-                      }}
-                      className="px-5 py-2.5 rounded-xl text-xs font-semibold text-[#8F99A8] hover:bg-[#161922] hover:text-white transition-all cursor-pointer flex items-center gap-1.5"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                      Cancel
-                    </button>
-                    {/* Save — calls handleSubmit directly via onClick */}
-                    <button
-                      type="button"
-                      onClick={handleSubmit}
-                      disabled={isSaving}
-                      className="px-5 py-2.5 bg-[#00D8F6] hover:bg-[#00c4e0] disabled:opacity-50 text-[#0B0D11] rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(0,216,246,0.25)] cursor-pointer"
-                    >
-                      <Save className="w-4 h-4" />
-                      {isSaving ? "Saving Rig..." : "Save Configuration"}
-                    </button>
                   </div>
-                </div>
+
+                  {/* ── Footer Actions ────────────────────────────────────────────────
+                    Cancel resets all fields to the last-saved profile.
+                    Save triggers handleSubmit. */}
+                  <div className="flex flex-col gap-3">
+                    {error && (
+                      <div className="px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-medium">
+                        {error}
+                      </div>
+                    )}
+                    {saveSuccess && (
+                      <div className="px-4 py-2.5 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-medium">
+                        Profile saved successfully! Refreshing...
+                      </div>
+                    )}
+                    <div className="flex items-center justify-end gap-3">
+                      {/* Cancel — reverts form to the last-saved profile and exits edit mode */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditing(false);
+                          applyProfile(existingProfile);
+                          setError("");
+                          setSaveSuccess(false);
+                        }}
+                        className="px-5 py-2.5 rounded-xl text-xs font-semibold text-[#8F99A8] hover:bg-[#161922] hover:text-white transition-all cursor-pointer flex items-center gap-1.5"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        Cancel
+                      </button>
+                      {/* Save — calls handleSubmit directly via onClick */}
+                      <button
+                        type="button"
+                        onClick={handleSubmit}
+                        disabled={isSaving}
+                        className="px-5 py-2.5 bg-[#00D8F6] hover:bg-[#00c4e0] disabled:opacity-50 text-[#0B0D11] rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(0,216,246,0.25)] cursor-pointer"
+                      >
+                        <Save className="w-4 h-4" />
+                        {isSaving ? "Saving..." : "Save Configuration"}
+                      </button>
+                    </div>
+                  </div>
+                </form>
               )}
-            </form>
 
               {/* ── Tab Navigation ────────────────────────────────────────────────
-                Three tabs: Overview, PC Build Specs, Recent Activity.
-                Active tab gets a cyan accent highlight; others stay dimmed.    */}
+                Two tabs: Posts and Recent Activity. */}
               <div className="flex items-center gap-1 p-1 rounded-xl bg-[#0F1117] border border-[#222834] mt-8">
                 {[
                   {
-                    id: "overview",
-                    label: "Overview",
+                    id: "posts",
+                    label: "Posts",
                     icon: <Layers className="w-4 h-4" />,
-                  },
-                  {
-                    id: "specs",
-                    label: "PC Build Specs",
-                    icon: <Cpu className="w-4 h-4" />,
                   },
                   {
                     id: "activity",
@@ -537,194 +451,20 @@ Shows avatar, username, bio excerpt, and inline CPU/GPU flair. */}
               </div>
 
               {/* ── Tab Content Panels ────────────────────────────────────────────
-                Only the active tab panel renders. Each uses animate-fade-in.   */}
+                Only the active tab panel renders. */}
               <div className="mt-6 space-y-6">
-                {/* ── Overview Tab — stat cards + recent activity preview ── */}
-                {activeTab === "overview" && (
-                  <div className="space-y-6 animate-fade-in">
-                    {/* Quick Stats — 4 cards: Posts, Comments, Likes, Reputation */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {[
-                        {
-                          label: "Posts",
-                          value: USER.stats.posts,
-                          icon: <MessageCircle className="w-5 h-5" />,
-                          color: "#00D8F6",
-                        },
-                        {
-                          label: "Comments",
-                          value: USER.stats.comments,
-                          icon: <Activity className="w-5 h-5" />,
-                          color: "#A78BFA",
-                        },
-                        {
-                          label: "Likes",
-                          value: USER.stats.likes,
-                          icon: <Heart className="w-5 h-5" />,
-                          color: "#F472B6",
-                        },
-                        {
-                          label: "Reputation",
-                          value: USER.stats.reputation,
-                          icon: <Star className="w-5 h-5" />,
-                          color: "#FBBF24",
-                        },
-                      ].map((s, i) => (
-                        <div
-                          key={i}
-                          className="rounded-2xl p-5 border border-[#222834] hover:border-[#00D8F6]/15 transition-all duration-300 group"
-                        >
-                          {/* Colored icon badge — scales up on card hover */}
-                          <div
-                            className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"
-                            style={{
-                              backgroundColor: s.color + "15",
-                              color: s.color,
-                            }}
-                          >
-                            {s.icon}
-                          </div>
-                          <p className="text-2xl font-bold text-white">
-                            {s.value.toLocaleString()}
-                          </p>
-                          <p className="text-[10px] uppercase tracking-wider font-bold text-[#8F99A8] mt-0.5">
-                            {s.label}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Recent Activity Preview — shows only the first 4 items.
-                      "View all →" switches the active tab to "activity".       */}
-                    <div className="rounded-2xl border border-[#222834] bg-[#0F1117] overflow-hidden">
-                      <div className="flex items-center justify-between p-5 border-b border-[#222834]">
-                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                          <Activity className="w-4 h-4 text-[#00D8F6]" />
-                          Recent Activity
-                        </h3>
-                        <button
-                          onClick={() => setActiveTab("activity")}
-                          className="text-xs text-[#00D8F6] hover:underline font-semibold transition-all cursor-pointer"
-                        >
-                          View all →
-                        </button>
+                {/* ── Posts Tab — user's submitted posts ── */}
+                {activeTab === "posts" && (
+                  <div className="space-y-4 animate-fade-in">
+                    {USER.userPosts.length === 0 ? (
+                      <div className="text-center py-12 text-[#8F99A8]">
+                        You haven't submitted any posts yet.
                       </div>
-                      <div className="divide-y divide-[#222834]">
-                        {USER.recentActivity.slice(0, 4).map((item, i) => (
-                          <ActivityItem key={i} item={item} />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* ── Specs Tab — full hardware list + SVG performance ring charts ── */}
-                {activeTab === "specs" && (
-                  <div className="space-y-6 animate-fade-in">
-                    {/* Spec list — rendered from SPEC_LABELS with matching SPEC_ICONS */}
-                    <div className="rounded-2xl border border-[#222834] bg-[#0F1117] overflow-hidden">
-                      <div className="p-5 border-b border-[#222834]">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                              <Cpu className="w-4 h-4 text-[#00D8F6]" />
-                              PC Build Configuration
-                            </h3>
-                            <p className="text-xs text-[#8F99A8] mt-1">
-                              Primary build
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {Object.entries(SPEC_LABELS).map(([key, label]) => (
-                          <div
-                            key={key}
-                            className="flex items-start gap-3 p-3 rounded-xl bg-[#161922] border border-[#222834] hover:border-[#00D8F6]/15 transition-all duration-300 group"
-                          >
-                            {/* Spec icon — fades from dim to full opacity on hover */}
-                            <div className="mt-0.5 text-[#00D8F6] opacity-60 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                              {SPEC_ICONS[key] || <Cpu className="w-4 h-4" />}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8F99A8] block mb-0.5">
-                                {label}
-                              </span>
-                              <span className="text-sm font-medium text-white leading-tight block">
-                                {specs[key]}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Performance Rings — 4 SVG donut charts.
-                      circumference = 2πr (r=34). dashArray fills the arc
-                      proportionally to the score out of 100.                   */}
-                    <div className="rounded-2xl border border-[#222834] bg-[#0F1117] p-5">
-                      <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4 text-[#00D8F6]" />
-                        Performance Profile
-                      </h3>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        {[
-                          { score: 98, label: "Gaming", color: "#00D8F6" },
-                          {
-                            score: 92,
-                            label: "Productivity",
-                            color: "#A78BFA",
-                          },
-                          { score: 87, label: "Thermal", color: "#34D399" },
-                          { score: 95, label: "Overall", color: "#FB923C" },
-                        ].map((p, i) => {
-                          const circumference = 2 * Math.PI * 34;
-                          const dashArray = `${(p.score / 100) * circumference} ${circumference}`;
-                          return (
-                            <div key={i} className="text-center">
-                              <div className="relative w-20 h-20 mx-auto mb-2">
-                                {/* SVG ring — rotated -90° so the arc starts from the top */}
-                                <svg
-                                  className="w-full h-full -rotate-90"
-                                  viewBox="0 0 80 80"
-                                >
-                                  {/* Background track */}
-                                  <circle
-                                    cx="40"
-                                    cy="40"
-                                    r="34"
-                                    fill="none"
-                                    stroke="#222834"
-                                    strokeWidth="6"
-                                  />
-                                  {/* Score arc — length driven by dashArray */}
-                                  <circle
-                                    cx="40"
-                                    cy="40"
-                                    r="34"
-                                    fill="none"
-                                    stroke={p.color}
-                                    strokeWidth="6"
-                                    strokeLinecap="round"
-                                    strokeDasharray={dashArray}
-                                  />
-                                </svg>
-                                {/* Numeric score centered over the ring */}
-                                <span className="absolute inset-0 flex items-center justify-center text-lg font-bold text-white">
-                                  {p.score}
-                                </span>
-                              </div>
-                              <p
-                                className="text-[10px] uppercase tracking-wider font-bold"
-                                style={{ color: p.color }}
-                              >
-                                {p.label}
-                              </p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    ) : (
+                      USER.userPosts.map((post) => (
+                        <PostCard key={post.id} post={post} />
+                      ))
+                    )}
                   </div>
                 )}
 
@@ -755,9 +495,7 @@ Shows avatar, username, bio excerpt, and inline CPU/GPU flair. */}
 
 // ─── ActivityItem Sub-Component ───────────────────────────────────────────────
 // Renders a single row in the activity feed.
-// Receives one activity item and displays its type icon, title, community, and time.
 function ActivityItem({ item }) {
-  // Maps activity type strings to their matching Lucide icons.
   const TYPE_ICONS = {
     post: <MessageCircle className="w-3.5 h-3.5" />,
     comment: <MessageCircle className="w-3.5 h-3.5" />,
@@ -771,7 +509,6 @@ function ActivityItem({ item }) {
 
   return (
     <div className="flex items-start gap-3 p-3.5 hover:bg-[#161922] transition-all duration-200 group">
-      {/* Colored icon badge — background and icon color driven by item.color */}
       <div
         className="mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
         style={{ backgroundColor: item.color + "15", color: item.color }}
@@ -779,7 +516,6 @@ function ActivityItem({ item }) {
         {TYPE_ICONS[item.type] || TYPE_ICONS.post}
       </div>
 
-      {/* Activity title and metadata */}
       <div className="min-w-0 flex-1">
         <p className="text-sm text-white leading-snug">
           <span className="font-semibold">{item.title}</span>
@@ -796,7 +532,6 @@ function ActivityItem({ item }) {
         </div>
       </div>
 
-      {/* Activity type label (e.g. "post", "comment") on the far right */}
       <span
         className="text-[10px] uppercase tracking-wider font-bold mt-1 px-2 py-0.5 rounded-md bg-[#161922] border border-[#222834]"
         style={{ color: item.color }}
