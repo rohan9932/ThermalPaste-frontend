@@ -31,7 +31,7 @@ export function CreateGroupForm({ isOpen, onClose }) {
         tagline: tagline.trim(),
         description: description.trim(),
         category,
-        privacy: privacy === "restricted" || privacy === "private" ? "private" : "public",
+        privacy: "public",
       });
 
       queryClient.invalidateQueries({ queryKey: ["groups"] });
@@ -193,22 +193,23 @@ export function CreateGroupForm({ isOpen, onClose }) {
                 </div>
               </label>
 
-              <label
-                onClick={() => setPrivacy("restricted")}
-                className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                  privacy === "restricted"
-                    ? "bg-[#00D8F6]/10 border-[#00D8F6] text-white"
-                    : "bg-[#161922] border-[#222834] text-[#8F99A8] hover:border-[#2A3142]"
-                }`}
+              <div
+                className="flex items-start gap-3 p-3 rounded-xl border border-[#222834] bg-[#161922]/40 text-[#8F99A8] opacity-60 cursor-not-allowed select-none relative"
+                title="Restricted sub-groups are coming soon"
               >
-                <Shield className={`w-4 h-4 mt-0.5 shrink-0 ${privacy === "restricted" ? "text-[#00D8F6]" : ""}`} />
-                <div>
-                  <p className="text-xs font-bold text-white">Restricted</p>
+                <Shield className="w-4 h-4 mt-0.5 shrink-0 text-[#8F99A8]" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-xs font-bold text-white/80">Restricted</p>
+                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/30">
+                      Coming Soon
+                    </span>
+                  </div>
                   <p className="text-[11px] text-[#8F99A8] leading-tight mt-0.5">
                     Only approved members can post
                   </p>
                 </div>
-              </label>
+              </div>
             </div>
           </div>
 
