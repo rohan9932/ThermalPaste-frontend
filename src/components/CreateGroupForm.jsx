@@ -1,36 +1,59 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, Users, Globe, Shield, Sparkles } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { X, Users, Globe, Shield, Sparkles, Loader2 } from "lucide-react";
+import { createGroup } from "../services/groups";
 
 export function CreateGroupForm({ isOpen, onClose }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [groupName, setGroupName] = useState("");
   const [tagline, setTagline] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("hardware");
   const [privacy, setPrivacy] = useState("public");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!groupName.trim()) return;
 
-    // Sanitize group name for URL (remove g/, spaces, special characters)
-    const cleanId = groupName
-      .toLowerCase()
-      .replace(/^g\//, "")
-      .replace(/[^a-z0-9-_]/g, "");
+    setIsSubmitting(true);
+    setError("");
 
-    // Reset fields & close
-    setGroupName("");
-    setTagline("");
-    setDescription("");
-    onClose();
+    try {
+      const created = await createGroup({
+        name: groupName.trim(),
+        tagline: tagline.trim(),
+        description: description.trim(),
+        category,
+        privacy: privacy === "restricted" || privacy === "private" ? "private" : "public",
+      });
 
-    // Navigate to the newly created sub-group
-    navigate(`/communities/${cleanId || "custom-group"}`);
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+
+      // Reset fields & close
+      setGroupName("");
+      setTagline("");
+      setDescription("");
+      setError("");
+      onClose();
+
+      // Navigate to the newly created sub-group
+      navigate(`/communities/${created?.name || groupName.trim()}`);
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to create group. Make sure you are logged in."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -68,11 +91,18 @@ export function CreateGroupForm({ isOpen, onClose }) {
           </button>
         </div>
 
+        {error && (
+          <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
+            {error}
+          </div>
+        )}
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Group Identifier */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#8F99A8] mb-1.5">
+
               Group Name <span className="text-[#00D8F6]">*</span>
             </label>
             <div className="relative flex items-center">
@@ -193,10 +223,20 @@ export function CreateGroupForm({ isOpen, onClose }) {
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 px-5 py-2.5 bg-[#00D8F6] hover:bg-[#00c4e0] text-[#0B0D11] text-xs font-bold uppercase tracking-wider rounded-xl shadow-[0_0_15px_rgba(0,216,246,0.25)] active:scale-95 transition-all cursor-pointer"
+              disabled={isSubmitting}
+              className="flex items-center gap-1.5 px-5 py-2.5 bg-[#00D8F6] hover:bg-[#00c4e0] disabled:opacity-50 text-[#0B0D11] text-xs font-bold uppercase tracking-wider rounded-xl shadow-[0_0_15px_rgba(0,216,246,0.25)] active:scale-95 transition-all cursor-pointer"
             >
-              <Sparkles className="w-4 h-4" />
-              <span>Create Group</span>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Creating...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  <span>Create Group</span>
+                </>
+              )}
             </button>
           </div>
         </form>

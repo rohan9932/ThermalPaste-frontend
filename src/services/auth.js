@@ -6,7 +6,7 @@ export async function login({ identifier, password }) {
     payload.identifier = identifier;
   }
   const response = await api.post("/api/auth/login", payload);
-  return response.data;
+  return response.data?.data ?? response.data;
 }
 
 export async function register({ username, email, password }) {
@@ -15,12 +15,12 @@ export async function register({ username, email, password }) {
     email,
     password,
   });
-  return response.data;
+  return response.data?.data ?? response.data;
 }
 
 export async function logout() {
   const response = await api.post("/api/auth/logout");
-  return response.data;
+  return response.data?.data ?? response.data;
 }
 
 export async function getMe() {
@@ -29,5 +29,6 @@ export async function getMe() {
   // (no cookies at all), not an expired access token — attempting a
   // refresh here would be wrong and cause a loop on initial page load.
   const response = await api.get("/api/auth/me", { _retried: true });
-  return response.data?.user ?? response.data;
+  return response.data?.data?.user ?? response.data?.user ?? response.data;
 }
+

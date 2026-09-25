@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import CreateGroupForm from "./CreateGroupForm";
-import { Bookmark, House, Plus, UsersRound, UserRoundCog, LogOut } from "lucide-react";
-import { SUB_GROUPS } from "../data/mockData";
+import { Bookmark, House, Plus, UsersRound, UserRoundCog, LogOut, Boxes } from "lucide-react";
+import { SUB_GROUPS, COMMUNITY_ICON_MAP } from "../data/mockData";
+import { getGroups } from "../services/groups";
 import { useAuth } from "../context/AuthContext";
 
 export function Sidebar({ isOpen, onClose }) {
@@ -12,11 +14,39 @@ export function Sidebar({ isOpen, onClose }) {
   const { user, isLoading, logout } = useAuth();
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
 
+  // Fetch dynamic groups from backend
+  const { data: apiGroups } = useQuery({
+    queryKey: ["groups"],
+    queryFn: () => getGroups(),
+  });
+
+  // Merge default SUB_GROUPS with any backend groups
+  const mergedSubGroups = [...SUB_GROUPS];
+  if (apiGroups && apiGroups.length > 0) {
+    apiGroups.forEach((g) => {
+      const slug = g.name.replace(/^g\//, "");
+      const exists = mergedSubGroups.some(
+        (m) => m.id === slug || m.name === `g/${slug}`,
+      );
+      if (!exists) {
+        mergedSubGroups.push({
+          id: slug,
+          name: `g/${slug}`,
+          topic: g.tagline || "Community",
+          description: g.description,
+          icon: COMMUNITY_ICON_MAP[slug] || Boxes,
+          iconColor: "text-gray-300",
+        });
+      }
+    });
+  }
+
   const handleLogout = async () => {
     await logout();
     if (onClose) onClose();
     navigate("/login", { replace: true });
   };
+
 
   return (
     <>
@@ -111,7 +141,7 @@ export function Sidebar({ isOpen, onClose }) {
             </div>
 
             <div className="space-y-1">
-              {SUB_GROUPS.map((group) => {
+              {mergedSubGroups.map((group) => {
                 const Icon = group.icon;
                 const isGroupActive = currentPath === `/communities/${group.id}`;
 

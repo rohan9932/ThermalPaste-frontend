@@ -48,6 +48,7 @@ _There are 3 people working on this project. Agents must track work separately f
 - [2026-08-28] Centralized all mock posts, communities, and user data into `src/data/mockData.js` with fetch helpers (`getPostById`, `getPostsByCommunity`, `getCommunityById`, `getSavedPosts`). Refactored all pages and components (`Navbar`, `Sidebar`, `PostCard`, `CreatePostForm`, `CommunitiesPage`, `CommunitiesListPage`, `PostDetailsPage`, `SavedPostsPage`, `HomePage`) to eliminate duplicate data bloat.
 - [2026-08-28] Removed sort bar and sorting state from `CommunitiesPage.jsx` for a cleaner, unified feed view.
 - [2026-08-28] Updated `ProfilePage.jsx` recent activity feed: replaced all `r/` prefixes with standard `g/` sub-groups and rendered active, styled router `Link`s for all communities.
+- [2026-09-25] Resolved Mongoose duplicate schema index warning on `Group.js` by removing redundant `groupSchema.index({ name: 1 })` definition (`name: { unique: true }` already creates it).
 
 ### User 2 (Rohan)
 
@@ -77,12 +78,12 @@ _To keep things clean, use these sections to track ongoing work without needing 
 
 ### 💡 Suggested Edits & Improvements
 
-1. ~~**Diverse HomePage Feed**: Pass varied post data to `HomePage.jsx` instead of repeating default cards.~~ *(Completed)*
-2. ~~**Direct Post URL Lookup**: Match post ID in `PostDetailsPage.jsx` when loaded directly via URL without route state.~~ *(Completed)*
-3. ~~**Sidebar Dynamic States**: Highlight active sub-group based on URL pathname and calculate post counts dynamically.~~ *(Completed)*
-4. ~~**Saved Posts Route**: Implement `/saved` bookmark feed.~~ *(Completed)*
-5. ~~**Navbar Search**: Add client-side query filtering for posts and communities.~~ *(Completed)*
-6. ~~**Profile Activity Links**: Change `r/` prefix to `g/` and link to respective sub-groups.~~ *(Completed)*
+1. ~~**Diverse HomePage Feed**: Pass varied post data to `HomePage.jsx` instead of repeating default cards.~~ _(Completed)_
+2. ~~**Direct Post URL Lookup**: Match post ID in `PostDetailsPage.jsx` when loaded directly via URL without route state.~~ _(Completed)_
+3. ~~**Sidebar Dynamic States**: Highlight active sub-group based on URL pathname and calculate post counts dynamically.~~ _(Completed)_
+4. ~~**Saved Posts Route**: Implement `/saved` bookmark feed.~~ _(Completed)_
+5. ~~**Navbar Search**: Add client-side query filtering for posts and communities.~~ _(Completed)_
+6. ~~**Profile Activity Links**: Change `r/` prefix to `g/` and link to respective sub-groups.~~ _(Completed)_
 7. **Auth State Switch**: Add guest (login/register) vs logged-in state toggle in Navbar.
 
 ### 🐛 Known Issues / Tech Debt
