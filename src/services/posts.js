@@ -106,3 +106,10 @@ export async function getCommentVotes(commentId) {
   const response = await api.get(`/api/comments/${commentId}/votes`);
   return response.data?.data ?? {};
 }
+
+// Fetch comments by user
+export async function getUserComments(userId, params = {}) {
+  if (!userId) return { comments: [], count: 0 };
+  const response = await api.get(`/api/comments/user/${userId}`, { params });
+  return response.data?.data ?? { comments: [], count: 0 };
+}
