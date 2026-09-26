@@ -1,7 +1,15 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { X, PlusCircle, Sparkles, Loader2 } from "lucide-react";
+import {
+  X,
+  PlusCircle,
+  Sparkles,
+  Loader2,
+  Upload,
+  Image as ImageIcon,
+  Trash2,
+} from "lucide-react";
 import { getGroups } from "../services/groups";
 import { createPost } from "../services/posts";
 import { useAuth } from "../context/AuthContext";
@@ -20,9 +28,12 @@ export function CreatePostForm({
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [sectionHeader, setSectionHeader] = useState("");
-  const [image, setImage] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const fileInputRef = useRef(null);
 
   // Query live groups from database
   const { data: apiGroups, isLoading: isGroupsLoading } = useQuery({
@@ -48,6 +59,39 @@ export function CreatePostForm({
 
   if (!isOpen) return null;
 
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.match(/^image\/(jpeg|jpg|png|webp)$/i)) {
+      setError("Please select a valid image file (JPEG, PNG, or WebP).");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setError("Image file size must not exceed 10MB.");
+      return;
+    }
+
+    setError("");
+    setImageFile(file);
+    setImageUrl("");
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleClearImage = () => {
+    setImageFile(null);
+    setImagePreview("");
+    setImageUrl("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) return;
@@ -70,12 +114,24 @@ export function CreatePostForm({
         ? `${sectionHeader.trim()}\n\n${content.trim()}`
         : content.trim();
 
-      const created = await createPost({
-        group: selectedCommunity,
-        heading: title.trim(),
-        description: fullContent,
-        imageLink: image.trim(),
-      });
+      let postPayload;
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append("group", selectedCommunity);
+        formData.append("heading", title.trim());
+        formData.append("description", fullContent);
+        formData.append("image", imageFile);
+        postPayload = formData;
+      } else {
+        postPayload = {
+          group: selectedCommunity,
+          heading: title.trim(),
+          description: fullContent,
+          imageLink: imageUrl.trim(),
+        };
+      }
+
+      const created = await createPost(postPayload);
 
       // Invalidate posts cache so feeds update immediately
       queryClient.invalidateQueries({ queryKey: ["posts"] });
@@ -88,8 +144,13 @@ export function CreatePostForm({
       setTitle("");
       setContent("");
       setSectionHeader("");
-      setImage("");
+      setImageFile(null);
+      setImagePreview("");
+      setImageUrl("");
       setError("");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       onClose();
 
       // Navigate to the newly created post
@@ -227,19 +288,105 @@ export function CreatePostForm({
             />
           </div>
 
-          {/* Image URL (Optional) */}
+          {/* Post Image (Full File Upload to Cloudinary or URL) */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#8F99A8] mb-1.5">
-              Image URL{" "}
+              Post Image{" "}
               <span className="text-gray-500 font-normal">(Optional)</span>
             </label>
+
+            {/* Hidden native file input */}
             <input
-              type="url"
-              value={image}
-              onChange={(e) => setImage(e.target.value)}
-              placeholder="e.g: https://... or /images/small-form-factor-mini-itx-pc-case-build-1.webp"
-              className="w-full bg-[#161922] text-sm text-white placeholder-[#8F99A8]/60 px-3.5 py-2.5 rounded-xl border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all"
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/jpg"
+              onChange={handleImageChange}
+              className="hidden"
             />
+
+            {imagePreview || imageUrl ? (
+              <div className="relative rounded-xl overflow-hidden border border-[#222834] bg-[#0B0D11] p-3 flex flex-col sm:flex-row items-center gap-3">
+                <img
+                  src={imagePreview || imageUrl}
+                  alt="Post preview"
+                  className="w-full sm:w-28 h-28 object-cover rounded-lg border border-[#222834]"
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                  }}
+                />
+                <div className="flex-1 min-w-0 space-y-1 text-center sm:text-left">
+                  <p className="text-xs font-semibold text-white truncate">
+                    {imageFile ? imageFile.name : "Image linked"}
+                  </p>
+                  <p className="text-[11px] text-[#8F99A8]">
+                    {imageFile
+                      ? `${(imageFile.size / (1024 * 1024)).toFixed(2)} MB • Uploads to Cloudinary`
+                      : "Remote image URL"}
+                  </p>
+                  <div className="flex items-center justify-center sm:justify-start gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="text-xs text-[#00D8F6] hover:underline font-medium cursor-pointer"
+                    >
+                      Change Image
+                    </button>
+                    <span className="text-[#8F99A8]">•</span>
+                    <button
+                      type="button"
+                      onClick={handleClearImage}
+                      className="text-xs text-rose-400 hover:underline font-medium flex items-center gap-1 cursor-pointer"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full border-2 border-dashed border-[#222834] hover:border-[#00D8F6]/60 hover:bg-[#161922]/50 transition-all rounded-xl p-4 sm:p-5 flex flex-col items-center justify-center gap-2 cursor-pointer group text-center"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#161922] group-hover:bg-[#00D8F6]/10 flex items-center justify-center text-[#8F99A8] group-hover:text-[#00D8F6] transition-colors">
+                    <Upload className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-white group-hover:text-[#00D8F6] transition-colors">
+                      Click to upload an image from your device
+                    </p>
+                    <p className="text-[11px] text-[#8F99A8] mt-0.5">
+                      JPG, PNG, or WebP up to 10MB (Automatically hosted on Cloudinary)
+                    </p>
+                  </div>
+                </div>
+
+                <div className="relative flex items-center justify-center my-1">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-[#222834]" />
+                  </div>
+                  <span className="relative bg-[#0F1117] px-2 text-[10px] uppercase font-bold text-[#8F99A8]/70">
+                    or paste image url
+                  </span>
+                </div>
+
+                <input
+                  type="url"
+                  value={imageUrl}
+                  onChange={(e) => {
+                    setImageUrl(e.target.value);
+                    if (e.target.value.trim()) {
+                      setImagePreview(e.target.value.trim());
+                    } else {
+                      setImagePreview("");
+                    }
+                  }}
+                  placeholder="https://images.unsplash.com/..."
+                  className="w-full bg-[#161922] text-xs text-white placeholder-[#8F99A8]/60 px-3.5 py-2 rounded-xl border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all"
+                />
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}

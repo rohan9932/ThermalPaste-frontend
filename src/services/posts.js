@@ -42,16 +42,36 @@ export async function getPostsByGroup(idOrName, params = {}) {
   return posts;
 }
 
-// Create a new post
+// Create a new post (supports JSON and multipart/form-data)
 export async function createPost(postData) {
-  const response = await api.post("/api/posts", postData);
+  const isFormData = postData instanceof FormData;
+  const response = await api.post("/api/posts", postData, {
+    headers: isFormData ? { "Content-Type": "multipart/form-data" } : undefined,
+  });
   return response.data?.data?.post ?? response.data;
 }
 
-// Update existing post (owner only)
+// Update existing post (owner only, supports JSON and multipart/form-data)
 export async function updatePost(id, updates) {
-  const response = await api.put(`/api/posts/${id}`, updates);
+  const isFormData = updates instanceof FormData;
+  const response = await api.put(`/api/posts/${id}`, updates, {
+    headers: isFormData ? { "Content-Type": "multipart/form-data" } : undefined,
+  });
   return response.data?.data?.post ?? response.data;
+}
+
+// Upload post image to Cloudinary (standalone or for existing post)
+export async function uploadPostImage(file, postId = null) {
+  const formData = new FormData();
+  formData.append("image", file);
+  if (postId) {
+    formData.append("postId", postId);
+  }
+  const endpoint = postId ? `/api/posts/${postId}/image` : "/api/posts/image";
+  const response = await api.post(endpoint, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data?.data ?? response.data;
 }
 
 // Delete post and cascade delete comments/votes/saved (owner only)

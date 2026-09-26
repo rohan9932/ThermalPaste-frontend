@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, useLocation, Link, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Navbar from "../components/Navbar";
@@ -31,6 +31,7 @@ import {
   X,
   AlertTriangle,
   Loader2,
+  Upload,
 } from "lucide-react";
 
 // ─── Comment Item Sub-Component ───────────────────────────────────────────────
@@ -222,8 +223,11 @@ export default function PostDetailsPage() {
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
   const [editImage, setEditImage] = useState("");
+  const [editImageFile, setEditImageFile] = useState(null);
+  const [editImagePreview, setEditImagePreview] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editError, setEditError] = useState("");
+  const editFileInputRef = useRef(null);
 
   // Delete State
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -473,8 +477,42 @@ export default function PostDetailsPage() {
     setEditTitle(title);
     setEditContent(content);
     setEditImage(image || "");
+    setEditImageFile(null);
+    setEditImagePreview(image || "");
     setEditError("");
     setIsEditOpen(true);
+  };
+
+  const handleEditImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.match(/^image\/(jpeg|jpg|png|webp)$/i)) {
+      setEditError("Please select a valid image file (JPEG, PNG, or WebP).");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setEditError("Image file size must not exceed 10MB.");
+      return;
+    }
+
+    setEditError("");
+    setEditImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setEditImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleClearEditImage = () => {
+    setEditImageFile(null);
+    setEditImagePreview("");
+    setEditImage("");
+    if (editFileInputRef.current) {
+      editFileInputRef.current.value = "";
+    }
   };
 
   // Handle Edit Submit
@@ -486,14 +524,25 @@ export default function PostDetailsPage() {
     setEditError("");
 
     try {
-      await updatePost(postId, {
-        heading: editTitle.trim(),
-        description: editContent.trim(),
-        imageLink: editImage.trim(),
-      });
+      let updatePayload;
+      if (editImageFile) {
+        const formData = new FormData();
+        formData.append("heading", editTitle.trim());
+        formData.append("description", editContent.trim());
+        formData.append("image", editImageFile);
+        updatePayload = formData;
+      } else {
+        updatePayload = {
+          heading: editTitle.trim(),
+          description: editContent.trim(),
+          imageLink: editImage.trim(),
+        };
+      }
+
+      await updatePost(postId, updatePayload);
 
       queryClient.invalidateQueries({ queryKey: POST_KEYS.post(id) });
-      queryClient.invalidateQueries({ queryKey: POST_KEYS.feed() });
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
       setIsEditOpen(false);
     } catch (err) {
       setEditError(
@@ -591,17 +640,91 @@ export default function PostDetailsPage() {
                 />
               </div>
 
+              {/* Post Image (Upload to Cloudinary or URL) */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#8F99A8] mb-1.5">
-                  Image URL
+                  Post Image
                 </label>
+
+                {/* Hidden native file input */}
                 <input
-                  type="url"
-                  value={editImage}
-                  onChange={(e) => setEditImage(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full bg-[#161922] text-sm text-white px-3.5 py-2.5 rounded-xl border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all"
+                  ref={editFileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/jpg"
+                  onChange={handleEditImageChange}
+                  className="hidden"
                 />
+
+                {editImagePreview ? (
+                  <div className="relative rounded-xl overflow-hidden border border-[#222834] bg-[#0B0D11] p-3 flex flex-col sm:flex-row items-center gap-3">
+                    <img
+                      src={editImagePreview}
+                      alt="Post preview"
+                      className="w-full sm:w-28 h-28 object-cover rounded-lg border border-[#222834]"
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                      }}
+                    />
+                    <div className="flex-1 min-w-0 space-y-1 text-center sm:text-left">
+                      <p className="text-xs font-semibold text-white truncate">
+                        {editImageFile ? editImageFile.name : "Current Post Image"}
+                      </p>
+                      <p className="text-[11px] text-[#8F99A8]">
+                        {editImageFile
+                          ? `${(editImageFile.size / (1024 * 1024)).toFixed(2)} MB • Uploads to Cloudinary`
+                          : "Stored image"}
+                      </p>
+                      <div className="flex items-center justify-center sm:justify-start gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => editFileInputRef.current?.click()}
+                          className="text-xs text-[#00D8F6] hover:underline font-medium cursor-pointer"
+                        >
+                          Change Image
+                        </button>
+                        <span className="text-[#8F99A8]">•</span>
+                        <button
+                          type="button"
+                          onClick={handleClearEditImage}
+                          className="text-xs text-rose-400 hover:underline font-medium flex items-center gap-1 cursor-pointer"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div
+                      onClick={() => editFileInputRef.current?.click()}
+                      className="w-full border-2 border-dashed border-[#222834] hover:border-[#00D8F6]/60 hover:bg-[#161922]/50 transition-all rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer group text-center"
+                    >
+                      <div className="w-9 h-9 rounded-full bg-[#161922] group-hover:bg-[#00D8F6]/10 flex items-center justify-center text-[#8F99A8] group-hover:text-[#00D8F6] transition-colors">
+                        <Upload className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-white group-hover:text-[#00D8F6] transition-colors">
+                          Click to upload an image from your device
+                        </p>
+                        <p className="text-[10px] text-[#8F99A8] mt-0.5">
+                          JPG, PNG, or WebP up to 10MB (Cloudinary)
+                        </p>
+                      </div>
+                    </div>
+
+                    <input
+                      type="url"
+                      value={editImage}
+                      onChange={(e) => {
+                        setEditImage(e.target.value);
+                        setEditImagePreview(e.target.value.trim());
+                      }}
+                      placeholder="Or paste an image URL (https://...)"
+                      className="w-full bg-[#161922] text-xs text-white placeholder-[#8F99A8]/60 px-3.5 py-2 rounded-xl border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#222834]">
