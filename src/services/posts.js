@@ -7,6 +7,7 @@ export const POST_KEYS = {
   group: (groupId, params) =>
     params ? ["posts", "group", String(groupId), params] : ["posts", "group", String(groupId)],
   saved: (params) => (params ? ["saved", params] : ["saved"]),
+  reaction: (id) => ["posts", String(id), "reaction"],
 };
 
 // Fetch cross-group feed with pagination & privacy filtering
@@ -63,6 +64,20 @@ export async function deletePost(id) {
 export async function toggleSavePost(id) {
   const response = await api.post(`/api/posts/${id}/save`);
   return response.data?.data ?? response.data;
+}
+
+// React to a post ('upvote' | 'downvote')
+export async function reactPost(id, reaction) {
+  if (!id) return null;
+  const response = await api.post(`/api/posts/${id}/react`, { reaction });
+  return response.data?.data ?? response.data;
+}
+
+// Get reaction counts & current user reaction status for a post
+export async function getPostReaction(id) {
+  if (!id) return { reactCount: { upvote: 0, downvote: 0 }, userReaction: null };
+  const response = await api.get(`/api/posts/${id}/react`);
+  return response.data?.data ?? { reactCount: { upvote: 0, downvote: 0 }, userReaction: null };
 }
 
 // Fetch saved posts for currently logged-in user

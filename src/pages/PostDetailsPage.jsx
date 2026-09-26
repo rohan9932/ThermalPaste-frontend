@@ -12,6 +12,7 @@ import {
   updatePost,
   deletePost,
   toggleSavePost,
+  reactPost,
   POST_KEYS,
   getComments,
   createComment,
@@ -286,7 +287,17 @@ export default function PostDetailsPage() {
   const sectionHeader =
     rawPost?.sectionHeader || rawPost?.previewSnippet || null;
   const image = rawPost?.imageLink || rawPost?.image || null;
-  const initialVotes = rawPost?.upvotes ?? 1;
+  const initialVotes =
+    rawPost?.reactCount?.upvote ??
+    rawPost?.reactcount?.upvote ??
+    rawPost?.upvotes ??
+    1;
+  const initialVoteState =
+    rawPost?.userReaction === "upvote"
+      ? "up"
+      : rawPost?.userReaction === "downvote"
+      ? "down"
+      : null;
 
   // Determine post ownership
   const isOwner =
@@ -339,20 +350,73 @@ export default function PostDetailsPage() {
     }
   };
 
-  // Voting state initialized from the post's vote count
-  const [vote, setVote] = useState(null);
+  // Voting state initialized from the post's vote count and user reaction
+  const [vote, setVote] = useState(initialVoteState);
   const [voteCount, setVoteCount] = useState(initialVotes);
 
-  const handleVote = (type) => {
-    if (vote === type) {
-      setVote(null);
-      setVoteCount((prev) => (type === "up" ? prev - 1 : prev + 1));
-    } else if (vote === null) {
-      setVote(type);
-      setVoteCount((prev) => (type === "up" ? prev + 1 : prev - 1));
+  // Sync if rawPost loads or updates
+  const [prevRawPostUpvotes, setPrevRawPostUpvotes] = useState(initialVotes);
+  const [prevRawPostReaction, setPrevRawPostReaction] = useState(
+    rawPost?.userReaction,
+  );
+  if (
+    initialVotes !== prevRawPostUpvotes ||
+    rawPost?.userReaction !== prevRawPostReaction
+  ) {
+    setPrevRawPostUpvotes(initialVotes);
+    setPrevRawPostReaction(rawPost?.userReaction);
+    setVote(initialVoteState);
+    setVoteCount(initialVotes);
+  }
+
+  const handleVote = async (type) => {
+    if (!user) {
+      navigate("/login", { state: { from: location.pathname } });
+      return;
+    }
+
+    const reaction = type === "up" ? "upvote" : "downvote";
+    const prevVote = vote;
+    const prevCount = voteCount;
+
+    let nextCount = prevCount;
+    let nextVote = vote === type ? null : type;
+
+    if (type === "up") {
+      if (vote === "up") {
+        nextCount = Math.max(0, prevCount - 1);
+      } else {
+        nextCount = prevCount + 1;
+      }
     } else {
-      setVote(type);
-      setVoteCount((prev) => (type === "up" ? prev + 2 : prev - 2));
+      if (vote === "up") {
+        nextCount = Math.max(0, prevCount - 1);
+      }
+    }
+
+    setVote(nextVote);
+    setVoteCount(nextCount);
+
+    try {
+      const data = await reactPost(postId, reaction);
+      if (data?.reactCount) {
+        setVoteCount(
+          data.reactCount.upvote ?? data.reactcount?.upvote ?? nextCount,
+        );
+        setVote(
+          data.userReaction === "upvote"
+            ? "up"
+            : data.userReaction === "downvote"
+            ? "down"
+            : null,
+        );
+      }
+      queryClient.invalidateQueries({ queryKey: POST_KEYS.post(id) });
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    } catch (err) {
+      console.error("Failed to react to post:", err);
+      setVote(prevVote);
+      setVoteCount(prevCount);
     }
   };
 

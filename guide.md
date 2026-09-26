@@ -56,6 +56,11 @@ _There are 3 people working on this project. Agents must track work separately f
 - [2026-09-26] Audited and refined `plan.md` to strictly align the post feature implementation roadmap with `guide.md` (pure Axios service layer, exact dark/cyan theme tokens, backend schema normalization map, mobile responsiveness, and preserved nested comments).
 - [2026-09-26] Implemented Phase 1: created `src/services/posts.js` with pure Axios service methods (`getFeed`, `getPostById`, `getPostsByGroup`, `createPost`, `updatePost`, `deletePost`, `toggleSavePost`, `getSavedPosts`) and standardized `POST_KEYS` query keys.
 - [2026-09-26] Implemented Phase 2: connected `HomePage.jsx` to live API feed with theme-matched pulse skeleton cards, retryable error alert, and empty state CTA; updated `PostCard.jsx` to seamlessly normalize backend and mock fields; wired `CreatePostForm.jsx` to dynamic groups and `createPost` API with cache invalidation and redirect.
+- [2026-09-26] Implemented Phase 3: upgraded `PostDetailsPage.jsx` with direct API query by ID, loading spinner, and 404 fallback; implemented owner-only Edit and Delete modals with cascade delete confirmation and query cache invalidation, while preserving all existing nested comment threads and vote controls.
+- [2026-09-26] Implemented Phase 4: added optimistic Bookmark save/unsave toggles to `PostCard.jsx` and `PostDetailsPage.jsx` with auth redirects and cache invalidation; connected `SavedPostsPage.jsx` to live `getSavedPosts` API with loading skeleton, error retry, and empty bookmarks state.
+- [2026-09-26] Implemented Phase 5: connected `CommunitiesPage.jsx` to live group posts via `getPostsByGroup` API with loading skeleton, error retry, and empty community posts state with "Write the First Post" CTA button.
+- [2026-09-26] Implemented Phase 6: upgraded `ProfilePage.jsx` with TanStack Query fetching `getProfile` and `getFeed`, eliminated React 19 `useEffect` cascading re-render warnings, added pulse skeleton loading for posts and communities tabs, rendered real joined communities (`profile.groups`) with dynamic icons, public/private badges, member counts, links to `/communities/:groupId`, and empty states.
+- [2026-09-26] Implemented Phase 7: pruned unused mock post helpers (`getSavedPosts`) from `mockData.js`; performed responsive & mobile layout audit down to 360px viewport across `PostCard.jsx`, `PostDetailsPage.jsx`, `CommunitiesPage.jsx`, `SavedPostsPage.jsx`, and `CreatePostForm.jsx` (ensuring flex-wrapping and no badge or button clipping); resolved all ESLint errors across the entire codebase (`npx eslint src` passes with 0 errors and 0 warnings). Full frontend post feature implementation completed.
 
 ### User 3 (Shafayat)
 
@@ -77,7 +82,7 @@ _To keep things clean, use these sections to track ongoing work without needing 
 
 ### 🎯 Current Focus
 
-- Post feature integration: transitioning Home, Details, Community, and Saved feeds from mock data to the backend API per `plan.md`.
+- Post feature integration complete (Phases 1–7): Home feed, Post Details, Communities, Saved posts, and User Profile are fully transitioned from mock data to the live backend API with verified responsive layouts, cache invalidation, and 0 ESLint warnings.
 
 ### 💡 Suggested Edits & Improvements
 

@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { COMMUNITY_ICON_MAP } from "../data/mockData";
 import { useAuth } from "../context/AuthContext";
-import { toggleSavePost } from "../services/posts";
+import { toggleSavePost, reactPost } from "../services/posts";
 
 const DEFAULT_POST = {
   id: "post-1",
@@ -55,7 +55,18 @@ export function PostCard({ post = DEFAULT_POST }) {
   const title = post.heading || post.title || "Untitled Post";
   const content = post.description || post.content || "";
   const sectionSnippet = post.previewSnippet || post.sectionHeader || null;
-  const initialVotes = post.upvotes ?? DEFAULT_POST.upvotes;
+  // Upvotes from backend reactCount (upvote) or mock upvotes fallback
+  const initialVotes =
+    post.reactCount?.upvote ??
+    post.reactcount?.upvote ??
+    post.upvotes ??
+    DEFAULT_POST.upvotes;
+  const initialVoteState =
+    post.userReaction === "upvote"
+      ? "up"
+      : post.userReaction === "downvote"
+      ? "down"
+      : null;
   const commentsTotal = post.commentsCount ?? post.comments ?? 0;
   const image = post.imageLink || post.image || null;
   const authorAvatar = post.user?.imageLink || post.authorAvatar || null;
@@ -80,32 +91,104 @@ export function PostCard({ post = DEFAULT_POST }) {
     setIsSaved(Boolean(post.isSaved));
   }
 
-  // Local voting state
-  const [voteState, setVoteState] = useState(null);
+  // Local voting state initialized with backend reaction status & count
+  const [voteState, setVoteState] = useState(initialVoteState);
   const [upvoteCount, setUpvoteCount] = useState(initialVotes);
 
-  const handleUpvote = (e) => {
+  // Sync voting state if post props update
+  const [prevPostId, setPrevPostId] = useState(postId);
+  const [prevPostUpvotes, setPrevPostUpvotes] = useState(initialVotes);
+  const [prevPostReaction, setPrevPostReaction] = useState(post.userReaction);
+  if (
+    postId !== prevPostId ||
+    initialVotes !== prevPostUpvotes ||
+    post.userReaction !== prevPostReaction
+  ) {
+    setPrevPostId(postId);
+    setPrevPostUpvotes(initialVotes);
+    setPrevPostReaction(post.userReaction);
+    setVoteState(initialVoteState);
+    setUpvoteCount(initialVotes);
+  }
+
+  const handleUpvote = async (e) => {
     e.stopPropagation();
-    if (voteState === "down") {
-      setUpvoteCount((prev) => prev + 2);
-    } else if (voteState === "up") {
-      setUpvoteCount((prev) => prev - 1);
-    } else {
-      setUpvoteCount((prev) => prev + 1);
+    if (!user) {
+      navigate("/login", { state: { from: window.location.pathname } });
+      return;
     }
-    setVoteState(voteState === "up" ? null : "up");
+
+    const prevVote = voteState;
+    const prevCount = upvoteCount;
+    let nextCount = prevCount;
+    let nextVote = voteState === "up" ? null : "up";
+
+    if (voteState === "up") {
+      nextCount = Math.max(0, prevCount - 1);
+    } else {
+      nextCount = prevCount + 1;
+    }
+
+    setVoteState(nextVote);
+    setUpvoteCount(nextCount);
+
+    try {
+      const data = await reactPost(postId, "upvote");
+      if (data?.reactCount) {
+        setUpvoteCount(data.reactCount.upvote ?? data.reactcount?.upvote ?? nextCount);
+        setVoteState(
+          data.userReaction === "upvote"
+            ? "up"
+            : data.userReaction === "downvote"
+            ? "down"
+            : null
+        );
+      }
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    } catch (err) {
+      console.error("Failed to upvote post:", err);
+      setVoteState(prevVote);
+      setUpvoteCount(prevCount);
+    }
   };
 
-  const handleDownvote = (e) => {
+  const handleDownvote = async (e) => {
     e.stopPropagation();
-    if (voteState === "up") {
-      setUpvoteCount((prev) => prev - 2);
-    } else if (voteState === "down") {
-      setUpvoteCount((prev) => prev + 1);
-    } else {
-      setUpvoteCount((prev) => prev - 1);
+    if (!user) {
+      navigate("/login", { state: { from: window.location.pathname } });
+      return;
     }
-    setVoteState(voteState === "down" ? null : "down");
+
+    const prevVote = voteState;
+    const prevCount = upvoteCount;
+    let nextCount = prevCount;
+    let nextVote = voteState === "down" ? null : "down";
+
+    if (voteState === "up") {
+      nextCount = Math.max(0, prevCount - 1);
+    }
+
+    setVoteState(nextVote);
+    setUpvoteCount(nextCount);
+
+    try {
+      const data = await reactPost(postId, "downvote");
+      if (data?.reactCount) {
+        setUpvoteCount(data.reactCount.upvote ?? data.reactcount?.upvote ?? nextCount);
+        setVoteState(
+          data.userReaction === "upvote"
+            ? "up"
+            : data.userReaction === "downvote"
+            ? "down"
+            : null
+        );
+      }
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    } catch (err) {
+      console.error("Failed to downvote post:", err);
+      setVoteState(prevVote);
+      setUpvoteCount(prevCount);
+    }
   };
 
   const handleShare = (e) => {
