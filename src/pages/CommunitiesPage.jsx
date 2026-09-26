@@ -1,12 +1,11 @@
-import React, { useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import CreatePostForm from "../components/CreatePostForm";
 import PostCard from "../components/PostCard";
 import {
-  LayoutGrid,
   Boxes,
   Users,
   Lock,
@@ -14,15 +13,45 @@ import {
   Check,
   UserPlus,
   Loader2,
-  ShieldAlert,
+  AlertTriangle,
+  RefreshCw,
+  MessageSquare,
+  Plus,
 } from "lucide-react";
 import {
-  getPostsByCommunity,
+  getPostsByCommunity as getFallbackPosts,
   getCommunityById,
   COMMUNITY_ICON_MAP,
 } from "../data/mockData";
 import { getGroupByIdOrName, joinGroup, leaveGroup } from "../services/groups";
+import { getPostsByGroup, POST_KEYS } from "../services/posts";
 import { useAuth } from "../context/AuthContext";
+
+// Skeleton for community posts loading
+function CommunityPostSkeleton() {
+  return (
+    <div className="w-full bg-[#0F1117] border border-[#222834] rounded-2xl overflow-hidden flex flex-row shadow-xl animate-pulse">
+      <div className="w-14 sm:w-16 bg-[#0B0D11] border-r border-[#222834]/60 flex flex-col items-center py-4 px-2 shrink-0 space-y-2">
+        <div className="w-8 h-8 rounded-xl bg-[#161922]" />
+        <div className="w-4 h-4 rounded bg-[#161922]" />
+        <div className="w-8 h-8 rounded-xl bg-[#161922]" />
+      </div>
+      <div className="flex-1 p-4 sm:p-5 flex flex-col space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="w-24 h-5 rounded-md bg-[#161922]" />
+          <div className="w-3 h-3 rounded-full bg-[#161922]" />
+          <div className="w-20 h-4 rounded bg-[#161922]" />
+        </div>
+        <div className="w-3/4 h-6 rounded-lg bg-[#161922]" />
+        <div className="w-full h-3.5 rounded bg-[#161922]" />
+        <div className="border-t border-[#222834] pt-3 flex items-center gap-4">
+          <div className="w-20 h-5 rounded bg-[#161922]" />
+          <div className="w-16 h-5 rounded bg-[#161922]" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function CommunitiesPage() {
   const { groupId } = useParams();
@@ -38,10 +67,9 @@ export default function CommunitiesPage() {
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [actionError, setActionError] = useState("");
 
-  // Fetch real group from backend API
+  // Fetch real group metadata from backend API
   const {
     data: apiGroup,
-    isLoading: isGroupLoading,
     refetch: refetchGroup,
   } = useQuery({
     queryKey: ["group", displayGroupId],
@@ -49,9 +77,22 @@ export default function CommunitiesPage() {
     retry: false,
   });
 
-  // Fallback to mock data if group hasn't been created on backend yet
+  // Fetch community-scoped posts from backend API
+  const {
+    data: apiPosts,
+    isLoading: isPostsLoading,
+    error: postsError,
+    refetch: refetchPosts,
+    isFetching: isPostsFetching,
+  } = useQuery({
+    queryKey: POST_KEYS.group(displayGroupId),
+    queryFn: () => getPostsByGroup(displayGroupId),
+  });
+
+  // Fallback to mock data if group/posts haven't been created on backend yet
   const mockInfo = getCommunityById(displayGroupId);
-  const posts = getPostsByCommunity(displayGroupId);
+  const fallbackMockPosts = getFallbackPosts(displayGroupId);
+  const posts = apiPosts !== undefined ? apiPosts : fallbackMockPosts;
 
   const groupData = apiGroup || {
     name: mockInfo?.name || displayGroupName,
@@ -105,11 +146,11 @@ export default function CommunitiesPage() {
 
   return (
     <div className="min-h-screen bg-[#0B0D11] text-white flex flex-col">
-      {/* Create Post Modal */}
+      {/* Create Post Modal pre-selected with this community */}
       <CreatePostForm
         isOpen={isCreatePostOpen}
         onClose={() => setIsCreatePostOpen(false)}
-        defaultCommunity={displayGroupName}
+        defaultCommunity={displayGroupId}
       />
 
       {/* Shared top navigation bar */}
@@ -267,15 +308,79 @@ export default function CommunitiesPage() {
               ) : (
                 /* Posts Feed */
                 <div className="space-y-4">
-                  {posts.map((post) => (
-                    <PostCard key={post.id} post={post} />
-                  ))}
-                  {posts.length === 0 && (
-                    <div className="rounded-2xl border border-[#222834] bg-[#0F1117] py-12 text-center text-[#8F99A8] text-sm">
-                      No posts found in this community yet. Be the first to
-                      share!
+                  {/* Loading State */}
+                  {isPostsLoading && (
+                    <div className="space-y-4">
+                      <CommunityPostSkeleton />
+                      <CommunityPostSkeleton />
                     </div>
                   )}
+
+                  {/* Error State */}
+                  {!isPostsLoading && postsError && (
+                    <div className="rounded-2xl border border-rose-500/30 bg-[#0F1117] p-8 text-center space-y-4 shadow-xl">
+                      <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 mx-auto">
+                        <AlertTriangle className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold text-white mb-1">
+                          Failed to load community posts
+                        </h3>
+                        <p className="text-xs text-[#8F99A8] max-w-sm mx-auto">
+                          {postsError?.response?.data?.message ||
+                            postsError?.message ||
+                            "Could not retrieve threads for this community."}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => refetchPosts()}
+                        disabled={isPostsFetching}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#161922] border border-[#222834] text-xs font-semibold text-white hover:border-[#00D8F6] hover:text-[#00D8F6] transition cursor-pointer disabled:opacity-50"
+                      >
+                        <RefreshCw
+                          className={`w-3.5 h-3.5 ${isPostsFetching ? "animate-spin" : ""}`}
+                        />
+                        <span>{isPostsFetching ? "Retrying..." : "Retry"}</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Empty State */}
+                  {!isPostsLoading && !postsError && posts.length === 0 && (
+                    <div className="rounded-2xl border border-[#222834] bg-[#0F1117] p-10 sm:p-12 text-center space-y-4 shadow-xl">
+                      <div className="w-14 h-14 rounded-2xl bg-[#00D8F6]/10 border border-[#00D8F6]/30 flex items-center justify-center text-[#00D8F6] mx-auto">
+                        <MessageSquare className="w-7 h-7" />
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="text-base sm:text-lg font-bold text-white">
+                          No posts in this community yet
+                        </h3>
+                        <p className="text-xs sm:text-sm text-[#8F99A8] max-w-sm mx-auto">
+                          Be the first to share your build, benchmarks, or ask a
+                          question in{" "}
+                          <span className="text-white font-semibold">
+                            {displayGroupName}
+                          </span>
+                          !
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setIsCreatePostOpen(true)}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#00D8F6] hover:bg-[#00c4e0] text-[#0B0D11] text-xs font-bold rounded-full shadow-[0_0_15px_rgba(0,216,246,0.3)] active:scale-95 transition cursor-pointer"
+                      >
+                        <Plus className="w-4 h-4 stroke-[2.5]" />
+                        <span>Write the First Post</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Post Cards List */}
+                  {!isPostsLoading &&
+                    !postsError &&
+                    posts.length > 0 &&
+                    posts.map((post) => (
+                      <PostCard key={post._id || post.id} post={post} />
+                    ))}
                 </div>
               )}
             </div>
