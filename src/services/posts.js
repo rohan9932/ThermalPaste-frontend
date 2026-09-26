@@ -75,3 +75,34 @@ export async function getSavedPosts(params = {}) {
   posts.currentPage = data?.currentPage ?? 1;
   return posts;
 }
+
+// Fetch comments for a post (nested tree)
+export async function getComments(postId) {
+  if (!postId) return { comments: [], count: 0 };
+  const response = await api.get(`/api/posts/${postId}/comments`);
+  return response.data?.data ?? { comments: [], count: 0 };
+}
+
+// Create a comment or reply on a post
+export async function createComment(postId, commentData) {
+  const response = await api.post("/api/comments", { postId, ...commentData });
+  return response.data?.data?.comment ?? response.data;
+}
+
+// Like/unlike a comment
+export async function likeComment(commentId) {
+  const response = await api.post(`/api/comments/${commentId}/like`);
+  return response.data?.data?.comment ?? response.data;
+}
+
+// Vote on a comment (1 = upvote, -1 = downvote)
+export async function voteComment(commentId, value) {
+  const response = await api.post(`/api/comments/${commentId}/vote`, { value });
+  return response.data?.data ?? response.data;
+}
+
+// Get vote counts for a comment
+export async function getCommentVotes(commentId) {
+  const response = await api.get(`/api/comments/${commentId}/votes`);
+  return response.data?.data ?? {};
+}
