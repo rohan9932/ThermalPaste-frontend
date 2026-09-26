@@ -10,11 +10,9 @@ import PostCard from "../components/PostCard.jsx";
 import {
   updateProfile,
 } from "../services/profile.js";
-import { getFeed, POST_KEYS } from "../services/posts.js";
+import { getFeed, POST_KEYS, getUserComments } from "../services/posts.js";
 import { useAuth } from "../context/AuthContext";
-import { getCategoryIcon } from "../data/mockData";
 import {
-  Cpu,
   Shield,
   Save,
   RotateCcw,
@@ -22,14 +20,6 @@ import {
   Settings,
   Layers,
   MessageCircle,
-  Heart,
-  Activity,
-  Users,
-  Compass,
-  ArrowRight,
-  Boxes,
-  Lock,
-  Globe,
 } from "lucide-react";
 
 // ─── Mock User Data ────────────────────────────────────────────────────────────
@@ -150,12 +140,12 @@ const USER = {
 // ─── ProfilePage Component ────────────────────────────────────────────────────
 export default function ProfilePage() {
   const queryClient = useQueryClient();
-  const { user, isLoading: isUserLoading } = useAuth();
+  const { user } = useAuth();
 
   // Controls whether the sidebar is open or collapsed.
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Tracks active tab: posts, communities, or activity.
+  // Tracks active tab: posts or comments.
   const [activeTab, setActiveTab] = useState("posts");
 
   // Editable profile fields.
@@ -172,16 +162,17 @@ export default function ProfilePage() {
     queryFn: () => getFeed(),
   });
 
+  // Fetch user's comments
+  const { data: userCommentsData = { comments: [] }, isLoading: isCommentsLoading } = useQuery({
+    queryKey: ["userComments", user?._id],
+    queryFn: () => getUserComments(user?._id),
+    enabled: !!user?._id,
+  });
+
   // Use user data from AuthContext (includes profile fields: imageLink, bio, groups)
   const displayName = user?.username || USER.username;
   const avatarUrl = user?.imageLink || "/images/avatar.jpg";
   const displayBio = user?.bio || USER.bio;
-
-  // Joined groups from profile
-  const rawGroups = user?.groups || [];
-  const joinedGroups = rawGroups.filter(
-    (g) => g && (typeof g === "object" || typeof g === "string"),
-  );
 
   // Filter posts created by the current user
   const userRealPosts = feedPosts.filter((p) => {
@@ -379,16 +370,11 @@ export default function ProfilePage() {
                     icon: <Layers className="w-4 h-4" />,
                   },
                   {
-                    id: "communities",
-                    label: isUserLoading
-                      ? "Your Communities"
-                      : `Your Communities (${joinedGroups.length})`,
-                    icon: <Users className="w-4 h-4" />,
-                  },
-                  {
-                    id: "activity",
-                    label: "Recent Activity",
-                    icon: <Activity className="w-4 h-4" />,
+                    id: "comments",
+                    label: isCommentsLoading
+                      ? "Comments"
+                      : `Comments (${userCommentsData.comments?.length ?? 0})`,
+                    icon: <MessageCircle className="w-4 h-4" />,
                   },
                 ].map((tab) => (
                   <button
@@ -448,189 +434,95 @@ export default function ProfilePage() {
                   </div>
                 )}
 
-                {/* ── Your Communities Tab ── */}
-                {activeTab === "communities" && (
+                {/* ── Comments Tab ── */}
+                {activeTab === "comments" && (
                   <div className="space-y-4">
-                    {isUserLoading ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {[1, 2, 3, 4].map((n) => (
+                    {isCommentsLoading ? (
+                      <div className="space-y-4">
+                        {[1, 2, 3].map((n) => (
                           <div
                             key={n}
-                            className="p-5 rounded-2xl bg-[#0F1117] border border-[#222834] animate-pulse space-y-4 shadow-xl"
+                            className="w-full bg-[#0F1117] border border-[#222834] rounded-2xl p-5 shadow-xl animate-pulse space-y-3"
                           >
-                            <div className="flex items-start gap-3.5">
-                              <div className="w-12 h-12 rounded-xl bg-[#161922] shrink-0" />
-                              <div className="space-y-2 flex-1">
-                                <div className="h-4 bg-[#161922] rounded w-1/2" />
-                                <div className="h-3 bg-[#161922] rounded w-1/3" />
-                                <div className="h-3 bg-[#161922] rounded w-3/4" />
-                              </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-24 h-5 rounded-md bg-[#161922]" />
+                              <div className="w-3 h-3 rounded-full bg-[#161922]" />
+                              <div className="w-20 h-4 rounded bg-[#161922]" />
                             </div>
-                            <div className="pt-3 border-t border-[#222834] flex justify-between">
-                              <div className="h-3 bg-[#161922] rounded w-16" />
-                              <div className="h-3 bg-[#161922] rounded w-12" />
+                            <div className="w-3/4 h-6 rounded-lg bg-[#161922]" />
+                            <div className="space-y-1.5 pt-1">
+                              <div className="w-full h-4 rounded bg-[#161922]" />
+                              <div className="w-5/6 h-4 rounded bg-[#161922]" />
                             </div>
                           </div>
                         ))}
                       </div>
-                    ) : joinedGroups.length === 0 ? (
-                      <div className="rounded-2xl border border-[#222834] bg-[#0F1117] p-10 sm:p-12 text-center space-y-4 shadow-xl">
-                        <div className="w-14 h-14 rounded-2xl bg-[#161922] border border-[#222834] text-[#8F99A8] flex items-center justify-center mx-auto">
-                          <Users className="w-6 h-6" />
+                    ) : userCommentsData.comments?.length === 0 ? (
+                      <div className="rounded-2xl border border-[#222834] bg-[#0F1117] p-10 text-center space-y-3 shadow-xl">
+                        <div className="w-12 h-12 rounded-2xl bg-[#161922] border border-[#222834] text-[#8F99A8] flex items-center justify-center mx-auto">
+                          <MessageCircle className="w-6 h-6" />
                         </div>
-                        <div className="space-y-1">
-                          <h3 className="text-base sm:text-lg font-bold text-white">
-                            You haven't joined any communities yet
-                          </h3>
-                          <p className="text-xs sm:text-sm text-[#8F99A8] max-w-sm mx-auto">
-                            Join hardware discussions, custom watercooling setups,
-                            and battlestations across ThermalPaste.
-                          </p>
-                        </div>
-                        <Link
-                          to="/communities"
-                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#00D8F6] hover:bg-[#00c4e0] text-[#0B0D11] text-xs font-bold transition shadow-[0_0_14px_rgba(0,216,246,0.3)] active:scale-95"
-                        >
-                          <Compass className="w-4 h-4" />
-                          <span>Explore Communities</span>
-                        </Link>
+                        <p className="text-sm text-[#8F99A8]">
+                          You haven't made any comments yet.
+                        </p>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {joinedGroups.map((group) => {
-                          const isString = typeof group === "string";
-                          const groupObj = isString ? { _id: group, name: group } : group;
-                          const rawName = groupObj.name || groupObj.slug || "community";
-                          const slug = rawName.replace(/^g\//, "");
-                          const groupDisplay = rawName.startsWith("g/")
-                            ? rawName
-                            : `g/${rawName}`;
-                          const GroupIcon = getCategoryIcon(
-                            groupObj.category || slug,
-                          );
-                          const memberCount = Array.isArray(groupObj.members)
-                            ? groupObj.members.length
-                            : typeof groupObj.memberCount === "number"
-                            ? groupObj.memberCount
-                            : 1;
-
-                          return (
-                            <Link
-                              key={groupObj._id || slug}
-                              to={`/communities/${slug}`}
-                              className="p-5 rounded-2xl bg-[#0F1117] border border-[#222834] hover:border-[#00D8F6]/40 transition-all duration-200 group flex flex-col justify-between space-y-4 shadow-xl cursor-pointer"
-                            >
-                              <div className="flex items-start gap-3.5">
-                                <div className="w-12 h-12 rounded-xl bg-[#00D8F6]/10 border border-[#00D8F6]/30 flex items-center justify-center text-[#00D8F6] shrink-0 group-hover:scale-105 transition-transform">
-                                  <GroupIcon className="w-6 h-6" />
+                      <div className="space-y-3">
+                        {userCommentsData.comments.map((comment) => (
+                          <div
+                            key={comment._id || comment.id}
+                            className="p-5 rounded-2xl bg-[#0F1117] border border-[#222834] shadow-xl"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-full bg-[#00D8F6]/10 border border-[#00D8F6]/30 flex items-center justify-center text-[#00D8F6] shrink-0">
+                                <MessageCircle className="w-4 h-4" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 text-xs mb-1">
+                                  <span className="font-semibold text-white">{comment.user?.username || "Unknown"}</span>
+                                  <span className="text-[#8F99A8]/60 font-bold">•</span>
+                                  <span className="text-[#8F99A8]">
+                                    {comment.createdAt
+                                      ? new Date(comment.createdAt).toLocaleDateString("en-US", {
+                                          month: "short",
+                                          day: "numeric",
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                        })
+                                      : "Recently"}
+                                  </span>
                                 </div>
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <h4 className="text-sm font-bold text-white group-hover:text-[#00D8F6] transition truncate">
-                                      {groupDisplay}
-                                    </h4>
-                                    {groupObj.privacy === "private" ? (
-                                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20">
-                                        <Lock className="w-2.5 h-2.5" />
-                                        Private
-                                      </span>
-                                    ) : (
-                                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded border border-emerald-400/20">
-                                        <Globe className="w-2.5 h-2.5" />
-                                        Public
-                                      </span>
-                                    )}
+                                <p className="text-sm text-[#C4C9D4] leading-relaxed whitespace-pre-line">
+                                  {comment.comment || ""}
+                                </p>
+                                <div className="flex items-center gap-3 mt-2 pt-2 border-t border-[#222834]/50">
+                                  {comment.post && (
+                                    <Link
+                                      to={`/post/${comment.post._id || comment.post}`}
+                                      className="text-xs text-[#00D8F6] hover:underline font-medium flex items-center gap-1"
+                                    >
+                                      <MessageCircle className="w-3.5 h-3.5" />
+                                      View Post
+                                    </Link>
+                                  )}
+                                  <div className="flex items-center gap-1.5 ml-auto">
+                                    <span className="text-xs text-[#8F99A8]">
+                                      {comment.score ?? 0}
+                                    </span>
                                   </div>
-                                  <p className="text-xs text-[#00D8F6] font-medium mt-0.5 truncate">
-                                    {groupObj.tagline || "Tech Community"}
-                                  </p>
-                                  <p className="text-xs text-[#8F99A8] line-clamp-2 mt-1">
-                                    {groupObj.description ||
-                                      "Join the discussion, share your benchmarks, and guides."}
-                                  </p>
                                 </div>
                               </div>
-
-                              <div className="flex items-center justify-between pt-3 border-t border-[#222834]/80 text-xs">
-                                <span className="text-[#8F99A8]">
-                                  {memberCount} {memberCount === 1 ? "member" : "members"}
-                                </span>
-                                <span className="inline-flex items-center gap-1 font-semibold text-[#00D8F6] group-hover:translate-x-0.5 transition-transform">
-                                  <span>Visit</span>
-                                  <ArrowRight className="w-3.5 h-3.5" />
-                                </span>
-                              </div>
-                            </Link>
-                          );
-                        })}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
-                  </div>
-                )}
-
-                {/* ── Activity Tab ── */}
-                {activeTab === "activity" && (
-                  <div className="rounded-2xl border border-[#222834] bg-[#0F1117] overflow-hidden shadow-xl">
-                    <div className="p-5 border-b border-[#222834]">
-                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                        <Activity className="w-4 h-4 text-[#00D8F6]" />
-                        <span>All Recent Activity</span>
-                      </h3>
-                    </div>
-                    <div className="divide-y divide-[#222834]">
-                      {USER.recentActivity.map((item, i) => (
-                        <ActivityItem key={i} item={item} />
-                      ))}
-                    </div>
                   </div>
                 )}
               </div>
             </div>
           </div>
         </main>
-      </div>
-    </div>
-  );
-}
-
-// ─── ActivityItem Sub-Component ───────────────────────────────────────────────
-function ActivityItem({ item }) {
-  const TYPE_ICONS = {
-    post: <MessageCircle className="w-3.5 h-3.5" />,
-    comment: <MessageCircle className="w-3.5 h-3.5" />,
-    like: <Heart className="w-3.5 h-3.5" />,
-    build: <Cpu className="w-3.5 h-3.5" />,
-  };
-
-  const targetGroup =
-    item.groupId ||
-    item.community.replace(/^g\//, "").replace(/^r\//, "").toLowerCase();
-
-  return (
-    <div className="flex items-start gap-3 p-3.5 hover:bg-[#161922] transition-all duration-200 group">
-      <div
-        className="mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-        style={{ backgroundColor: item.color + "15", color: item.color }}
-      >
-        {TYPE_ICONS[item.type] || TYPE_ICONS.post}
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <p className="text-sm text-white leading-snug">
-          <span className="font-semibold text-white group-hover:text-[#00D8F6] transition-colors">
-            {item.title}
-          </span>
-        </p>
-        <p className="text-xs text-[#8F99A8] mt-0.5 flex items-center gap-1.5">
-          <Link
-            to={`/communities/${targetGroup}`}
-            className="text-[#00D8F6] hover:underline font-medium"
-          >
-            {item.community}
-          </Link>
-          <span>•</span>
-          <span>{item.time}</span>
-        </p>
       </div>
     </div>
   );
