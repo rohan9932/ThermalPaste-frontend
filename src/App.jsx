@@ -53,7 +53,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/communities",
-    Component: (
+    element: (
       <ProtectedRoute>
         <CommunitiesListPage />
       </ProtectedRoute>
@@ -61,7 +61,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/communities/:groupId",
-    Component: (
+    element: (
       <ProtectedRoute>
         <CommunitiesPage />
       </ProtectedRoute>
@@ -69,7 +69,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/post/:id",
-    Component: (
+    element: (
       <ProtectedRoute>
         <PostDetailsPage />
       </ProtectedRoute>
