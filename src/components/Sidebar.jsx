@@ -247,9 +247,17 @@ export function Sidebar({ isOpen, onClose }) {
                     : "hover:bg-[#161922] text-[#8F99A8] hover:text-white"
                 }`}
               >
-                <div className="w-9 h-9 rounded-full bg-emerald-900/80 border border-emerald-500/40 flex items-center justify-center text-xs font-bold text-emerald-200 shrink-0 group-hover:ring-2 group-hover:ring-[#00D8F6]/40 transition">
-                  <UserRoundCog className="w-4 h-4 stroke-[2.5]" />
-                </div>
+                {user.imageLink ? (
+                  <img
+                    src={user.imageLink}
+                    alt={user.username || "Profile"}
+                    className="w-9 h-9 rounded-full object-cover shrink-0 group-hover:ring-2 group-hover:ring-[#00D8F6]/40 transition"
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-emerald-900/80 border border-emerald-500/40 flex items-center justify-center text-xs font-bold text-emerald-200 shrink-0 group-hover:ring-2 group-hover:ring-[#00D8F6]/40 transition">
+                    <UserRoundCog className="w-4 h-4 stroke-[2.5]" />
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-white group-hover:text-[#00D8F6] transition truncate">
                     {user.username || "Profile"}
