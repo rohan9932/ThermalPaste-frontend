@@ -3,10 +3,7 @@ import { useParams, useLocation, Link, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
-import {
-  getPostById as getPostByIdMock,
-  COMMUNITY_ICON_MAP,
-} from "../data/mockData";
+import { getCategoryIcon } from "../data/mockData";
 import {
   getPostById as getPostByIdApi,
   updatePost,
@@ -237,10 +234,9 @@ export default function PostDetailsPage() {
     retry: false,
   });
 
-  // Fallbacks: passed navigation state or mockData for static testing
+  // Fallback: passed navigation state
   const passedPost = location.state?.post;
-  const fetchedMock = getPostByIdMock(id);
-  const rawPost = apiPost || passedPost || fetchedMock;
+  const rawPost = apiPost || passedPost;
 
   // Normalize post properties across API & mock structures
   const postId = rawPost?._id || rawPost?.id || id;
@@ -286,11 +282,9 @@ export default function PostDetailsPage() {
         String(user.id || user._id) ||
         author === user.username));
 
-  // Subgroup Icon
-  const SubIcon =
-    COMMUNITY_ICON_MAP[subGroupName] ||
-    COMMUNITY_ICON_MAP[subGroupSlug] ||
-    Boxes;
+  // Subgroup Category Icon
+  const category = rawPost?.group?.category || rawPost?.category || "hardware";
+  const SubIcon = getCategoryIcon(category);
 
   // Saved / Bookmark State with Optimistic Toggle
   const [isSaved, setIsSaved] = useState(Boolean(rawPost?.isSaved));
