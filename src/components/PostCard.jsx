@@ -11,23 +11,19 @@ import {
   Boxes,
   Award,
 } from "lucide-react";
-import { COMMUNITY_ICON_MAP } from "../data/mockData";
+import { getCategoryIcon } from "../data/mockData";
 import { useAuth } from "../context/AuthContext";
 import { toggleSavePost, reactPost } from "../services/posts";
 
 const DEFAULT_POST = {
   id: "post-1",
-  subGroup: "g/pcbuilders",
-  authorname: "GamerGirlAria",
-  createdAt: "Aug 15, 08:30 PM",
-  title:
-    "Finished my very first solo PC build! Rate my setup and cable management",
-  content:
-    "I've been playing on a potato laptop for 5 years and finally saved up enough to build my absolute dream rig!",
-  previewSnippet: "### Specs:...",
-  upvotes: 1,
+  group: { name: "pc-building", category: "hardware" },
+  user: { username: "Community Member" },
+  heading: "Community Post",
+  description: "",
+  upvotes: 0,
   downvotes: 0,
-  commentsCount: 4,
+  commentsCount: 0,
 };
 
 export function PostCard({ post = DEFAULT_POST }) {
@@ -72,12 +68,9 @@ export function PostCard({ post = DEFAULT_POST }) {
   const authorAvatar = post.user?.imageLink || post.authorAvatar || null;
   const isPopularRig = post.isPopularRig || false;
 
-  // Derive SubGroup Icon from centralized icon map
-  const SubIcon =
-    COMMUNITY_ICON_MAP[subGroupName] ||
-    COMMUNITY_ICON_MAP[subGroupSlug] ||
-    post.subGroupIcon ||
-    Boxes;
+  // Derive category icon for subgroup
+  const category = post.group?.category || post.category || "hardware";
+  const SubIcon = getCategoryIcon(category);
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { X, PlusCircle, Sparkles, Loader2 } from "lucide-react";
-import { SUB_GROUPS } from "../data/mockData";
 import { getGroups } from "../services/groups";
 import { createPost } from "../services/posts";
 import { useAuth } from "../context/AuthContext";
@@ -10,16 +9,14 @@ import { useAuth } from "../context/AuthContext";
 export function CreatePostForm({
   isOpen,
   onClose,
-  defaultCommunity = "battlestations",
+  defaultCommunity = "",
   onPostCreated,
 }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
-  // Normalize defaultCommunity slug
-  const initialCommunity = String(defaultCommunity).replace(/^g\//, "");
-  const [community, setCommunity] = useState(initialCommunity);
+  const [community, setCommunity] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [sectionHeader, setSectionHeader] = useState("");
@@ -27,42 +24,27 @@ export function CreatePostForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  // Query live groups from backend
-  const { data: apiGroups } = useQuery({
+  // Query live groups from database
+  const { data: apiGroups, isLoading: isGroupsLoading } = useQuery({
     queryKey: ["groups"],
     queryFn: () => getGroups(),
   });
 
-  // Build merged community list (backend groups prioritized + mock fallbacks)
-  const groupOptions = [];
-  if (apiGroups && apiGroups.length > 0) {
-    apiGroups.forEach((g) => {
-      const slug = g.name.replace(/^g\//, "");
-      groupOptions.push({
-        id: slug,
-        name: `g/${slug} (${g.tagline || g.category || "Community"})`,
-      });
-    });
-  }
-  SUB_GROUPS.forEach((sg) => {
-    if (!groupOptions.some((o) => o.id === sg.id)) {
-      groupOptions.push({
-        id: sg.id,
-        name: `${sg.name} (${sg.topic})`,
-      });
-    }
+  // Build community list strictly from database groups
+  const groupOptions = (apiGroups || []).map((g) => {
+    const slug = g.name.replace(/^g\//, "");
+    return {
+      id: slug,
+      name: `g/${slug} (${g.tagline || g.category || "Community"})`,
+    };
   });
 
-  const [prevProps, setPrevProps] = useState({ defaultCommunity, isOpen });
-  if (
-    prevProps.defaultCommunity !== defaultCommunity ||
-    prevProps.isOpen !== isOpen
-  ) {
-    setPrevProps({ defaultCommunity, isOpen });
-    if (defaultCommunity) {
-      setCommunity(String(defaultCommunity).replace(/^g\//, ""));
-    }
-  }
+  // Derived selected community: explicitly chosen > default prop > first loaded group > empty
+  const selectedCommunity =
+    community ||
+    (defaultCommunity ? String(defaultCommunity).replace(/^g\//, "") : "") ||
+    groupOptions[0]?.id ||
+    "";
 
   if (!isOpen) return null;
 
@@ -75,6 +57,11 @@ export function CreatePostForm({
       return;
     }
 
+    if (!selectedCommunity) {
+      setError("Please select a sub-group for your post.");
+      return;
+    }
+
     setIsSubmitting(true);
     setError("");
 
@@ -84,7 +71,7 @@ export function CreatePostForm({
         : content.trim();
 
       const created = await createPost({
-        group: community,
+        group: selectedCommunity,
         heading: title.trim(),
         description: fullContent,
         imageLink: image.trim(),
@@ -172,19 +159,25 @@ export function CreatePostForm({
             </label>
             <div className="relative">
               <select
-                value={community}
+                value={selectedCommunity}
                 onChange={(e) => setCommunity(e.target.value)}
                 className="w-full bg-[#161922] text-sm text-white px-3.5 py-2.5 rounded-xl border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all cursor-pointer"
               >
-                {groupOptions.map((opt) => (
-                  <option
-                    key={opt.id}
-                    value={opt.id}
-                    className="bg-[#0F1117] text-white"
-                  >
-                    {opt.name}
+                {groupOptions.length === 0 ? (
+                  <option value="" disabled className="bg-[#0F1117] text-[#8F99A8]">
+                    {isGroupsLoading ? "Loading sub-groups..." : "No sub-groups available"}
                   </option>
-                ))}
+                ) : (
+                  groupOptions.map((opt) => (
+                    <option
+                      key={opt.id}
+                      value={opt.id}
+                      className="bg-[#0F1117] text-white"
+                    >
+                      {opt.name}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
           </div>

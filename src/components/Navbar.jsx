@@ -6,11 +6,17 @@ import {
   X,
   FileText,
   User,
+  Boxes,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../context/AuthContext";
 import CreatePostForm from "./CreatePostForm";
-import { SUB_GROUPS, POSTS, SEARCH_USERS } from "../data/mockData";
+import {
+  SEARCH_USERS,
+  getCategoryIcon,
+} from "../data/mockData";
+import { getGroups } from "../services/groups";
 
 function Navbar({ onToggleSidebar, isSidebarOpen }) {
   const { user, isLoading } = useAuth();
@@ -19,6 +25,12 @@ function Navbar({ onToggleSidebar, isSidebarOpen }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchRef = useRef(null);
+
+  // Fetch groups dynamically from database for search suggestions
+  const { data: apiGroups = [] } = useQuery({
+    queryKey: ["groups"],
+    queryFn: () => getGroups(),
+  });
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -34,22 +46,31 @@ function Navbar({ onToggleSidebar, isSidebarOpen }) {
   const query = searchQuery.toLowerCase().trim();
 
   const filteredCommunities = query
-    ? SUB_GROUPS.filter(
-        (c) =>
-          c.name.toLowerCase().includes(query) ||
-          c.topic.toLowerCase().includes(query),
-      )
+    ? apiGroups
+        .filter((c) => {
+          const name = (c.name || "").toLowerCase();
+          const tagline = (c.tagline || "").toLowerCase();
+          const desc = (c.description || "").toLowerCase();
+          const cat = (c.category || "").toLowerCase();
+          return (
+            name.includes(query) ||
+            tagline.includes(query) ||
+            desc.includes(query) ||
+            cat.includes(query)
+          );
+        })
+        .map((g) => {
+          const slug = g.name.replace(/^g\//, "");
+          return {
+            id: slug,
+            name: `g/${slug}`,
+            topic: g.tagline || g.category || "Community",
+            icon: getCategoryIcon(g.category),
+          };
+        })
     : [];
 
-  const filteredPosts = query
-    ? POSTS.filter(
-        (p) =>
-          p.title.toLowerCase().includes(query) ||
-          p.content.toLowerCase().includes(query) ||
-          (p.subGroup || p.community || "").toLowerCase().includes(query) ||
-          (p.author || p.authorname || "").toLowerCase().includes(query),
-      )
-    : [];
+  const filteredPosts = [];
 
   const filteredUsers = query
     ? SEARCH_USERS.filter(

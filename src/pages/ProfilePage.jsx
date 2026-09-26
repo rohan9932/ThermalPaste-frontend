@@ -12,7 +12,7 @@ import {
 } from "../services/profile.js";
 import { getFeed, POST_KEYS } from "../services/posts.js";
 import { useAuth } from "../context/AuthContext";
-import { COMMUNITY_ICON_MAP } from "../data/mockData";
+import { getCategoryIcon } from "../data/mockData";
 import {
   Cpu,
   Shield,
@@ -505,10 +505,9 @@ export default function ProfilePage() {
                           const groupDisplay = rawName.startsWith("g/")
                             ? rawName
                             : `g/${rawName}`;
-                          const GroupIcon =
-                            COMMUNITY_ICON_MAP[groupDisplay] ||
-                            COMMUNITY_ICON_MAP[slug] ||
-                            Boxes;
+                          const GroupIcon = getCategoryIcon(
+                            groupObj.category || slug,
+                          );
                           const memberCount = Array.isArray(groupObj.members)
                             ? groupObj.members.length
                             : typeof groupObj.memberCount === "number"
