@@ -53,15 +53,27 @@ const router = createBrowserRouter([
   },
   {
     path: "/communities",
-    Component: CommunitiesListPage,
+    Component: (
+      <ProtectedRoute>
+        <CommunitiesListPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/communities/:groupId",
-    Component: CommunitiesPage,
+    Component: (
+      <ProtectedRoute>
+        <CommunitiesPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/post/:id",
-    Component: PostDetailsPage,
+    Component: (
+      <ProtectedRoute>
+        <PostDetailsPage />
+      </ProtectedRoute>
+    ),
   },
 ]);
 
