@@ -9,6 +9,7 @@ import Sidebar from "../components/Sidebar";
 import PostCard from "../components/PostCard.jsx";
 import {
   updateProfile,
+  uploadProfileImage,
 } from "../services/profile.js";
 import { getFeed, POST_KEYS, getUserComments } from "../services/posts.js";
 import { useAuth } from "../context/AuthContext";
@@ -151,6 +152,8 @@ export default function ProfilePage() {
   // Editable profile fields.
   const [bio, setBio] = useState("");
   const [imageLink, setImageLink] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -190,6 +193,8 @@ export default function ProfilePage() {
   const handleStartEditing = () => {
     setBio(user?.bio ?? "");
     setImageLink(user?.imageLink ?? "");
+    setImageFile(null);
+    setImagePreview("");
     setError("");
     setSaveSuccess(false);
     setIsEditing(true);
@@ -199,6 +204,8 @@ export default function ProfilePage() {
     setIsEditing(false);
     setBio(user?.bio ?? "");
     setImageLink(user?.imageLink ?? "");
+    setImageFile(null);
+    setImagePreview("");
     setError("");
   };
 
@@ -209,7 +216,14 @@ export default function ProfilePage() {
     setIsSaving(true);
 
     try {
-      const payload = { imageLink, bio };
+      // Upload image if a new file was selected
+      let finalImageLink = imageLink;
+      if (imageFile) {
+        const uploadRes = await uploadProfileImage(imageFile);
+        finalImageLink = uploadRes.data?.data?.profile?.imageLink || uploadRes.data?.profile?.imageLink || uploadRes.data?.imageLink;
+      }
+
+      const payload = { imageLink: finalImageLink, bio };
 
       await updateProfile(payload);
 
@@ -305,15 +319,46 @@ export default function ProfilePage() {
 
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-[#F3F4F6]">
-                      Avatar URL
+                      Avatar
                     </label>
-                    <input
-                      type="url"
-                      value={imageLink}
-                      onChange={(e) => setImageLink(e.target.value)}
-                      placeholder="https://..."
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#161922] border border-[#222834] text-white placeholder-[#8F99A8]/60 focus:outline-none focus:border-[#00D8F6] text-xs transition-all"
-                    />
+                    <div className="space-y-2">
+                      {imagePreview && (
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-20 h-20 rounded-full object-cover border-2 border-[#00D8F6]/40"
+                        />
+                      )}
+                      <label className="cursor-pointer w-full px-3.5 py-2.5 rounded-xl bg-[#161922] border border-[#222834] text-white placeholder-[#8F99A8]/60 focus:outline-none focus:border-[#00D8F6] text-xs transition-all flex items-center gap-2 hover:border-[#00D8F6]/40">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              setImageFile(file);
+                              setImagePreview(URL.createObjectURL(file));
+                            }
+                          }}
+                          className="hidden"
+                          id="avatar-upload"
+                        />
+                        <span>Upload Image</span>
+                      </label>
+                      <p className="text-[11px] text-[#8F99A8]">Or enter image URL below</p>
+                      <input
+                        type="url"
+                        value={imageLink}
+                        onChange={(e) => {
+                          setImageLink(e.target.value);
+                          if (e.target.value && !e.target.value.startsWith("blob:")) {
+                            setImagePreview(e.target.value);
+                          }
+                        }}
+                        placeholder="https://..."
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-[#161922] border border-[#222834] text-white placeholder-[#8F99A8]/60 focus:outline-none focus:border-[#00D8F6] text-xs transition-all"
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-1">
