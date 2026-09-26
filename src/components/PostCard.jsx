@@ -27,18 +27,34 @@ const DEFAULT_POST = {
 };
 
 export function PostCard({ post = DEFAULT_POST }) {
-  // Normalize post properties to support variations seamlessly
-  const subGroupName = post.subGroup || post.community || "g/pcbuilders";
+  // Normalize post properties to support backend API and mock data seamlessly
+  const postId = post._id || post.id || "post-1";
+  const subGroupName = post.group?.name
+    ? post.group.name.startsWith("g/")
+      ? post.group.name
+      : `g/${post.group.name}`
+    : post.subGroup || post.community || "g/pcbuilders";
   const subGroupSlug = subGroupName.replace(/^g\//, "");
-  const author = post.authorname || post.author || "Community Member";
-  const timestamp = post.createdAt || post.timestamp || "Recently";
-  const title = post.title || "Untitled Post";
-  const content = post.content || "";
+  const author =
+    post.user?.username || post.authorname || post.author || "Community Member";
+  const rawCreatedAt = post.createdAt || post.timestamp;
+  const timestamp = rawCreatedAt
+    ? isNaN(Date.parse(rawCreatedAt))
+      ? rawCreatedAt
+      : new Date(rawCreatedAt).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+    : "Recently";
+  const title = post.heading || post.title || "Untitled Post";
+  const content = post.description || post.content || "";
   const sectionSnippet = post.previewSnippet || post.sectionHeader || null;
   const initialVotes = post.upvotes ?? DEFAULT_POST.upvotes;
   const commentsTotal = post.commentsCount ?? post.comments ?? 0;
-  const image = post.image || null;
-  const authorAvatar = post.authorAvatar || null;
+  const image = post.imageLink || post.image || null;
+  const authorAvatar = post.user?.imageLink || post.authorAvatar || null;
   const isPopularRig = post.isPopularRig || false;
 
   // Derive SubGroup Icon from centralized icon map
@@ -80,7 +96,7 @@ export function PostCard({ post = DEFAULT_POST }) {
     e.stopPropagation();
     if (navigator.clipboard) {
       navigator.clipboard.writeText(
-        `${window.location.origin}/post/${post.id || "post-1"}`,
+        `${window.location.origin}/post/${postId}`,
       );
       alert("Post link copied to clipboard!");
     }
@@ -173,7 +189,7 @@ export function PostCard({ post = DEFAULT_POST }) {
 
         {/* POST TITLE */}
         <Link
-          to={`/post/${post.id || "post-1"}`}
+          to={`/post/${postId}`}
           state={{ post }}
           className="block"
         >
@@ -199,7 +215,7 @@ export function PostCard({ post = DEFAULT_POST }) {
         {/* OPTIONAL POST IMAGE */}
         {image && (
           <Link
-            to={`/post/${post.id || "post-1"}`}
+            to={`/post/${postId}`}
             state={{ post }}
             className="block rounded-xl overflow-hidden border border-[#222834] mb-3 max-h-[400px]"
           >
@@ -222,7 +238,7 @@ export function PostCard({ post = DEFAULT_POST }) {
           {/* LEFT ACTIONS */}
           <div className="flex items-center gap-1.5 sm:gap-3">
             <Link
-              to={`/post/${post.id || "post-1"}`}
+              to={`/post/${postId}`}
               state={{ post }}
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[#8F99A8] hover:text-white hover:bg-[#161922] font-semibold text-xs transition cursor-pointer"
             >

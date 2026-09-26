@@ -1,70 +1,124 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, PlusCircle, Sparkles } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { X, PlusCircle, Sparkles, Loader2 } from "lucide-react";
 import { SUB_GROUPS } from "../data/mockData";
-
-const COMMUNITY_OPTIONS = SUB_GROUPS.map((g) => ({
-  id: g.name,
-  name: `${g.name} (${g.topic})`,
-}));
+import { getGroups } from "../services/groups";
+import { createPost } from "../services/posts";
+import { useAuth } from "../context/AuthContext";
 
 export function CreatePostForm({
   isOpen,
   onClose,
-  defaultCommunity = "g/battlestations",
+  defaultCommunity = "battlestations",
   onPostCreated,
 }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
 
-  const [community, setCommunity] = useState(defaultCommunity);
+  // Normalize defaultCommunity slug
+  const initialCommunity = String(defaultCommunity).replace(/^g\//, "");
+  const [community, setCommunity] = useState(initialCommunity);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [sectionHeader, setSectionHeader] = useState("");
   const [image, setImage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (defaultCommunity) {
-      setCommunity(defaultCommunity);
+  // Query live groups from backend
+  const { data: apiGroups } = useQuery({
+    queryKey: ["groups"],
+    queryFn: () => getGroups(),
+  });
+
+  // Build merged community list (backend groups prioritized + mock fallbacks)
+  const groupOptions = [];
+  if (apiGroups && apiGroups.length > 0) {
+    apiGroups.forEach((g) => {
+      const slug = g.name.replace(/^g\//, "");
+      groupOptions.push({
+        id: slug,
+        name: `g/${slug} (${g.tagline || g.category || "Community"})`,
+      });
+    });
+  }
+  SUB_GROUPS.forEach((sg) => {
+    if (!groupOptions.some((o) => o.id === sg.id)) {
+      groupOptions.push({
+        id: sg.id,
+        name: `${sg.name} (${sg.topic})`,
+      });
     }
-  }, [defaultCommunity, isOpen]);
+  });
+
+  const [prevProps, setPrevProps] = useState({ defaultCommunity, isOpen });
+  if (
+    prevProps.defaultCommunity !== defaultCommunity ||
+    prevProps.isOpen !== isOpen
+  ) {
+    setPrevProps({ defaultCommunity, isOpen });
+    if (defaultCommunity) {
+      setCommunity(String(defaultCommunity).replace(/^g\//, ""));
+    }
+  }
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) return;
 
-    const newPost = {
-      id: `post-${Date.now()}`,
-      title: title.trim(),
-      content: content.trim(),
-      subGroup: community,
-      community: community,
-      subGroupSlug: community.replace(/^g\//, ""),
-      author: "You",
-      authorname: "You",
-      createdAt: "Just now",
-      timestamp: "Just now",
-      sectionHeader: sectionHeader.trim() || null,
-      image: image.trim() || null,
-      upvotes: 1,
-      commentsCount: 0,
-      comments: 0,
-    };
-
-    if (onPostCreated) {
-      onPostCreated(newPost);
+    if (!user) {
+      setError("You must be logged in to create a post.");
+      return;
     }
 
-    // Reset fields & close modal
-    setTitle("");
-    setContent("");
-    setSectionHeader("");
-    setImage("");
-    onClose();
+    setIsSubmitting(true);
+    setError("");
 
-    // Navigate directly to the new post's dynamic route
-    navigate(`/post/${newPost.id}`, { state: { post: newPost } });
+    try {
+      const fullContent = sectionHeader.trim()
+        ? `${sectionHeader.trim()}\n\n${content.trim()}`
+        : content.trim();
+
+      const created = await createPost({
+        group: community,
+        heading: title.trim(),
+        description: fullContent,
+        imageLink: image.trim(),
+      });
+
+      // Invalidate posts cache so feeds update immediately
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+
+      if (onPostCreated) {
+        onPostCreated(created);
+      }
+
+      // Reset form & close modal
+      setTitle("");
+      setContent("");
+      setSectionHeader("");
+      setImage("");
+      setError("");
+      onClose();
+
+      // Navigate to the newly created post
+      const targetId = created?._id || created?.id;
+      if (targetId) {
+        navigate(`/post/${targetId}`);
+      }
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to create post. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -102,6 +156,13 @@ export function CreatePostForm({
           </button>
         </div>
 
+        {/* Error Alert */}
+        {error && (
+          <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
+            {error}
+          </div>
+        )}
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Target Community */}
@@ -115,7 +176,7 @@ export function CreatePostForm({
                 onChange={(e) => setCommunity(e.target.value)}
                 className="w-full bg-[#161922] text-sm text-white px-3.5 py-2.5 rounded-xl border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all cursor-pointer"
               >
-                {COMMUNITY_OPTIONS.map((opt) => (
+                {groupOptions.map((opt) => (
                   <option
                     key={opt.id}
                     value={opt.id}
@@ -193,16 +254,27 @@ export function CreatePostForm({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-[#8F99A8] hover:text-white hover:bg-[#161922] transition-colors cursor-pointer"
+              disabled={isSubmitting}
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-[#8F99A8] hover:text-white hover:bg-[#161922] transition-colors cursor-pointer disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex items-center gap-2 px-5 py-2 bg-[#00D8F6] hover:bg-[#00c4e0] text-[#0B0D11] text-xs font-bold rounded-xl shadow-[0_0_14px_rgba(0,216,246,0.3)] active:scale-95 transition-all cursor-pointer"
+              disabled={isSubmitting}
+              className="flex items-center gap-2 px-5 py-2 bg-[#00D8F6] hover:bg-[#00c4e0] text-[#0B0D11] text-xs font-bold rounded-xl shadow-[0_0_14px_rgba(0,216,246,0.3)] active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Publish Post</span>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Publishing...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Publish Post</span>
+                </>
+              )}
             </button>
           </div>
         </form>
