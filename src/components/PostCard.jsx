@@ -1,15 +1,19 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowDown,
   ArrowUp,
   MessageSquare,
   Share2,
+  Bookmark,
   CircleUserRound,
   Boxes,
   Award,
 } from "lucide-react";
 import { COMMUNITY_ICON_MAP } from "../data/mockData";
+import { useAuth } from "../context/AuthContext";
+import { toggleSavePost } from "../services/posts";
 
 const DEFAULT_POST = {
   id: "post-1",
@@ -64,6 +68,18 @@ export function PostCard({ post = DEFAULT_POST }) {
     post.subGroupIcon ||
     Boxes;
 
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const [isSaved, setIsSaved] = useState(Boolean(post.isSaved));
+
+  // Sync isSaved state if post prop changes
+  const [prevPostSaved, setPrevPostSaved] = useState(post.isSaved);
+  if (post.isSaved !== prevPostSaved) {
+    setPrevPostSaved(post.isSaved);
+    setIsSaved(Boolean(post.isSaved));
+  }
+
   // Local voting state
   const [voteState, setVoteState] = useState(null);
   const [upvoteCount, setUpvoteCount] = useState(initialVotes);
@@ -99,6 +115,28 @@ export function PostCard({ post = DEFAULT_POST }) {
         `${window.location.origin}/post/${postId}`,
       );
       alert("Post link copied to clipboard!");
+    }
+  };
+
+  const handleToggleSave = async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (!user) {
+      navigate("/login", { state: { from: window.location.pathname } });
+      return;
+    }
+
+    const prevSaved = isSaved;
+    setIsSaved(!prevSaved);
+
+    try {
+      await toggleSavePost(postId);
+      queryClient.invalidateQueries({ queryKey: ["saved"] });
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    } catch (err) {
+      setIsSaved(prevSaved);
+      console.error("Failed to toggle save post:", err);
     }
   };
 
@@ -252,6 +290,21 @@ export function PostCard({ post = DEFAULT_POST }) {
             >
               <Share2 className="w-4 h-4 stroke-[2]" />
               <span>Share</span>
+            </button>
+
+            <button
+              onClick={handleToggleSave}
+              aria-label={isSaved ? "Remove from saved" : "Save post"}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold text-xs transition cursor-pointer ${
+                isSaved
+                  ? "bg-[#00D8F6]/15 text-[#00D8F6] border border-[#00D8F6]/30 shadow-[0_0_10px_rgba(0,216,246,0.15)]"
+                  : "text-[#8F99A8] hover:text-white hover:bg-[#161922]"
+              }`}
+            >
+              <Bookmark
+                className={`w-4 h-4 stroke-[2] ${isSaved ? "fill-current" : ""}`}
+              />
+              <span>{isSaved ? "Saved" : "Save"}</span>
             </button>
           </div>
 
