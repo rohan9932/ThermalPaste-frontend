@@ -8,6 +8,7 @@ import PostDetailsPage from "./pages/PostDetailsPage";
 import SavedPostsPage from "./pages/SavedPostsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicOnlyRoute from "./components/PublicOnlyRoute";
+import CarbonFootprintDisplay from "./components/CarbonFootprintDisplay";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const router = createBrowserRouter([
@@ -81,6 +82,7 @@ function App() {
   return (
     <div>
       <RouterProvider router={router} />
+      <CarbonFootprintDisplay />
     </div>
   );
 }
