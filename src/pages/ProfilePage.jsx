@@ -1,8 +1,9 @@
 // ProfilePage.jsx
-// Displays the user's profile settings, their posts, and recent activity feed.
+// Displays the user's profile settings, their posts, joined communities, and recent activity feed.
 
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import PostCard from "../components/PostCard.jsx";
@@ -11,6 +12,9 @@ import {
   updateProfile,
   createProfile,
 } from "../services/profile.js";
+import { getFeed, POST_KEYS } from "../services/posts.js";
+import { useAuth } from "../context/AuthContext";
+import { COMMUNITY_ICON_MAP } from "../data/mockData";
 import {
   Cpu,
   Shield,
@@ -22,48 +26,20 @@ import {
   MessageCircle,
   Heart,
   Activity,
+  Users,
+  Compass,
+  ArrowRight,
+  Boxes,
+  Lock,
+  Globe,
 } from "lucide-react";
 
 // ─── Mock User Data ────────────────────────────────────────────────────────────
-// Temporary static data representing the logged-in user.
-// In production, this would be fetched from the backend API (e.g. GET /api/user/me).
+// Temporary static data representing user posts & badges.
 const USER = {
   username: "LinusBuilds",
   imageLink: "/images/avatar.jpg",
   bio: "I build enterprise servers in my sleep and drop graphics cards for a living. Host of Overclocked Tech Tips.",
-  badges: [
-    {
-      icon: "/images/thermal-paste-thermal-paste-cooling-hard-1.webp",
-      label: "Firestarter",
-      color: "#FB923C",
-    },
-    {
-      icon: "/images/water-cooling-custom-loop-pc-build-1.jpg",
-      label: "Ice Cold",
-      color: "#00D8F6",
-    },
-    {
-      icon: "/images/overclocking-cpu-benchmark-gaming-1.webp",
-      label: "Power User",
-      color: "#A78BDA",
-    },
-    {
-      icon: "/images/gpu-graphics-card-rtx-nvidia-1.webp",
-      label: "Top Builder",
-      color: "#F59E0B",
-    },
-    {
-      icon: "/images/small-form-factor-mini-itx-pc-case-build-1.webp",
-      label: "Diamond Tier",
-      color: "#E5E7EB",
-    },
-  ],
-  stats: {
-    reputation: 4872,
-    posts: 312,
-    comments: 1847,
-    likes: 5620,
-  },
   userPosts: [
     {
       id: "post_7",
@@ -109,7 +85,8 @@ const USER = {
       authorAvatar: "/images/avatar.jpg",
       timestamp: "Sep 15, 6:15 PM",
       createdAt: "Sep 15, 6:15 PM",
-      title: "12-node render farm in a single 4U chassis — cable management nightmare",
+      title:
+        "12-node render farm in a single 4U chassis — cable management nightmare",
       content:
         "Built this for a rendering studio. 12x EPYC nodes, dual 4090s each, all in one 4U box...",
       sectionHeader: "### Setup Gear...",
@@ -174,122 +151,132 @@ const USER = {
 
 // ─── ProfilePage Component ────────────────────────────────────────────────────
 export default function ProfilePage() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
   // Controls whether the sidebar is open or collapsed.
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Tracks which tab is currently active: posts or activity.
+  // Tracks active tab: posts, communities, or activity.
   const [activeTab, setActiveTab] = useState("posts");
 
-  // Editable profile fields — populated from backend on mount.
+  // Editable profile fields.
   const [bio, setBio] = useState("");
   const [imageLink, setImageLink] = useState("");
-
-  // Holds the last-saved profile (used to revert on Cancel).
-  const [existingProfile, setExistingProfile] = useState(null);
-
-  // Username from profile's nested user object
-  const [profileUsername, setProfileUsername] = useState("");
-
-  // Tracks whether the form is currently in a saving state (API call in progress).
   const [isSaving, setIsSaving] = useState(false);
-
-  // Stores any API error or success message.
   const [error, setError] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
-
-  // Toggles whether the form fields are editable or read-only.
   const [isEditing, setIsEditing] = useState(false);
 
-  // Pushes a saved (or empty) profile into the form fields.
-  const applyProfile = (profile) => {
+  // Fetch real profile data (including populated groups) via React Query
+  const { data: profileRes, isLoading: isProfileLoading } = useQuery({
+    queryKey: ["profile"],
+    queryFn: getProfile,
+  });
+
+  // Fetch real feed to retrieve user's real posts
+  const { data: feedPosts = [], isLoading: isPostsLoading } = useQuery({
+    queryKey: POST_KEYS.feed(),
+    queryFn: () => getFeed(),
+  });
+
+  const profile =
+    profileRes?.data?.data?.profile ||
+    profileRes?.data?.profile ||
+    null;
+
+  // Joined groups populated by backend UserProfile.groups
+  const rawGroups = profile?.groups || [];
+  const joinedGroups = rawGroups.filter(
+    (g) => g && (typeof g === "object" || typeof g === "string"),
+  );
+
+  const displayName =
+    profile?.user?.username || user?.username || USER.username;
+  const avatarUrl =
+    profile?.imageLink || user?.imageLink || "/images/avatar.jpg";
+  const displayBio = profile?.bio || USER.bio;
+
+  // Filter posts created by the current user
+  const userRealPosts = feedPosts.filter((p) => {
+    if (user?._id && p.user?._id) {
+      return String(p.user._id) === String(user._id);
+    }
+    if (displayName && p.user?.username) {
+      return p.user.username.toLowerCase() === displayName.toLowerCase();
+    }
+    return false;
+  });
+
+  const displayPosts = userRealPosts.length > 0 ? userRealPosts : USER.userPosts;
+
+  const handleStartEditing = () => {
     setBio(profile?.bio ?? "");
     setImageLink(profile?.imageLink ?? "");
+    setError("");
+    setSaveSuccess(false);
+    setIsEditing(true);
   };
 
-  // On mount, load the user's saved profile from backend.
-  useEffect(() => {
-    async function loadProfile() {
-      try {
-        const res = await getProfile();
-        const profile = res?.data?.data?.profile || res?.data?.profile || res?.data || res;
-        if (profile) {
-          setExistingProfile(profile);
-          applyProfile(profile);
-          if (profile.user?.username) {
-            setProfileUsername(profile.user.username);
-          }
-        }
-      } catch (err) {
-        console.error("Profile load error:", err);
-      }
-    }
-    loadProfile();
-  }, []);
+  const handleCancelEditing = () => {
+    setIsEditing(false);
+    setBio(profile?.bio ?? "");
+    setImageLink(profile?.imageLink ?? "");
+    setError("");
+  };
 
-  // ─── Handlers ───────────────────────────────────────────────────────────────
-
-  // Handles save button click — sends an update request with the provided values.
+  // Handles save button click — sends update request with provided values.
   const handleSubmit = async () => {
     setError("");
     setSaveSuccess(false);
     setIsSaving(true);
-    try {
-      const payload = {
-        imageLink,
-        bio,
-      };
 
-      if (existingProfile) {
+    try {
+      const payload = { imageLink, bio };
+
+      if (profile?._id) {
         await updateProfile(payload);
       } else {
         await createProfile(payload);
       }
 
       setSaveSuccess(true);
-
-      const savedProfile = {
-        bio,
-        imageLink,
-      };
-      setExistingProfile(savedProfile);
-      applyProfile(savedProfile);
-
-      setTimeout(() => {
-        window.location.reload();
-      }, 800);
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["me"] });
+      setIsEditing(false);
     } catch (err) {
-      setError(err.data?.message || err.message || "Failed to save profile.");
+      setError(
+        err.response?.data?.message || err.message || "Failed to update profile",
+      );
+    } finally {
       setIsSaving(false);
     }
   };
 
-  // ─── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#0B0D11] text-white flex flex-col">
-      {/* Shared top navigation bar — receives sidebar toggle state */}
       <Navbar
         isSidebarOpen={isSidebarOpen}
         onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
       />
 
       <div className="flex flex-1 relative">
-        {/* Collapsible sidebar — shifts main content right on desktop (md:ml-64) */}
         <Sidebar
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
         />
 
         <main
-          className={`flex-1 p-4 sm:p-6 w-full transition-all duration-300 ${isSidebarOpen ? "md:ml-64" : "ml-0"}`}
+          className={`flex-1 p-4 sm:p-6 w-full transition-all duration-300 ${
+            isSidebarOpen ? "md:ml-64" : "ml-0"
+          }`}
         >
           <div className="space-y-6">
             <div className="mx-auto max-w-4xl space-y-6">
-              {/* ── Page Header ──────────────────────────────────────────────────
-                Shows the page title and an edit pencil icon.
-                Clicking the pencil toggles isEditing to enable the form inputs. */}
+              {/* ── Page Header ────────────────────────────────────────────── */}
               <div className="flex items-center justify-between p-5 border border-[#222834] bg-[#0F1117] rounded-2xl mb-6">
                 <div className="flex items-center gap-3">
-                  <span className="p-2 bg-[#A78BDA]/20 border border-[#A78BDA]/40 text-[#A78BDA] rounded-lg text-lg">
+                  <span className="p-2 bg-[#00D8F6]/10 border border-[#00D8F6]/30 text-[#00D8F6] rounded-xl text-lg">
                     <Settings className="w-5 h-5" />
                   </span>
                   <div>
@@ -297,137 +284,125 @@ export default function ProfilePage() {
                       Profile Settings
                     </h1>
                     <p className="text-xs text-[#8F99A8]">
-                      Customize your avatar and bio.
+                      Customize your avatar, bio, and view your communities.
                     </p>
                   </div>
                 </div>
-                {/* Pencil icon — toggles edit mode on/off */}
                 <button
-                  onClick={() => setIsEditing(!isEditing)}
+                  onClick={() => (isEditing ? handleCancelEditing() : handleStartEditing())}
                   className="p-2 text-[#8F99A8] hover:text-white hover:bg-[#161922] rounded-lg transition-all cursor-pointer"
+                  aria-label="Edit Profile"
                 >
                   <Edit3 className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* ── Profile Preview Card ──────────────────────────────────────────
-                Live preview of how the user's profile appears to other users.
-                Shows avatar and username. */}
-              <div className="p-5 rounded-2xl border border-[#222834] bg-[#0F1117] flex items-center gap-5 mb-6">
-                {/* Avatar image — falls back to default if the URL fails to load */}
+              {/* ── Profile Preview Card ────────────────────────────────────── */}
+              <div className="p-5 rounded-2xl border border-[#222834] bg-[#0F1117] flex items-center gap-5 mb-6 shadow-xl">
                 <img
-                  src={imageLink || "/images/avatar.jpg"}
+                  src={avatarUrl}
                   alt="Avatar Preview"
-                  className="w-16 h-16 rounded-full object-cover border-2 border-[#A78BDA]/30 flex-shrink-0"
+                  className="w-16 h-16 rounded-full object-cover border-2 border-[#00D8F6]/40 flex-shrink-0"
                   onError={(e) => {
                     e.target.src = "/images/avatar.jpg";
                   }}
                 />
                 <div className="min-w-0">
-                  {/* Username */}
-                  <div className="text-sm font-bold text-white flex items-center gap-2">
-                    {profileUsername || USER.username}
+                  <div className="text-base font-bold text-white flex items-center gap-2">
+                    {displayName}
                   </div>
-                  {/* Bio preview — shows empty when no bio */}
-                  <p className="text-xs text-[#8F99A8] line-clamp-1 mt-0.5">
-                    {bio || ""}
+                  <p className="text-xs text-[#8F99A8] line-clamp-2 mt-0.5">
+                    {displayBio}
                   </p>
                 </div>
               </div>
 
-              {/* ── Edit Form ──────────────────────────────────────────
-                Avatar URL and short bio textarea.
-                Only rendered when isEditing = true; hidden in view mode. */}
+              {/* ── Edit Form ──────────────────────────────────────────────── */}
               {isEditing && (
-                <form className="grid grid-cols-1 gap-5">
-                  {/* General Info */}
-                  <div className="space-y-4">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#8F99A8] border-b border-[#222834] pb-2 flex items-center gap-1.5">
-                      <Shield className="w-3.5 h-3.5 text-[#A78BDA]" />
-                      General Info
-                    </h4>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSubmit();
+                  }}
+                  className="p-5 rounded-2xl border border-[#222834] bg-[#0F1117] space-y-4 shadow-xl"
+                >
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#8F99A8] border-b border-[#222834] pb-2 flex items-center gap-1.5">
+                    <Shield className="w-3.5 h-3.5 text-[#00D8F6]" />
+                    <span>General Info</span>
+                  </h4>
 
-                    {/* Avatar URL input */}
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-[#F3F4F6]">
-                        Avatar URL
-                      </label>
-                      <input
-                        type="url"
-                        value={imageLink}
-                        onChange={(e) => setImageLink(e.target.value)}
-                        placeholder="https://images.unsplash.com/photo-..."
-                        className="w-full px-3 py-2 rounded-xl bg-[#161922] border border-[#222834] text-white placeholder-[#4B5563] focus:outline-none focus:border-[#00D8F6] text-xs transition-all"
-                      />
-                    </div>
-
-                    {/* Short Bio textarea */}
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-[#F3F4F6]">
-                        Short Bio
-                      </label>
-                      <textarea
-                        value={bio}
-                        onChange={(e) => setBio(e.target.value)}
-                        placeholder="Write a custom bio about yourself..."
-                        rows={4}
-                        className="w-full px-3 py-2 rounded-xl bg-[#161922] border border-[#222834] text-white placeholder-[#4B5563] focus:outline-none focus:border-[#00D8F6] text-xs transition-all resize-none"
-                      />
-                    </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-[#F3F4F6]">
+                      Avatar URL
+                    </label>
+                    <input
+                      type="url"
+                      value={imageLink}
+                      onChange={(e) => setImageLink(e.target.value)}
+                      placeholder="https://..."
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#161922] border border-[#222834] text-white placeholder-[#8F99A8]/60 focus:outline-none focus:border-[#00D8F6] text-xs transition-all"
+                    />
                   </div>
 
-                  {/* ── Footer Actions ────────────────────────────────────────────────
-                    Cancel resets all fields to the last-saved profile.
-                    Save triggers handleSubmit. */}
-                  <div className="flex flex-col gap-3">
-                    {error && (
-                      <div className="px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-medium">
-                        {error}
-                      </div>
-                    )}
-                    {saveSuccess && (
-                      <div className="px-4 py-2.5 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-medium">
-                        Profile saved successfully! Refreshing...
-                      </div>
-                    )}
-                    <div className="flex items-center justify-end gap-3">
-                      {/* Cancel — reverts form to the last-saved profile and exits edit mode */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsEditing(false);
-                          applyProfile(existingProfile);
-                          setError("");
-                          setSaveSuccess(false);
-                        }}
-                        className="px-5 py-2.5 rounded-xl text-xs font-semibold text-[#8F99A8] hover:bg-[#161922] hover:text-white transition-all cursor-pointer flex items-center gap-1.5"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                        Cancel
-                      </button>
-                      {/* Save — calls handleSubmit directly via onClick */}
-                      <button
-                        type="button"
-                        onClick={handleSubmit}
-                        disabled={isSaving}
-                        className="px-5 py-2.5 bg-[#00D8F6] hover:bg-[#00c4e0] disabled:opacity-50 text-[#0B0D11] rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(0,216,246,0.25)] cursor-pointer"
-                      >
-                        <Save className="w-4 h-4" />
-                        {isSaving ? "Saving..." : "Save Configuration"}
-                      </button>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-[#F3F4F6]">
+                      Short Bio
+                    </label>
+                    <textarea
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value)}
+                      placeholder="Write a custom bio about yourself..."
+                      rows={3}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#161922] border border-[#222834] text-white placeholder-[#8F99A8]/60 focus:outline-none focus:border-[#00D8F6] text-xs transition-all resize-none"
+                    />
+                  </div>
+
+                  {error && (
+                    <div className="px-4 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-medium">
+                      {error}
                     </div>
+                  )}
+                  {saveSuccess && (
+                    <div className="px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium">
+                      Profile saved successfully!
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-end gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={handleCancelEditing}
+                      className="px-4 py-2 rounded-xl text-xs font-semibold text-[#8F99A8] hover:bg-[#161922] hover:text-white transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Cancel</span>
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSaving}
+                      className="px-5 py-2 bg-[#00D8F6] hover:bg-[#00c4e0] disabled:opacity-50 text-[#0B0D11] rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-[0_0_12px_rgba(0,216,246,0.25)] cursor-pointer"
+                    >
+                      <Save className="w-4 h-4" />
+                      <span>{isSaving ? "Saving..." : "Save Configuration"}</span>
+                    </button>
                   </div>
                 </form>
               )}
 
-              {/* ── Tab Navigation ────────────────────────────────────────────────
-                Two tabs: Posts and Recent Activity. */}
+              {/* ── Tab Navigation ──────────────────────────────────────────── */}
               <div className="flex items-center gap-1 p-1 rounded-xl bg-[#0F1117] border border-[#222834] mt-8">
                 {[
                   {
                     id: "posts",
                     label: "Posts",
                     icon: <Layers className="w-4 h-4" />,
+                  },
+                  {
+                    id: "communities",
+                    label: isProfileLoading
+                      ? "Your Communities"
+                      : `Your Communities (${joinedGroups.length})`,
+                    icon: <Users className="w-4 h-4" />,
                   },
                   {
                     id: "activity",
@@ -445,36 +420,181 @@ export default function ProfilePage() {
                     }`}
                   >
                     {tab.icon}
-                    {tab.label}
+                    <span>{tab.label}</span>
                   </button>
                 ))}
               </div>
 
-              {/* ── Tab Content Panels ────────────────────────────────────────────
-                Only the active tab panel renders. */}
+              {/* ── Tab Content Panels ──────────────────────────────────────── */}
               <div className="mt-6 space-y-6">
-                {/* ── Posts Tab — user's submitted posts ── */}
+                {/* ── Posts Tab ── */}
                 {activeTab === "posts" && (
-                  <div className="space-y-4 animate-fade-in">
-                    {USER.userPosts.length === 0 ? (
-                      <div className="text-center py-12 text-[#8F99A8]">
-                        You haven't submitted any posts yet.
+                  <div className="space-y-4">
+                    {isPostsLoading ? (
+                      <div className="space-y-4">
+                        {[1, 2, 3].map((n) => (
+                          <div
+                            key={n}
+                            className="w-full bg-[#0F1117] border border-[#222834] rounded-2xl p-5 shadow-xl animate-pulse space-y-3"
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className="w-24 h-5 rounded-md bg-[#161922]" />
+                              <div className="w-3 h-3 rounded-full bg-[#161922]" />
+                              <div className="w-20 h-4 rounded bg-[#161922]" />
+                            </div>
+                            <div className="w-3/4 h-6 rounded-lg bg-[#161922]" />
+                            <div className="space-y-1.5 pt-1">
+                              <div className="w-full h-4 rounded bg-[#161922]" />
+                              <div className="w-5/6 h-4 rounded bg-[#161922]" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : displayPosts.length === 0 ? (
+                      <div className="rounded-2xl border border-[#222834] bg-[#0F1117] p-10 text-center space-y-3 shadow-xl">
+                        <div className="w-12 h-12 rounded-2xl bg-[#161922] border border-[#222834] text-[#8F99A8] flex items-center justify-center mx-auto">
+                          <Layers className="w-6 h-6" />
+                        </div>
+                        <p className="text-sm text-[#8F99A8]">
+                          You haven't submitted any posts yet.
+                        </p>
                       </div>
                     ) : (
-                      USER.userPosts.map((post) => (
-                        <PostCard key={post.id} post={post} />
+                      displayPosts.map((post) => (
+                        <PostCard key={post._id || post.id} post={post} />
                       ))
                     )}
                   </div>
                 )}
 
-                {/* ── Activity Tab — full list of all recent activity items ── */}
+                {/* ── Your Communities Tab ── */}
+                {activeTab === "communities" && (
+                  <div className="space-y-4">
+                    {isProfileLoading ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {[1, 2, 3, 4].map((n) => (
+                          <div
+                            key={n}
+                            className="p-5 rounded-2xl bg-[#0F1117] border border-[#222834] animate-pulse space-y-4 shadow-xl"
+                          >
+                            <div className="flex items-start gap-3.5">
+                              <div className="w-12 h-12 rounded-xl bg-[#161922] shrink-0" />
+                              <div className="space-y-2 flex-1">
+                                <div className="h-4 bg-[#161922] rounded w-1/2" />
+                                <div className="h-3 bg-[#161922] rounded w-1/3" />
+                                <div className="h-3 bg-[#161922] rounded w-3/4" />
+                              </div>
+                            </div>
+                            <div className="pt-3 border-t border-[#222834] flex justify-between">
+                              <div className="h-3 bg-[#161922] rounded w-16" />
+                              <div className="h-3 bg-[#161922] rounded w-12" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : joinedGroups.length === 0 ? (
+                      <div className="rounded-2xl border border-[#222834] bg-[#0F1117] p-10 sm:p-12 text-center space-y-4 shadow-xl">
+                        <div className="w-14 h-14 rounded-2xl bg-[#161922] border border-[#222834] text-[#8F99A8] flex items-center justify-center mx-auto">
+                          <Users className="w-6 h-6" />
+                        </div>
+                        <div className="space-y-1">
+                          <h3 className="text-base sm:text-lg font-bold text-white">
+                            You haven't joined any communities yet
+                          </h3>
+                          <p className="text-xs sm:text-sm text-[#8F99A8] max-w-sm mx-auto">
+                            Join hardware discussions, custom watercooling setups,
+                            and battlestations across ThermalPaste.
+                          </p>
+                        </div>
+                        <Link
+                          to="/communities"
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#00D8F6] hover:bg-[#00c4e0] text-[#0B0D11] text-xs font-bold transition shadow-[0_0_14px_rgba(0,216,246,0.3)] active:scale-95"
+                        >
+                          <Compass className="w-4 h-4" />
+                          <span>Explore Communities</span>
+                        </Link>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {joinedGroups.map((group) => {
+                          const isString = typeof group === "string";
+                          const groupObj = isString ? { _id: group, name: group } : group;
+                          const rawName = groupObj.name || groupObj.slug || "community";
+                          const slug = rawName.replace(/^g\//, "");
+                          const groupDisplay = rawName.startsWith("g/")
+                            ? rawName
+                            : `g/${rawName}`;
+                          const GroupIcon =
+                            COMMUNITY_ICON_MAP[groupDisplay] ||
+                            COMMUNITY_ICON_MAP[slug] ||
+                            Boxes;
+                          const memberCount = Array.isArray(groupObj.members)
+                            ? groupObj.members.length
+                            : typeof groupObj.memberCount === "number"
+                            ? groupObj.memberCount
+                            : 1;
+
+                          return (
+                            <Link
+                              key={groupObj._id || slug}
+                              to={`/communities/${slug}`}
+                              className="p-5 rounded-2xl bg-[#0F1117] border border-[#222834] hover:border-[#00D8F6]/40 transition-all duration-200 group flex flex-col justify-between space-y-4 shadow-xl cursor-pointer"
+                            >
+                              <div className="flex items-start gap-3.5">
+                                <div className="w-12 h-12 rounded-xl bg-[#00D8F6]/10 border border-[#00D8F6]/30 flex items-center justify-center text-[#00D8F6] shrink-0 group-hover:scale-105 transition-transform">
+                                  <GroupIcon className="w-6 h-6" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <h4 className="text-sm font-bold text-white group-hover:text-[#00D8F6] transition truncate">
+                                      {groupDisplay}
+                                    </h4>
+                                    {groupObj.privacy === "private" ? (
+                                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20">
+                                        <Lock className="w-2.5 h-2.5" />
+                                        Private
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded border border-emerald-400/20">
+                                        <Globe className="w-2.5 h-2.5" />
+                                        Public
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-[#00D8F6] font-medium mt-0.5 truncate">
+                                    {groupObj.tagline || "Tech Community"}
+                                  </p>
+                                  <p className="text-xs text-[#8F99A8] line-clamp-2 mt-1">
+                                    {groupObj.description ||
+                                      "Join the discussion, share your benchmarks, and guides."}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-between pt-3 border-t border-[#222834]/80 text-xs">
+                                <span className="text-[#8F99A8]">
+                                  {memberCount} {memberCount === 1 ? "member" : "members"}
+                                </span>
+                                <span className="inline-flex items-center gap-1 font-semibold text-[#00D8F6] group-hover:translate-x-0.5 transition-transform">
+                                  <span>Visit</span>
+                                  <ArrowRight className="w-3.5 h-3.5" />
+                                </span>
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Activity Tab ── */}
                 {activeTab === "activity" && (
-                  <div className="rounded-2xl border border-[#222834] bg-[#0F1117] overflow-hidden animate-fade-in">
+                  <div className="rounded-2xl border border-[#222834] bg-[#0F1117] overflow-hidden shadow-xl">
                     <div className="p-5 border-b border-[#222834]">
                       <h3 className="text-sm font-bold text-white flex items-center gap-2">
                         <Activity className="w-4 h-4 text-[#00D8F6]" />
-                        All Recent Activity
+                        <span>All Recent Activity</span>
                       </h3>
                     </div>
                     <div className="divide-y divide-[#222834]">
@@ -494,7 +614,6 @@ export default function ProfilePage() {
 }
 
 // ─── ActivityItem Sub-Component ───────────────────────────────────────────────
-// Renders a single row in the activity feed.
 function ActivityItem({ item }) {
   const TYPE_ICONS = {
     post: <MessageCircle className="w-3.5 h-3.5" />,
@@ -518,26 +637,21 @@ function ActivityItem({ item }) {
 
       <div className="min-w-0 flex-1">
         <p className="text-sm text-white leading-snug">
-          <span className="font-semibold">{item.title}</span>
+          <span className="font-semibold text-white group-hover:text-[#00D8F6] transition-colors">
+            {item.title}
+          </span>
         </p>
-        <div className="flex items-center gap-2 mt-1">
+        <p className="text-xs text-[#8F99A8] mt-0.5 flex items-center gap-1.5">
           <Link
             to={`/communities/${targetGroup}`}
-            className="text-[11px] font-medium text-[#00D8F6] hover:underline transition-colors cursor-pointer"
+            className="text-[#00D8F6] hover:underline font-medium"
           >
             {item.community}
           </Link>
-          <span className="text-[11px] text-[#4B5563]">·</span>
-          <span className="text-[11px] text-[#8F99A8]">{item.time}</span>
-        </div>
+          <span>•</span>
+          <span>{item.time}</span>
+        </p>
       </div>
-
-      <span
-        className="text-[10px] uppercase tracking-wider font-bold mt-1 px-2 py-0.5 rounded-md bg-[#161922] border border-[#222834]"
-        style={{ color: item.color }}
-      >
-        {item.type}
-      </span>
     </div>
   );
 }

@@ -272,30 +272,32 @@ export function PostCard({ post = DEFAULT_POST }) {
         <div className="border-t border-[#222834] my-2" />
 
         {/* FOOTER ACTION BAR */}
-        <div className="flex items-center justify-between gap-3 pt-1">
+        <div className="flex items-center justify-between gap-2 sm:gap-3 pt-1 flex-wrap">
           {/* LEFT ACTIONS */}
-          <div className="flex items-center gap-1.5 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-2.5 flex-wrap">
             <Link
               to={`/post/${postId}`}
               state={{ post }}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[#8F99A8] hover:text-white hover:bg-[#161922] font-semibold text-xs transition cursor-pointer"
+              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg text-[#8F99A8] hover:text-white hover:bg-[#161922] font-semibold text-xs transition cursor-pointer"
             >
               <MessageSquare className="w-4 h-4 stroke-[2]" />
-              <span>{commentsTotal} Comments</span>
+              <span>
+                {commentsTotal} <span className="hidden sm:inline">Comments</span>
+              </span>
             </Link>
 
             <button
               onClick={handleShare}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[#8F99A8] hover:text-white hover:bg-[#161922] font-semibold text-xs transition cursor-pointer"
+              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg text-[#8F99A8] hover:text-white hover:bg-[#161922] font-semibold text-xs transition cursor-pointer"
             >
               <Share2 className="w-4 h-4 stroke-[2]" />
-              <span>Share</span>
+              <span className="hidden xs:inline">Share</span>
             </button>
 
             <button
               onClick={handleToggleSave}
               aria-label={isSaved ? "Remove from saved" : "Save post"}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold text-xs transition cursor-pointer ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg font-semibold text-xs transition cursor-pointer ${
                 isSaved
                   ? "bg-[#00D8F6]/15 text-[#00D8F6] border border-[#00D8F6]/30 shadow-[0_0_10px_rgba(0,216,246,0.15)]"
                   : "text-[#8F99A8] hover:text-white hover:bg-[#161922]"

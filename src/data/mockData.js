@@ -262,7 +262,3 @@ export function getCommunityById(groupId) {
   const cleanId = String(groupId).replace(/^g\//, "").toLowerCase();
   return SUB_GROUPS.find((group) => group.id.toLowerCase() === cleanId) || null;
 }
-
-export function getSavedPosts(savedIds = ["post_5", "post_3", "post_2"]) {
-  return POSTS.filter((post) => savedIds.includes(post.id));
-}

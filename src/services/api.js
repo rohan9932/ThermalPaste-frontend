@@ -67,7 +67,7 @@ api.interceptors.response.use(
       // Refresh succeeded — the backend has set new cookies.
       // Retry the original request (cookies are sent automatically).
       return api(originalRequest);
-    } catch (refreshError) {
+    } catch {
       // Refresh failed (refresh token expired/invalid).
       // Clear the cached user data so every ProtectedRoute
       // immediately redirects to /login.

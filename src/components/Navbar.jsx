@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import {
   Plus,
   Search,
-  UserRoundCog,
   Menu,
   X,
   FileText,
