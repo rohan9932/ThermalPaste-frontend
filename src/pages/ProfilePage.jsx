@@ -12,10 +12,6 @@ import {
 } from "../services/profile.js";
 import { getFeed, POST_KEYS, getUserComments } from "../services/posts.js";
 import { useAuth } from "../context/AuthContext";
-<<<<<<< HEAD
-=======
-import { getCategoryIcon } from "../data/mockData";
->>>>>>> b793ceb62bf260f17d543fff42093b304e7c9aeb
 import {
   Shield,
   Save,
@@ -471,7 +467,6 @@ export default function ProfilePage() {
                         </p>
                       </div>
                     ) : (
-<<<<<<< HEAD
                       <div className="space-y-3">
                         {userCommentsData.comments.map((comment) => (
                           <div
@@ -496,35 +491,6 @@ export default function ProfilePage() {
                                         })
                                       : "Recently"}
                                   </span>
-=======
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {joinedGroups.map((group) => {
-                          const isString = typeof group === "string";
-                          const groupObj = isString ? { _id: group, name: group } : group;
-                          const rawName = groupObj.name || groupObj.slug || "community";
-                          const slug = rawName.replace(/^g\//, "");
-                          const groupDisplay = rawName.startsWith("g/")
-                            ? rawName
-                            : `g/${rawName}`;
-                          const GroupIcon = getCategoryIcon(
-                            groupObj.category || slug,
-                          );
-                          const memberCount = Array.isArray(groupObj.members)
-                            ? groupObj.members.length
-                            : typeof groupObj.memberCount === "number"
-                            ? groupObj.memberCount
-                            : 1;
-
-                          return (
-                            <Link
-                              key={groupObj._id || slug}
-                              to={`/communities/${slug}`}
-                              className="p-5 rounded-2xl bg-[#0F1117] border border-[#222834] hover:border-[#00D8F6]/40 transition-all duration-200 group flex flex-col justify-between space-y-4 shadow-xl cursor-pointer"
-                            >
-                              <div className="flex items-start gap-3.5">
-                                <div className="w-12 h-12 rounded-xl bg-[#00D8F6]/10 border border-[#00D8F6]/30 flex items-center justify-center text-[#00D8F6] shrink-0 group-hover:scale-105 transition-transform">
-                                  <GroupIcon className="w-6 h-6" />
->>>>>>> b793ceb62bf260f17d543fff42093b304e7c9aeb
                                 </div>
                                 <p className="text-sm text-[#C4C9D4] leading-relaxed whitespace-pre-line">
                                   {comment.comment || ""}
