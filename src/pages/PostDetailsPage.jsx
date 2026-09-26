@@ -13,6 +13,9 @@ import {
   deletePost,
   toggleSavePost,
   POST_KEYS,
+  getComments,
+  createComment,
+  voteComment,
 } from "../services/posts";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -35,32 +38,25 @@ import {
 
 // ─── Comment Item Sub-Component ───────────────────────────────────────────────
 // Renders an individual comment with independent vote controls, score, and reply capability.
-function CommentItem({ comment, onAddReply, isNested = false }) {
-  const [voteState, setVoteState] = useState(null);
-  const [voteCount, setVoteCount] = useState(comment.upvotes ?? 0);
+function CommentItem({ comment, onAddReply, onVote, isNested = false }) {
+  const [voteState, setVoteState] = useState(comment.userVote ?? 0);
+  const [voteCount, setVoteCount] = useState(comment.score ?? 0);
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState("");
 
-  const handleUpvote = () => {
-    if (voteState === "down") {
-      setVoteCount((prev) => prev + 2);
-    } else if (voteState === "up") {
-      setVoteCount((prev) => prev - 1);
-    } else {
-      setVoteCount((prev) => prev + 1);
+  const handleVote = async (value) => {
+    if (onVote) {
+      await onVote(comment._id || comment.id, value);
+      // Optimistic update
+      setVoteState(value === voteState ? 0 : value);
+      if (voteState === value) {
+        setVoteCount((prev) => prev - value);
+      } else if (voteState === -value) {
+        setVoteCount((prev) => prev + value * 2);
+      } else {
+        setVoteCount((prev) => prev + value);
+      }
     }
-    setVoteState(voteState === "up" ? null : "up");
-  };
-
-  const handleDownvote = () => {
-    if (voteState === "up") {
-      setVoteCount((prev) => prev - 2);
-    } else if (voteState === "down") {
-      setVoteCount((prev) => prev + 1);
-    } else {
-      setVoteCount((prev) => prev - 1);
-    }
-    setVoteState(voteState === "down" ? null : "down");
   };
 
   const handleReplySubmit = (e) => {
@@ -68,12 +64,18 @@ function CommentItem({ comment, onAddReply, isNested = false }) {
     if (!replyText.trim()) return;
 
     if (onAddReply) {
-      onAddReply(comment.id, replyText.trim());
+      onAddReply(comment._id || comment.id, replyText.trim());
     }
 
     setReplyText("");
     setIsReplying(false);
   };
+
+  const author = comment.user?.username || "Unknown";
+  const timeAgo = comment.createdAt
+    ? new Date(comment.createdAt).toLocaleString()
+    : "Recently";
+  const content = comment.comment || "";
 
   return (
     <div
@@ -87,38 +89,38 @@ function CommentItem({ comment, onAddReply, isNested = false }) {
         {/* Vote Column */}
         <div className="flex flex-col items-center shrink-0 pt-0.5">
           <button
-            onClick={handleUpvote}
-            aria-label="Upvote comment"
+            onClick={() => handleVote(1)}
+            aria-label={voteState === 1 ? "Remove upvote" : "Upvote comment"}
             className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
-              voteState === "up"
+              voteState === 1
                 ? "bg-[#00D8F6] text-[#0B0D11] shadow-[0_0_10px_rgba(0,216,246,0.4)]"
                 : "text-[#8F99A8] hover:text-[#00D8F6] hover:bg-[#0B0D11]"
             }`}
           >
             <ArrowUp
               className={`w-4 h-4 stroke-[2.5] ${
-                voteState === "up" ? "fill-current" : ""
+                voteState === 1 ? "fill-current" : ""
               }`}
             />
           </button>
 
           <span
             className={`text-xs font-bold my-1 transition-colors ${
-              voteState === "up"
+              voteState === 1
                 ? "text-[#00D8F6]"
-                : voteState === "down"
-                  ? "text-rose-400"
-                  : "text-[#8F99A8]"
+                : voteState === -1
+                ? "text-rose-400"
+                : "text-[#8F99A8]"
             }`}
           >
             {voteCount}
           </span>
 
           <button
-            onClick={handleDownvote}
-            aria-label="Downvote comment"
+            onClick={() => handleVote(-1)}
+            aria-label={voteState === -1 ? "Remove downvote" : "Downvote comment"}
             className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
-              voteState === "down"
+              voteState === -1
                 ? "bg-rose-500/20 text-rose-400 border border-rose-500/40"
                 : "text-[#8F99A8] hover:text-rose-400 hover:bg-[#0B0D11]"
             }`}
@@ -131,13 +133,13 @@ function CommentItem({ comment, onAddReply, isNested = false }) {
         <div className="flex-1 min-w-0 space-y-1.5">
           <div className="flex items-center gap-2 text-xs">
             <CircleUserRound className="w-4 h-4 text-[#00D8F6]" />
-            <span className="font-semibold text-white">{comment.author}</span>
+            <span className="font-semibold text-white">{author}</span>
             <span className="text-[#8F99A8]/60 font-bold">•</span>
-            <span className="text-[#8F99A8]">{comment.time}</span>
+            <span className="text-[#8F99A8]">{timeAgo}</span>
           </div>
 
           <p className="text-xs sm:text-sm text-[#C4C9D4] leading-relaxed whitespace-pre-line">
-            {comment.content}
+            {content}
           </p>
 
           {/* Reply Action Button */}
@@ -165,7 +167,7 @@ function CommentItem({ comment, onAddReply, isNested = false }) {
                 required
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
-                placeholder={`Reply to @${comment.author}...`}
+                placeholder={`Reply to @${author}...`}
                 className="w-full bg-[#0B0D11] text-xs sm:text-sm text-white placeholder-[#8F99A8]/60 p-2.5 rounded-lg border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all resize-none"
               />
               <div className="flex items-center justify-end gap-2">
@@ -194,7 +196,12 @@ function CommentItem({ comment, onAddReply, isNested = false }) {
           {comment.replies && comment.replies.length > 0 && (
             <div className="mt-3 pl-3 sm:pl-4 border-l-2 border-[#222834] space-y-2.5">
               {comment.replies.map((reply) => (
-                <CommentItem key={reply.id} comment={reply} isNested={true} />
+                <CommentItem
+                  key={reply._id || reply.id}
+                  comment={reply}
+                  onVote={onVote}
+                  isNested={true}
+                />
               ))}
             </div>
           )}
@@ -225,6 +232,9 @@ export default function PostDetailsPage() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+
+  // New comment text state
+  const [newCommentText, setNewCommentText] = useState("");
 
   // Query live post from backend API by ID
   const {
@@ -300,6 +310,15 @@ export default function PostDetailsPage() {
     setIsSaved(Boolean(rawPost?.isSaved));
   }
 
+  // Fetch comments for this post
+  const {
+    data: commentsData,
+  } = useQuery({
+    queryKey: ["comments", postId],
+    queryFn: () => getComments(postId),
+    enabled: !!postId,
+  });
+
   const handleToggleSave = async () => {
     if (!user) {
       navigate("/login", { state: { from: location.pathname } });
@@ -337,82 +356,53 @@ export default function PostDetailsPage() {
     }
   };
 
-  // Comments state with nested replies support
-  const [comments, setComments] = useState([
-    {
-      id: "comment-1",
-      author: "HardwareFan",
-      time: "2 hours ago",
-      content: "Great share! Thanks for posting the breakdown and details.",
-      upvotes: 4,
-      replies: [
-        {
-          id: "reply-1",
-          author: "SFF_Builder",
-          time: "1 hour ago",
-          content: "Agreed! That cable routing in particular is super clean.",
-          upvotes: 2,
-        },
-      ],
-    },
-    {
-      id: "comment-2",
-      author: "RigMaster",
-      time: "1 hour ago",
-      content:
-        "Clean aesthetics and great thermals. What paste compound did you use for the cooler mount?",
-      upvotes: 2,
-      replies: [],
-    },
-  ]);
-  const [newCommentText, setNewCommentText] = useState("");
+  // Comments from API (nested tree)
+  const comments = commentsData?.comments ?? [];
 
   // Calculate total comments + replies count
-  const totalCommentsCount =
-    (rawPost?.commentsCount ?? 0) > 0
-      ? rawPost.commentsCount
-      : comments.reduce(
-          (acc, c) => acc + 1 + (c.replies ? c.replies.length : 0),
-          0,
-        );
+  const totalCommentsCount = commentsData?.count ?? comments.length;
 
-  const handleAddComment = (e) => {
+  const handleAddComment = async (e) => {
     e.preventDefault();
-    if (!newCommentText.trim()) return;
+    if (!newCommentText.trim() || !user) return;
 
-    const newComment = {
-      id: `comment-${Date.now()}`,
-      author: user?.username || "You",
-      time: "Just now",
-      content: newCommentText.trim(),
-      upvotes: 0,
-      replies: [],
-    };
+    try {
+      await createComment(postId, {
+        comment: newCommentText.trim(),
+      });
 
-    setComments([newComment, ...comments]);
-    setNewCommentText("");
+      setNewCommentText("");
+      queryClient.invalidateQueries({ queryKey: ["comments", postId] });
+      queryClient.invalidateQueries({ queryKey: POST_KEYS.post(id) });
+    } catch (err) {
+      console.error("Failed to create comment:", err);
+    }
   };
 
-  const handleAddReply = (parentCommentId, replyContent) => {
-    const newReply = {
-      id: `reply-${Date.now()}`,
-      author: user?.username || "You",
-      time: "Just now",
-      content: replyContent,
-      upvotes: 0,
-    };
+  const handleAddReply = async (parentCommentId, replyContent) => {
+    if (!user) return;
 
-    setComments((prevComments) =>
-      prevComments.map((c) => {
-        if (c.id === parentCommentId) {
-          return {
-            ...c,
-            replies: [...(c.replies || []), newReply],
-          };
-        }
-        return c;
-      }),
-    );
+    try {
+      await createComment(postId, {
+        comment: replyContent,
+        parentCommentId,
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["comments", postId] });
+      queryClient.invalidateQueries({ queryKey: POST_KEYS.post(id) });
+    } catch (err) {
+      console.error("Failed to create reply:", err);
+    }
+  };
+
+  const handleVoteComment = async (commentId, value) => {
+    if (!user) return;
+    try {
+      await voteComment(commentId, value);
+      queryClient.invalidateQueries({ queryKey: ["comments", postId] });
+    } catch (err) {
+      console.error("Failed to vote comment:", err);
+    }
   };
 
   // Open Edit Modal with current values
@@ -916,9 +906,10 @@ export default function PostDetailsPage() {
                   <div className="space-y-3 pt-2">
                     {comments.map((comment) => (
                       <CommentItem
-                        key={comment.id}
+                        key={comment._id || comment.id}
                         comment={comment}
                         onAddReply={handleAddReply}
+                        onVote={handleVoteComment}
                       />
                     ))}
                   </div>
