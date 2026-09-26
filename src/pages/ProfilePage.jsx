@@ -8,9 +8,7 @@ import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import PostCard from "../components/PostCard.jsx";
 import {
-  getProfile,
   updateProfile,
-  createProfile,
 } from "../services/profile.js";
 import { getFeed, POST_KEYS } from "../services/posts.js";
 import { useAuth } from "../context/AuthContext";
@@ -152,7 +150,7 @@ const USER = {
 // ─── ProfilePage Component ────────────────────────────────────────────────────
 export default function ProfilePage() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, isLoading: isUserLoading } = useAuth();
 
   // Controls whether the sidebar is open or collapsed.
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -168,34 +166,22 @@ export default function ProfilePage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  // Fetch real profile data (including populated groups) via React Query
-  const { data: profileRes, isLoading: isProfileLoading } = useQuery({
-    queryKey: ["profile"],
-    queryFn: getProfile,
-  });
-
   // Fetch real feed to retrieve user's real posts
   const { data: feedPosts = [], isLoading: isPostsLoading } = useQuery({
     queryKey: POST_KEYS.feed(),
     queryFn: () => getFeed(),
   });
 
-  const profile =
-    profileRes?.data?.data?.profile ||
-    profileRes?.data?.profile ||
-    null;
+  // Use user data from AuthContext (includes profile fields: imageLink, bio, groups)
+  const displayName = user?.username || USER.username;
+  const avatarUrl = user?.imageLink || "/images/avatar.jpg";
+  const displayBio = user?.bio || USER.bio;
 
-  // Joined groups populated by backend UserProfile.groups
-  const rawGroups = profile?.groups || [];
+  // Joined groups from profile
+  const rawGroups = user?.groups || [];
   const joinedGroups = rawGroups.filter(
     (g) => g && (typeof g === "object" || typeof g === "string"),
   );
-
-  const displayName =
-    profile?.user?.username || user?.username || USER.username;
-  const avatarUrl =
-    profile?.imageLink || user?.imageLink || "/images/avatar.jpg";
-  const displayBio = profile?.bio || USER.bio;
 
   // Filter posts created by the current user
   const userRealPosts = feedPosts.filter((p) => {
@@ -211,8 +197,8 @@ export default function ProfilePage() {
   const displayPosts = userRealPosts.length > 0 ? userRealPosts : USER.userPosts;
 
   const handleStartEditing = () => {
-    setBio(profile?.bio ?? "");
-    setImageLink(profile?.imageLink ?? "");
+    setBio(user?.bio ?? "");
+    setImageLink(user?.imageLink ?? "");
     setError("");
     setSaveSuccess(false);
     setIsEditing(true);
@@ -220,8 +206,8 @@ export default function ProfilePage() {
 
   const handleCancelEditing = () => {
     setIsEditing(false);
-    setBio(profile?.bio ?? "");
-    setImageLink(profile?.imageLink ?? "");
+    setBio(user?.bio ?? "");
+    setImageLink(user?.imageLink ?? "");
     setError("");
   };
 
@@ -234,14 +220,9 @@ export default function ProfilePage() {
     try {
       const payload = { imageLink, bio };
 
-      if (profile?._id) {
-        await updateProfile(payload);
-      } else {
-        await createProfile(payload);
-      }
+      await updateProfile(payload);
 
       setSaveSuccess(true);
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
       queryClient.invalidateQueries({ queryKey: ["me"] });
       setIsEditing(false);
     } catch (err) {
@@ -399,7 +380,7 @@ export default function ProfilePage() {
                   },
                   {
                     id: "communities",
-                    label: isProfileLoading
+                    label: isUserLoading
                       ? "Your Communities"
                       : `Your Communities (${joinedGroups.length})`,
                     icon: <Users className="w-4 h-4" />,
@@ -470,7 +451,7 @@ export default function ProfilePage() {
                 {/* ── Your Communities Tab ── */}
                 {activeTab === "communities" && (
                   <div className="space-y-4">
-                    {isProfileLoading ? (
+                    {isUserLoading ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {[1, 2, 3, 4].map((n) => (
                           <div

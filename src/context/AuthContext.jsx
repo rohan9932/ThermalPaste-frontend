@@ -36,7 +36,8 @@ export function AuthProvider({ children }) {
     error?.response?.data?.status === 401;
 
   // User is valid only if the query succeeded with real data
-  const user = !error && data ? data : null;
+  // New response format: { user: {...}, profile: {...} }
+  const user = !error && data?.user ? { ...data.user, ...data.profile } : null;
 
   // Expose whether the error is a real server/network fault (not a normal 401)
   const authError = error && !is401 ? error : null;
