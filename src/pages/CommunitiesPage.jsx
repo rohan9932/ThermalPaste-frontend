@@ -21,11 +21,7 @@ import {
   getCommunityById,
   COMMUNITY_ICON_MAP,
 } from "../data/mockData";
-import {
-  getGroupByIdOrName,
-  joinGroup,
-  leaveGroup,
-} from "../services/groups";
+import { getGroupByIdOrName, joinGroup, leaveGroup } from "../services/groups";
 import { useAuth } from "../context/AuthContext";
 
 export default function CommunitiesPage() {
@@ -222,7 +218,7 @@ export default function CommunitiesPage() {
                         ) : groupData.isMember ? (
                           <>
                             <Check className="w-3.5 h-3.5" />
-                            <span>Joined</span>
+                            <span>Leave Group</span>
                           </>
                         ) : groupData.isPending ? (
                           <>
@@ -264,7 +260,8 @@ export default function CommunitiesPage() {
                   </h3>
                   <p className="text-xs text-[#8F99A8] max-w-md mx-auto">
                     This is a private sub-group. You must request to join and be
-                    accepted by the creator before viewing threads and participating.
+                    accepted by the creator before viewing threads and
+                    participating.
                   </p>
                 </div>
               ) : (
@@ -288,4 +285,3 @@ export default function CommunitiesPage() {
     </div>
   );
 }
-

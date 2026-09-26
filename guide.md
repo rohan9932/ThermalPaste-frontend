@@ -52,7 +52,10 @@ _There are 3 people working on this project. Agents must track work separately f
 
 ### User 2 (Rohan)
 
-- _No recent activity._
+- [2026-09-26] Created `context.md` providing a comprehensive architectural and codebase reference for the frontend (Vite, React 19, Tailwind v4 design tokens, React Router v6, TanStack Query, Axios silent refresh interceptor, and backend service integration).
+- [2026-09-26] Audited and refined `plan.md` to strictly align the post feature implementation roadmap with `guide.md` (pure Axios service layer, exact dark/cyan theme tokens, backend schema normalization map, mobile responsiveness, and preserved nested comments).
+- [2026-09-26] Implemented Phase 1: created `src/services/posts.js` with pure Axios service methods (`getFeed`, `getPostById`, `getPostsByGroup`, `createPost`, `updatePost`, `deletePost`, `toggleSavePost`, `getSavedPosts`) and standardized `POST_KEYS` query keys.
+- [2026-09-26] Implemented Phase 2: connected `HomePage.jsx` to live API feed with theme-matched pulse skeleton cards, retryable error alert, and empty state CTA; updated `PostCard.jsx` to seamlessly normalize backend and mock fields; wired `CreatePostForm.jsx` to dynamic groups and `createPost` API with cache invalidation and redirect.
 
 ### User 3 (Shafayat)
 
@@ -74,7 +77,7 @@ _To keep things clean, use these sections to track ongoing work without needing 
 
 ### 🎯 Current Focus
 
-- UX refinement, feed integration, and component polishing.
+- Post feature integration: transitioning Home, Details, Community, and Saved feeds from mock data to the backend API per `plan.md`.
 
 ### 💡 Suggested Edits & Improvements
 
