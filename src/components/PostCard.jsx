@@ -5,7 +5,6 @@ import {
   ArrowDown,
   ArrowUp,
   MessageSquare,
-  Share2,
   Bookmark,
   CircleUserRound,
   Boxes,
@@ -51,12 +50,13 @@ export function PostCard({ post = DEFAULT_POST }) {
   const title = post.heading || post.title || "Untitled Post";
   const content = post.description || post.content || "";
   const sectionSnippet = post.previewSnippet || post.sectionHeader || null;
-  // Upvotes from backend reactCount (upvote) or mock upvotes fallback
+  // Total score from backend reactCount (upvote - downvote) or mock upvotes fallback
   const initialVotes =
-    post.reactCount?.upvote ??
-    post.reactcount?.upvote ??
-    post.upvotes ??
-    DEFAULT_POST.upvotes;
+    post.reactCount
+      ? (post.reactCount.upvote || 0) - (post.reactCount.downvote || 0)
+      : post.reactcount
+      ? (post.reactcount.upvote || 0) - (post.reactcount.downvote || 0)
+      : post.upvotes ?? DEFAULT_POST.upvotes;
   const initialVoteState =
     post.userReaction === "upvote"
       ? "up"
@@ -86,7 +86,7 @@ export function PostCard({ post = DEFAULT_POST }) {
 
   // Local voting state initialized with backend reaction status & count
   const [voteState, setVoteState] = useState(initialVoteState);
-  const [upvoteCount, setUpvoteCount] = useState(initialVotes);
+  const [voteCount, setVoteCount] = useState(initialVotes);
 
   // Sync voting state if post props update
   const [prevPostId, setPrevPostId] = useState(postId);
@@ -101,7 +101,7 @@ export function PostCard({ post = DEFAULT_POST }) {
     setPrevPostUpvotes(initialVotes);
     setPrevPostReaction(post.userReaction);
     setVoteState(initialVoteState);
-    setUpvoteCount(initialVotes);
+    setVoteCount(initialVotes);
   }
 
   const handleUpvote = async (e) => {
@@ -112,23 +112,26 @@ export function PostCard({ post = DEFAULT_POST }) {
     }
 
     const prevVote = voteState;
-    const prevCount = upvoteCount;
+    const prevCount = voteCount;
     let nextCount = prevCount;
     let nextVote = voteState === "up" ? null : "up";
 
-    if (voteState === "up") {
-      nextCount = Math.max(0, prevCount - 1);
+    if (voteState === "down") {
+      nextCount = prevCount + 2;
+    } else if (voteState === "up") {
+      nextCount = prevCount - 1;
     } else {
       nextCount = prevCount + 1;
     }
 
     setVoteState(nextVote);
-    setUpvoteCount(nextCount);
+    setVoteCount(nextCount);
 
     try {
       const data = await reactPost(postId, "upvote");
-      if (data?.reactCount) {
-        setUpvoteCount(data.reactCount.upvote ?? data.reactcount?.upvote ?? nextCount);
+      const rc = data?.reactCount ?? data?.reactcount;
+      if (rc) {
+        setVoteCount((rc.upvote || 0) - (rc.downvote || 0));
         setVoteState(
           data.userReaction === "upvote"
             ? "up"
@@ -141,7 +144,7 @@ export function PostCard({ post = DEFAULT_POST }) {
     } catch (err) {
       console.error("Failed to upvote post:", err);
       setVoteState(prevVote);
-      setUpvoteCount(prevCount);
+      setVoteCount(prevCount);
     }
   };
 
@@ -153,21 +156,26 @@ export function PostCard({ post = DEFAULT_POST }) {
     }
 
     const prevVote = voteState;
-    const prevCount = upvoteCount;
+    const prevCount = voteCount;
     let nextCount = prevCount;
     let nextVote = voteState === "down" ? null : "down";
 
     if (voteState === "up") {
-      nextCount = Math.max(0, prevCount - 1);
+      nextCount = prevCount - 2;
+    } else if (voteState === "down") {
+      nextCount = prevCount + 1;
+    } else {
+      nextCount = prevCount - 1;
     }
 
     setVoteState(nextVote);
-    setUpvoteCount(nextCount);
+    setVoteCount(nextCount);
 
     try {
       const data = await reactPost(postId, "downvote");
-      if (data?.reactCount) {
-        setUpvoteCount(data.reactCount.upvote ?? data.reactcount?.upvote ?? nextCount);
+      const rc = data?.reactCount ?? data?.reactcount;
+      if (rc) {
+        setVoteCount((rc.upvote || 0) - (rc.downvote || 0));
         setVoteState(
           data.userReaction === "upvote"
             ? "up"
@@ -180,17 +188,7 @@ export function PostCard({ post = DEFAULT_POST }) {
     } catch (err) {
       console.error("Failed to downvote post:", err);
       setVoteState(prevVote);
-      setUpvoteCount(prevCount);
-    }
-  };
-
-  const handleShare = (e) => {
-    e.stopPropagation();
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(
-        `${window.location.origin}/post/${postId}`,
-      );
-      alert("Post link copied to clipboard!");
+      setVoteCount(prevCount);
     }
   };
 
@@ -245,7 +243,7 @@ export function PostCard({ post = DEFAULT_POST }) {
                 : "text-[#8F99A8]"
           }`}
         >
-          {upvoteCount}
+          {voteCount}
         </span>
 
         <button
@@ -361,14 +359,6 @@ export function PostCard({ post = DEFAULT_POST }) {
                 {commentsTotal} <span className="hidden sm:inline">Comments</span>
               </span>
             </Link>
-
-            <button
-              onClick={handleShare}
-              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg text-[#8F99A8] hover:text-white hover:bg-[#161922] font-semibold text-xs transition cursor-pointer"
-            >
-              <Share2 className="w-4 h-4 stroke-[2]" />
-              <span className="hidden xs:inline">Share</span>
-            </button>
 
             <button
               onClick={handleToggleSave}

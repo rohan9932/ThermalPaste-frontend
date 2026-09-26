@@ -21,7 +21,6 @@ import {
   ArrowUp,
   ArrowDown,
   MessageSquare,
-  Share2,
   Bookmark,
   CircleUserRound,
   Boxes,
@@ -284,10 +283,11 @@ export default function PostDetailsPage() {
     rawPost?.sectionHeader || rawPost?.previewSnippet || null;
   const image = rawPost?.imageLink || rawPost?.image || null;
   const initialVotes =
-    rawPost?.reactCount?.upvote ??
-    rawPost?.reactcount?.upvote ??
-    rawPost?.upvotes ??
-    1;
+    rawPost?.reactCount
+      ? (rawPost.reactCount.upvote || 0) - (rawPost.reactCount.downvote || 0)
+      : rawPost?.reactcount
+      ? (rawPost.reactcount.upvote || 0) - (rawPost.reactcount.downvote || 0)
+      : rawPost?.upvotes ?? 1;
   const initialVoteState =
     rawPost?.userReaction === "upvote"
       ? "up"
@@ -377,14 +377,20 @@ export default function PostDetailsPage() {
     let nextVote = vote === type ? null : type;
 
     if (type === "up") {
-      if (vote === "up") {
-        nextCount = Math.max(0, prevCount - 1);
+      if (vote === "down") {
+        nextCount = prevCount + 2;
+      } else if (vote === "up") {
+        nextCount = prevCount - 1;
       } else {
         nextCount = prevCount + 1;
       }
     } else {
       if (vote === "up") {
-        nextCount = Math.max(0, prevCount - 1);
+        nextCount = prevCount - 2;
+      } else if (vote === "down") {
+        nextCount = prevCount + 1;
+      } else {
+        nextCount = prevCount - 1;
       }
     }
 
@@ -393,10 +399,9 @@ export default function PostDetailsPage() {
 
     try {
       const data = await reactPost(postId, reaction);
-      if (data?.reactCount) {
-        setVoteCount(
-          data.reactCount.upvote ?? data.reactcount?.upvote ?? nextCount,
-        );
+      const rc = data?.reactCount ?? data?.reactcount;
+      if (rc) {
+        setVoteCount((rc.upvote || 0) - (rc.downvote || 0));
         setVote(
           data.userReaction === "upvote"
             ? "up"
@@ -893,21 +898,6 @@ export default function PostDetailsPage() {
                             {totalCommentsCount} <span className="hidden sm:inline">Comments</span>
                           </span>
                         </div>
-
-                        <button
-                          onClick={() => {
-                            if (navigator.clipboard) {
-                              navigator.clipboard.writeText(
-                                window.location.href,
-                              );
-                              alert("Post link copied to clipboard!");
-                            }
-                          }}
-                          className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg text-[#8F99A8] hover:text-white hover:bg-[#161922] font-semibold text-xs transition cursor-pointer"
-                        >
-                          <Share2 className="w-4 h-4 stroke-[2]" />
-                          <span className="hidden xs:inline">Share</span>
-                        </button>
 
                         <button
                           onClick={handleToggleSave}
