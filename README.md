@@ -204,12 +204,7 @@ Ensure you have installed:
 
 ---
 
-## 📄 Documentation & Reports
 
-- **Engineering Session Report:** [`details.pdf`](file:///Volumes/Mac%20Drive/Projects/ThermalPaste/details.pdf) — Printable 4-page technical breakdown of the Post CRUD, Cloudinary pipeline, and voting engine architecture.
-- **Team Guidelines & Activity Log:** [`guide.md`](file:///Volumes/Mac%20Drive/Projects/ThermalPaste/guide.md) — Ground rules, coding conventions, and developer activity history.
-
----
 
 ## 👥 Authors & Team
 
