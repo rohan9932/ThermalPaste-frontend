@@ -34,12 +34,14 @@ export function getCategoryIcon(category, fallback = Boxes) {
 }
 
 // ─── Users Registry ──────────────────────────────────────────────────────────
-export const SEARCH_USERS = [
-  { username: "LinusBuilds", role: "Host of Overclocked Tech Tips", link: "/profile" },
-  { username: "SFF_Enthusiast", role: "Custom Mini-ITX Builder", link: "/profile" },
-  { username: "LoopMaster", role: "Hardline Liquid Cooling Guru", link: "/profile" },
-  { username: "VoltageKing", role: "Competitive Hardware Overclocker", link: "/profile" },
-  { username: "GPUBeliever", role: "GPU Benchmark Reviewer", link: "/profile" },
-  { username: "BuildLogger", role: "PC Assembly & BIOS Specialist", link: "/profile" },
-  { username: "GamerGirlAria", role: "First-time Dream Rig Builder", link: "/profile" },
-];
+// export const SEARCH_USERS = [
+//   { username: "LinusBuilds", role: "Host of Overclocked Tech Tips", link: "/profile" },
+//   { username: "SFF_Enthusiast", role: "Custom Mini-ITX Builder", link: "/profile" },
+//   { username: "LoopMaster", role: "Hardline Liquid Cooling Guru", link: "/profile" },
+//   { username: "VoltageKing", role: "Competitive Hardware Overclocker", link: "/profile" },
+//   { username: "GPUBeliever", role: "GPU Benchmark Reviewer", link: "/profile" },
+//   { username: "BuildLogger", role: "PC Assembly & BIOS Specialist", link: "/profile" },
+//   { username: "GamerGirlAria", role: "First-time Dream Rig Builder", link: "/profile" },
+// ];
+
+export const SEARCH_USERS = [];

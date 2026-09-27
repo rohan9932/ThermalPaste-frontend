@@ -1,4 +1,4 @@
-# ThermalPaste Frontend 🧪⚡
+# ThermalPaste Frontend
 
 > Modern, high-performance community platform for PC builders, overclockers, benchmarkers, and hardware enthusiasts.
 
@@ -10,27 +10,27 @@
 
 ---
 
-## 📖 Overview
+## Overview
 
 **ThermalPaste** is a full-featured web client built with **React 19**, **Vite**, and **Tailwind CSS v4**. It connects to the ThermalPaste Node/Express backend to offer high-speed feeds, sub-group communities (`g/community`), hardware build discussions, native drag-and-drop Cloudinary image uploads, threaded comments, bookmarking, and real-time environmental carbon emission metrics.
 
 ---
 
-## ✨ Features
+## Features
 
-- **⚡ Live Post Feed & Community Scoping:** Paginated global feeds, sub-group feeds (`/communities/:groupId`), and private group visibility checks.
-- **🖼️ Native Cloudinary Post & Avatar Uploads:** Drag-and-drop image dropzones with client-side format checks (JPEG, PNG, WebP) and 10MB limits, live `FileReader` previews, and direct streaming through backend endpoints to Cloudinary CDN.
-- **🔺 Atomic Upvote / Downvote Engine:** Reddit-style reaction counter with accurate delta updates (net `-2` on reverse votes) and immediate optimistic UI updates.
-- **💬 Nested Threaded Discussions:** Full post view (`/post/:id`) featuring nested author replies, inline comment creation, and comment vote controls.
-- **🔖 Saved Bookmarks:** Toggle bookmarking on any post card with instantaneous synchronization across the dedicated `/saved` page.
-- **🛡️ Secure Authentication & Route Guards:** Protected routes (`ProtectedRoute`) and guest-only routes (`PublicOnlyRoute`) with HttpOnly cookie sessions.
-- **🔄 Single-Flight Silent Token Refresh:** Axios response interceptor that intercepts 401 errors, requests token rotation via `POST /api/auth/refresh`, and seamlessly replays in-flight requests without page reloads or auth drops.
-- **🌱 Carbon Footprint Monitoring:** Built-in Sustainable Web Design model displaying network data transfer emissions in real time (`CarbonFootprintDisplay`).
-- **📱 Fully Responsive Design:** Hand-crafted cyber/dark aesthetics optimized for viewports from 360px mobile screens up to ultrawide monitors.
+- **Live Post Feed & Community Scoping:** Paginated global feeds, sub-group feeds (`/communities/:groupId`), and private group visibility checks.
+- **Native Cloudinary Post & Avatar Uploads:** Drag-and-drop image dropzones with client-side format checks (JPEG, PNG, WebP) and 10MB limits, live `FileReader` previews, and direct streaming through backend endpoints to Cloudinary CDN.
+- **Atomic Upvote / Downvote Engine:** Reddit-style reaction counter with accurate delta updates (net `-2` on reverse votes) and immediate optimistic UI updates.
+- **Nested Threaded Discussions:** Full post view (`/post/:id`) featuring nested author replies, inline comment creation, and comment vote controls.
+- **Saved Bookmarks:** Toggle bookmarking on any post card with instantaneous synchronization across the dedicated `/saved` page.
+- **Secure Authentication & Route Guards:** Protected routes (`ProtectedRoute`) and guest-only routes (`PublicOnlyRoute`) with HttpOnly cookie sessions.
+- **Single-Flight Silent Token Refresh:** Axios response interceptor that intercepts 401 errors, requests token rotation via `POST /api/auth/refresh`, and seamlessly replays in-flight requests without page reloads or auth drops.
+- **Carbon Footprint Monitoring:** Built-in Sustainable Web Design model displaying network data transfer emissions in real time (`CarbonFootprintDisplay`).
+- **Fully Responsive Design:** Hand-crafted cyber/dark aesthetics optimized for viewports from 360px mobile screens up to ultrawide monitors.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Category | Technology | Description |
 |---|---|---|
@@ -45,7 +45,7 @@
 
 ---
 
-## 📁 Codebase Structure
+## Codebase Structure
 
 ```text
 ThermalPaste/
@@ -94,7 +94,7 @@ ThermalPaste/
 
 ---
 
-## 🧭 Application Routes
+## Application Routes
 
 All application routes are defined in [`src/App.jsx`](file:///Volumes/Mac%20Drive/Projects/ThermalPaste/src/App.jsx):
 
@@ -111,7 +111,7 @@ All application routes are defined in [`src/App.jsx`](file:///Volumes/Mac%20Driv
 
 ---
 
-## 🎨 Theme & Color System
+## Theme & Color System
 
 The application uses Tailwind CSS v4 with custom tokens configured in [`src/index.css`](file:///Volumes/Mac%20Drive/Projects/ThermalPaste/src/index.css):
 
@@ -132,7 +132,7 @@ The application uses Tailwind CSS v4 with custom tokens configured in [`src/inde
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -190,7 +190,7 @@ Ensure you have installed:
 
 ---
 
-## 🔌 API & Authentication Flow
+## API & Authentication Flow
 
 1. **HttpOnly Cookie Architecture:**
    Session tokens (`accessToken` and `refreshToken`) are stored in secure HttpOnly cookies set by the backend server. The frontend Axios client is initialized with `withCredentials: true`.
@@ -204,14 +204,14 @@ Ensure you have installed:
 
 ---
 
-## 📄 Documentation & Reports
+## Documentation & Reports
 
 - **Engineering Session Report:** [`details.pdf`](file:///Volumes/Mac%20Drive/Projects/ThermalPaste/details.pdf) — Printable 4-page technical breakdown of the Post CRUD, Cloudinary pipeline, and voting engine architecture.
 - **Team Guidelines & Activity Log:** [`guide.md`](file:///Volumes/Mac%20Drive/Projects/ThermalPaste/guide.md) — Ground rules, coding conventions, and developer activity history.
 
 ---
 
-## 👥 Authors & Team
+## Authors & Team
 
 Developed by the **ThermalPaste Engineering Team**:
 - **Rohan**
