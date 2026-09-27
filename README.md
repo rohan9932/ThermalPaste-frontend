@@ -1,4 +1,4 @@
-# ThermalPaste Frontend 🧪⚡
+# ThermalPaste Frontend ⚡
 
 > Modern, high-performance community platform for PC builders, overclockers, benchmarkers, and hardware enthusiasts.
 
