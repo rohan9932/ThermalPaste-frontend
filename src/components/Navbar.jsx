@@ -134,7 +134,7 @@ function Navbar({ onToggleSidebar, isSidebarOpen }) {
               onFocus={() => {
                 if (searchQuery.trim().length > 0) setIsSearchOpen(true);
               }}
-              placeholder="Search posts, groups, users..."
+              placeholder="Search posts, communities, users..."
               className="w-full bg-[#161922] hover:bg-[#1E2330] focus:bg-[#161922] text-xs text-white placeholder-[#8F99A8] pl-10 pr-9 py-2 rounded-full border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all duration-200"
             />
             {searchQuery && (
@@ -221,7 +221,7 @@ function Navbar({ onToggleSidebar, isSidebarOpen }) {
                               </p>
                               <p className="text-[11px] text-[#8F99A8] flex items-center gap-1.5 mt-0.5">
                                 <span className="text-[#00D8F6] font-medium">
-                                  {post.subGroup || post.community}
+                                  {post.community || post.subGroup || post.group?.name}
                                 </span>
                                 <span>•</span>
                                 <span>by {post.author}</span>

@@ -6,7 +6,6 @@ import Sidebar from "../components/Sidebar";
 import CreatePostForm from "../components/CreatePostForm";
 import PostCard from "../components/PostCard";
 import {
-  Boxes,
   Users,
   Lock,
   Globe,
@@ -188,7 +187,7 @@ export default function CommunitiesPage() {
                       Community Not Found
                     </h3>
                     <p className="text-xs text-[#8F99A8] max-w-sm mx-auto">
-                      The sub-group "{displayGroupName}" does not exist in the database.
+                      The community "{displayGroupName}" does not exist in the database.
                     </p>
                   </div>
                   <Link
@@ -286,7 +285,7 @@ export default function CommunitiesPage() {
                             ) : groupData.isMember ? (
                               <>
                                 <Check className="w-3.5 h-3.5" />
-                                <span>Leave Group</span>
+                                <span>Leave Community</span>
                               </>
                             ) : groupData.isPending ? (
                               <>
@@ -299,7 +298,7 @@ export default function CommunitiesPage() {
                                 <span>
                                   {groupData.privacy === "private"
                                     ? "Request to Join"
-                                    : "Join Group"}
+                                    : "Join Community"}
                                 </span>
                               </>
                             )}
@@ -317,7 +316,7 @@ export default function CommunitiesPage() {
                     </div>
                   </div>
 
-                  {/* Private Group Access Gate */}
+                  {/* Private Community Access Gate */}
                   {groupData.privacy === "private" && !groupData.hasAccess ? (
                     <div className="rounded-2xl border border-amber-500/30 bg-[#0F1117] p-8 text-center space-y-3">
                       <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto">
@@ -327,7 +326,7 @@ export default function CommunitiesPage() {
                         Private Community
                       </h3>
                       <p className="text-xs text-[#8F99A8] max-w-md mx-auto">
-                        This is a private sub-group. You must request to join and be
+                        This is a private community. You must request to join and be
                         accepted by the creator before viewing threads and
                         participating.
                       </p>

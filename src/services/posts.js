@@ -6,6 +6,8 @@ export const POST_KEYS = {
   post: (id) => ["posts", String(id)],
   group: (groupId, params) =>
     params ? ["posts", "group", String(groupId), params] : ["posts", "group", String(groupId)],
+  community: (communityId, params) =>
+    params ? ["posts", "group", String(communityId), params] : ["posts", "group", String(communityId)],
   saved: (params) => (params ? ["saved", params] : ["saved"]),
   reaction: (id) => ["posts", String(id), "reaction"],
 };
@@ -39,8 +41,11 @@ export async function getPostsByGroup(idOrName, params = {}) {
   posts.totalPages = data?.totalPages ?? 1;
   posts.currentPage = data?.currentPage ?? 1;
   posts.group = data?.group ?? null;
+  posts.community = data?.group ?? null;
   return posts;
 }
+
+export const getPostsByCommunity = getPostsByGroup;
 
 // Create a new post (supports JSON and multipart/form-data)
 export async function createPost(postData) {

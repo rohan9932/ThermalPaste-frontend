@@ -51,7 +51,7 @@ function HomePage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
 
-  // Fetch real cross-group posts from backend
+  // Fetch real cross-community posts from backend
   const {
     data: posts,
     isLoading,

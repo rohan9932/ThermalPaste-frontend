@@ -23,7 +23,6 @@ import {
   MessageSquare,
   Bookmark,
   CircleUserRound,
-  Boxes,
   Send,
   Reply,
   Edit3,
@@ -307,7 +306,7 @@ export default function PostDetailsPage() {
         String(user.id || user._id) ||
         author === user.username));
 
-  // Subgroup Category Icon
+  // Community Category Icon
   const category = rawPost?.group?.category || rawPost?.category || "hardware";
   const SubIcon = getCategoryIcon(category);
 
@@ -919,7 +918,7 @@ export default function PostDetailsPage() {
                     {/* Metadata Header Row */}
                     <div className="flex items-center justify-between flex-wrap gap-2 text-xs text-[#8F99A8] mb-2.5">
                       <div className="flex items-center flex-wrap gap-x-2 gap-y-1">
-                        {/* Subgroup Badge */}
+                        {/* Community Badge */}
                         <Link
                           to={`/communities/${subGroupSlug}`}
                           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#161922] text-white font-medium border border-[#222834] hover:border-[#00D8F6]/40 transition cursor-pointer"

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import CreateGroupForm from "./CreateGroupForm";
-import { Bookmark, House, Plus, UsersRound, UserRoundCog, LogOut, Boxes } from "lucide-react";
+import { CreateCommunityForm } from "./CreateGroupForm";
+import { Bookmark, House, Plus, UsersRound, UserRoundCog, LogOut } from "lucide-react";
 import { getCategoryIcon } from "../data/mockData";
 import { getGroups } from "../services/groups";
 import { useAuth } from "../context/AuthContext";
@@ -12,7 +12,7 @@ export function Sidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
   const currentPath = location.pathname;
   const { user, isLoading, logout } = useAuth();
-  const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
+  const [isCreateCommunityOpen, setIsCreateCommunityOpen] = useState(false);
 
   // Fetch dynamic groups from database
   const { data: apiGroups, isLoading: isGroupsLoading } = useQuery({
@@ -36,8 +36,8 @@ export function Sidebar({ isOpen, onClose }) {
     return isMember || isCreator || isJoinedInProfile;
   });
 
-  // Map joined groups with category-assigned icons
-  const subGroups = joinedGroups.map((g) => {
+  // Map joined communities with category-assigned icons
+  const joinedCommunities = joinedGroups.map((g) => {
     const slug = g.name.replace(/^g\//, "");
     return {
       id: slug,
@@ -58,10 +58,10 @@ export function Sidebar({ isOpen, onClose }) {
 
   return (
     <>
-      {/* Create Group Form Modal */}
-      <CreateGroupForm
-        isOpen={isCreateGroupOpen}
-        onClose={() => setIsCreateGroupOpen(false)}
+      {/* Create Community Form Modal */}
+      <CreateCommunityForm
+        isOpen={isCreateCommunityOpen}
+        onClose={() => setIsCreateCommunityOpen(false)}
       />
 
       {/* Mobile Overlay Background Blur */}
@@ -130,25 +130,25 @@ export function Sidebar({ isOpen, onClose }) {
 
             <button
               onClick={() => {
-                setIsCreateGroupOpen(true);
+                setIsCreateCommunityOpen(true);
                 if (onClose) onClose();
               }}
               className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-150 cursor-pointer font-semibold text-sm text-[#8F99A8] hover:bg-[#161922] hover:text-white"
             >
               <Plus className="w-5 h-5" />
-              <span>Create a Group</span>
+              <span>Create a Community</span>
             </button>
           </div>
 
-          {/* SUB-GROUPS SECTION (Joined Communities Only) */}
+          {/* COMMUNITIES SECTION (Joined Communities Only) */}
           <div>
             <div className="flex items-center justify-between px-3 mb-2">
               <h3 className="text-[11px] font-bold text-[#8F99A8] uppercase tracking-wider">
                 Joined Communities
               </h3>
-              {user && subGroups.length > 0 && (
+              {user && joinedCommunities.length > 0 && (
                 <span className="text-[10px] font-semibold text-[#00D8F6] bg-[#00D8F6]/10 px-2 py-0.5 rounded-full border border-[#00D8F6]/20">
-                  {subGroups.length}
+                  {joinedCommunities.length}
                 </span>
               )}
             </div>
@@ -176,7 +176,7 @@ export function Sidebar({ isOpen, onClose }) {
                     Log In &rarr;
                   </Link>
                 </div>
-              ) : subGroups.length === 0 ? (
+              ) : joinedCommunities.length === 0 ? (
                 <div className="px-3 py-2.5 rounded-xl bg-[#161922]/50 border border-[#222834]/50 text-xs text-[#8F99A8] space-y-1.5">
                   <p>No joined communities yet.</p>
                   <Link
@@ -190,19 +190,19 @@ export function Sidebar({ isOpen, onClose }) {
                   </Link>
                 </div>
               ) : (
-                subGroups.map((group) => {
-                  const Icon = group.icon;
-                  const isGroupActive = currentPath === `/communities/${group.id}`;
+                joinedCommunities.map((community) => {
+                  const Icon = community.icon;
+                  const isCommunityActive = currentPath === `/communities/${community.id}`;
 
                   return (
                     <Link
-                      key={group.id}
-                      to={`/communities/${group.id}`}
+                      key={community.id}
+                      to={`/communities/${community.id}`}
                       onClick={() => {
                         if (onClose) onClose();
                       }}
                       className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all duration-150 cursor-pointer font-medium text-sm ${
-                        isGroupActive
+                        isCommunityActive
                           ? "bg-[#222732] text-[#00D8F6]"
                           : "text-gray-300 hover:bg-[#161922] hover:text-white"
                       }`}
@@ -210,10 +210,10 @@ export function Sidebar({ isOpen, onClose }) {
                       <div className="flex items-center gap-3.5 truncate">
                         <Icon
                           className={`w-4 h-4 shrink-0 ${
-                            isGroupActive ? "text-[#00D8F6]" : group.iconColor || "text-gray-400"
+                            isCommunityActive ? "text-[#00D8F6]" : community.iconColor || "text-gray-400"
                           }`}
                         />
-                        <span className="truncate">{group.name}</span>
+                        <span className="truncate">{community.name}</span>
                       </div>
                     </Link>
                   );

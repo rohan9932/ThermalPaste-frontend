@@ -4,11 +4,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { X, Users, Globe, Shield, Sparkles, Loader2 } from "lucide-react";
 import { createGroup } from "../services/groups";
 
-export function CreateGroupForm({ isOpen, onClose }) {
+export function CreateCommunityForm({ isOpen, onClose }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const [groupName, setGroupName] = useState("");
+  const [communityName, setCommunityName] = useState("");
   const [tagline, setTagline] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("hardware");
@@ -20,14 +20,14 @@ export function CreateGroupForm({ isOpen, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!groupName.trim()) return;
+    if (!communityName.trim()) return;
 
     setIsSubmitting(true);
     setError("");
 
     try {
       const created = await createGroup({
-        name: groupName.trim(),
+        name: communityName.trim(),
         tagline: tagline.trim(),
         description: description.trim(),
         category,
@@ -37,19 +37,19 @@ export function CreateGroupForm({ isOpen, onClose }) {
       queryClient.invalidateQueries({ queryKey: ["groups"] });
 
       // Reset fields & close
-      setGroupName("");
+      setCommunityName("");
       setTagline("");
       setDescription("");
       setError("");
       onClose();
 
-      // Navigate to the newly created sub-group
-      navigate(`/communities/${created?.name || groupName.trim()}`);
+      // Navigate to the newly created community
+      navigate(`/communities/${created?.name || communityName.trim()}`);
     } catch (err) {
       setError(
         err.response?.data?.message ||
         err.message ||
-        "Failed to create group. Make sure you are logged in."
+        "Failed to create community. Make sure you are logged in."
       );
     } finally {
       setIsSubmitting(false);
@@ -74,7 +74,7 @@ export function CreateGroupForm({ isOpen, onClose }) {
             </div>
             <div>
               <h2 className="text-lg font-bold text-white leading-tight">
-                Create a Sub-group
+                Create a Community
               </h2>
               <p className="text-xs text-[#8F99A8]">
                 Start a new community
@@ -99,11 +99,10 @@ export function CreateGroupForm({ isOpen, onClose }) {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Group Identifier */}
+          {/* Community Identifier */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#8F99A8] mb-1.5">
-
-              Group Name <span className="text-[#00D8F6]">*</span>
+              Community Name <span className="text-[#00D8F6]">*</span>
             </label>
             <div className="relative flex items-center">
               <span className="absolute left-3.5 text-sm font-semibold text-[#8F99A8] select-none">
@@ -112,8 +111,8 @@ export function CreateGroupForm({ isOpen, onClose }) {
               <input
                 type="text"
                 required
-                value={groupName}
-                onChange={(e) => setGroupName(e.target.value)}
+                value={communityName}
+                onChange={(e) => setCommunityName(e.target.value)}
                 placeholder="e.g: keyboards"
                 className="w-full bg-[#161922] text-sm text-white placeholder-[#8F99A8]/60 pl-8 pr-4 py-2.5 rounded-xl border border-[#222834] focus:border-[#00D8F6] focus:outline-none transition-all"
               />
@@ -195,7 +194,7 @@ export function CreateGroupForm({ isOpen, onClose }) {
 
               <div
                 className="flex items-start gap-3 p-3 rounded-xl border border-[#222834] bg-[#161922]/40 text-[#8F99A8] opacity-60 cursor-not-allowed select-none relative"
-                title="Restricted sub-groups are coming soon"
+                title="Restricted communities are coming soon"
               >
                 <Shield className="w-4 h-4 mt-0.5 shrink-0 text-[#8F99A8]" />
                 <div className="flex-1 min-w-0">
@@ -235,7 +234,7 @@ export function CreateGroupForm({ isOpen, onClose }) {
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  <span>Create Group</span>
+                  <span>Create Community</span>
                 </>
               )}
             </button>
@@ -246,4 +245,5 @@ export function CreateGroupForm({ isOpen, onClose }) {
   );
 }
 
-export default CreateGroupForm;
+export const CreateGroupForm = CreateCommunityForm;
+export default CreateCommunityForm;

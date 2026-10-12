@@ -76,7 +76,7 @@ export default function CommunitiesListPage() {
                     All Communities
                   </h1>
                   <p className="text-sm text-[#8F99A8] mt-1">
-                    Discover and explore all hardware, cooling, and overclocking sub-groups.
+                    Discover and explore all hardware, cooling, and overclocking communities.
                   </p>
                 </div>
                 <span className="text-xs text-[#00D8F6] font-semibold bg-[#00D8F6]/10 px-3 py-1 rounded-full border border-[#00D8F6]/30">

@@ -68,7 +68,7 @@ export function PostCard({ post = DEFAULT_POST }) {
   const authorAvatar = post.user?.imageLink || post.authorAvatar || null;
   const isPopularRig = post.isPopularRig || false;
 
-  // Derive category icon for subgroup
+  // Derive category icon for community
   const category = post.group?.category || post.category || "hardware";
   const SubIcon = getCategoryIcon(category);
 
@@ -263,7 +263,7 @@ export function PostCard({ post = DEFAULT_POST }) {
       <div className="flex-1 p-4 sm:p-5 flex flex-col min-w-0">
         {/* HEADER ROW */}
         <div className="flex items-center gap-2 flex-wrap text-xs text-[#8F99A8] mb-2.5">
-          {/* SUBGROUP BADGE */}
+          {/* COMMUNITY BADGE */}
           <Link
             to={`/communities/${subGroupSlug}`}
             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#161922] text-white font-medium border border-[#222834] hover:border-[#00D8F6]/40 transition cursor-pointer"

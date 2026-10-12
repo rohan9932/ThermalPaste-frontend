@@ -50,3 +50,13 @@ export async function handleJoinRequest(id, userId, action) {
   });
   return response.data?.data ?? response.data;
 }
+
+// ─── Community Aliases ────────────────────────────────────────────────────────
+export const getCommunities = getGroups;
+export const getCommunityByIdOrName = getGroupByIdOrName;
+export const createCommunity = createGroup;
+export const updateCommunity = updateGroup;
+export const joinCommunity = joinGroup;
+export const leaveCommunity = leaveGroup;
+export const getCommunityJoinRequests = getJoinRequests;
+export const handleCommunityJoinRequest = handleJoinRequest;

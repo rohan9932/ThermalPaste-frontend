@@ -102,7 +102,7 @@ export function CreatePostForm({
     }
 
     if (!selectedCommunity) {
-      setError("Please select a sub-group for your post.");
+      setError("Please select a community for your post.");
       return;
     }
 
@@ -216,7 +216,7 @@ export function CreatePostForm({
           {/* Target Community */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#8F99A8] mb-1.5">
-              Choose Sub-group <span className="text-[#00D8F6]">*</span>
+              Choose Community <span className="text-[#00D8F6]">*</span>
             </label>
             <div className="relative">
               <select
@@ -226,7 +226,7 @@ export function CreatePostForm({
               >
                 {groupOptions.length === 0 ? (
                   <option value="" disabled className="bg-[#0F1117] text-[#8F99A8]">
-                    {isGroupsLoading ? "Loading sub-groups..." : "No sub-groups available"}
+                    {isGroupsLoading ? "Loading communities..." : "No communities available"}
                   </option>
                 ) : (
                   groupOptions.map((opt) => (
