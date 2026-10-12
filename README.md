@@ -12,7 +12,7 @@
 
 ## Overview
 
-**ThermalPaste** is a full-featured web client built with **React 19**, **Vite**, and **Tailwind CSS v4**. It connects to the ThermalPaste Node/Express backend to offer high-speed feeds, sub-group communities (`g/community`), hardware build discussions, native drag-and-drop Cloudinary image uploads, threaded comments, bookmarking, and real-time environmental carbon emission metrics.
+**ThermalPaste** is a full-featured web client built with **React 19**, **Vite**, and **Tailwind CSS v4**. It connects to the ThermalPaste Node/Express backend to offer high-speed feeds, sub-group communities (`g/community`), hardware build discussions, native drag-and-drop Cloudinary image uploads, threaded comments, and bookmarking.
 
 ---
 
@@ -25,7 +25,6 @@
 - **Saved Bookmarks:** Toggle bookmarking on any post card with instantaneous synchronization across the dedicated `/saved` page.
 - **Secure Authentication & Route Guards:** Protected routes (`ProtectedRoute`) and guest-only routes (`PublicOnlyRoute`) with HttpOnly cookie sessions.
 - **Single-Flight Silent Token Refresh:** Axios response interceptor that intercepts 401 errors, requests token rotation via `POST /api/auth/refresh`, and seamlessly replays in-flight requests without page reloads or auth drops.
-- **Carbon Footprint Monitoring:** Built-in Sustainable Web Design model displaying network data transfer emissions in real time (`CarbonFootprintDisplay`).
 - **Fully Responsive Design:** Hand-crafted cyber/dark aesthetics optimized for viewports from 360px mobile screens up to ultrawide monitors.
 
 ---
@@ -41,7 +40,6 @@
 | **Routing** | **React Router v6** (`^6.28.0`) | Data-router configured via `createBrowserRouter` |
 | **HTTP Client** | **Axios** (`^1.20.0`) | Promise-based HTTP client with cookie credentials and interceptors |
 | **Icons** | **Lucide React** (`^1.31.0`) | Consistent, clean icon set |
-| **Sustainability** | **react-carbon-footprint** (`^1.0.0`) | Real-time byte transfer and CO2 emissions tracking |
 
 ---
 
@@ -53,7 +51,6 @@ ThermalPaste/
 ├── src/
 │   ├── assets/                 # SVGs, brand logos, and static illustrations
 │   ├── components/             # Reusable UI widgets and layout blocks
-│   │   ├── CarbonFootprintDisplay.jsx # Floating live network CO2 footprint widget
 │   │   ├── CreateGroupForm.jsx        # Community / sub-group creation modal
 │   │   ├── CreatePostForm.jsx         # Post creation modal with Cloudinary dropzone
 │   │   ├── Navbar.jsx                 # Top nav with search dropdown, user menu, and CTAs
